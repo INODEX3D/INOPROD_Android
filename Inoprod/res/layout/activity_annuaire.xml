@@ -1,0 +1,39 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/blank"
+    tools:context="${relativePackage}.${activityClass}" >
+
+    <ImageButton
+        android:id="@+id/imageButton1"
+        android:layout_width="40dip"
+        android:layout_height="40dip"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="@dimen/b12"
+        android:src="@drawable/exit" />
+
+    <TextView
+        android:id="@+id/textViewA"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="@dimen/b12"
+        android:text="Annuaire du personnel autorisé"
+        android:textSize="@dimen/basicima" />
+
+    <GridView
+        android:id="@+id/gridview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/imageButton1"
+        android:layout_alignTop="@+id/textView1"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="40dp"
+        android:numColumns="1"
+        android:stretchMode="columnWidth" >
+    </GridView>
+
+</RelativeLayout>

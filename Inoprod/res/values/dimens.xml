@@ -5,5 +5,7 @@
     <dimen name="b1">7dip</dimen>
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="b12">12dip</dimen>
+    <dimen name="b30">30dip</dimen>
 
 </resources>

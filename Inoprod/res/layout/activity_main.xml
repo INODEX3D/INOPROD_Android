@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res/com.v1.inoprod"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@drawable/blank"
+    android:background="#ffffff"
     tools:context="${relativePackage}.${activityClass}" >
 
     <ImageButton
@@ -13,6 +13,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:layout_margin="25dip"
+        android:layout_marginLeft="@dimen/b30"
         android:src="@drawable/login5" />
 
     <ImageButton
@@ -22,6 +23,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_margin="25dip"
+        android:layout_marginLeft="@dimen/b30"
         android:src="@drawable/aide5" />
 
     <ImageButton
@@ -31,15 +33,17 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_margin="25dip"
+        android:layout_marginRight="@dimen/b30"
         android:src="@drawable/exit2" />
 
     <ImageButton
         android:id="@+id/imageButton2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
         android:layout_margin="25dip"
+        android:layout_marginRight="@dimen/b30"
         android:src="@drawable/annuaire4" />
 
 </RelativeLayout>

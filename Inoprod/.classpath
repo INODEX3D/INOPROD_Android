@@ -5,7 +5,9 @@
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="C:/Users/user/Desktop/Jan/Dvlp/poi-bin-3.10.1-20140818/poi-3.10.1/lib/poi-3.10.1-20140818.jar"/>
+	<classpathentry kind="lib" path="C:/Users/user/Desktop/Jan/Dvlp/poi-bin-3.10.1-20140818/poi-3.10.1/lib/poi-ooxml-3.10.1-20140818.jar"/>
+	<classpathentry kind="lib" path="C:/Users/user/Desktop/Jan/Dvlp/poi-bin-3.10.1-20140818/poi-3.10.1/lib/poi-ooxml-schemas-3.10.1-20140818.jar"/>
+	<classpathentry kind="lib" path="C:/Users/user/Desktop/Jan/Dvlp/poi-bin-3.10.1-20140818/poi-3.10.1/lib/xmlbeans-2.6.0.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

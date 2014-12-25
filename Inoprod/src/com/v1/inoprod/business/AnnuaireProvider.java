@@ -1,23 +1,24 @@
-package business;
+package com.v1.inoprod.business;
 
-import business.AnnuairePersonel.Employe;
+import com.v1.inoprod.business.AnnuairePersonel.Employe;
+
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.util.Log;
+
 
 public class AnnuaireProvider extends ContentProvider  {
 	
 
 
 	DatabaseHelper dbHelper;
-	public static final Uri CONTENT_URI = Uri.parse("content://business.annuairepersonel");
+	public static final Uri CONTENT_URI = Uri.parse("content://com.v1.inoprod.business.annuairepersonel");
 
 	// Nom de notre base de données 
 		public static final String CONTENT_PROVIDER_DB_NAME = "annuairepersonel.db";
@@ -26,7 +27,7 @@ public class AnnuaireProvider extends ContentProvider  {
 	// Nom de la table de notre base 
 		public static final String CONTENT_PROVIDER_TABLE_NAME = "employe";
 	// Le Mime de notre content provider, la premiére partie est toujours identique 
-		public static final String CONTENT_PROVIDER_MIME = "vnd.android.cursor.item/vnd.business.employe";
+		public static final String CONTENT_PROVIDER_MIME = "vnd.android.cursor.item/vnd.com.v1.inoprod.business.employe";
 
 		
 	// Notre DatabaseHelper 
@@ -40,7 +41,7 @@ public class AnnuaireProvider extends ContentProvider  {
 		// Création des tables 
 		@Override
 		public void onCreate(SQLiteDatabase db) {
-	db.execSQL("CREATE TABLE " + AnnuaireProvider.CONTENT_PROVIDER_TABLE_NAME + " (" + Employe.EMPLOYE_NOM + " STRING PRIMARY KEY ," + Employe.EMPLOYE_PRENOM + " STRING PRIMARY KEY ," + Employe.EMPLOYE_METIER + " STRING " + ");");
+	db.execSQL("CREATE TABLE " + AnnuaireProvider.CONTENT_PROVIDER_TABLE_NAME + " (" + Employe._id + " INTEGER PRIMARY KEY AUTOINCREMENT ," + Employe.EMPLOYE_NOM + " STRING ," + Employe.EMPLOYE_PRENOM + " STRING ," + Employe.EMPLOYE_METIER + " STRING " + ");");
 		}
 
 		// Cette méthode sert à gérer la montée de version de notre base 
@@ -48,6 +49,7 @@ public class AnnuaireProvider extends ContentProvider  {
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 	db.execSQL("DROP TABLE IF EXISTS " + AnnuaireProvider.CONTENT_PROVIDER_TABLE_NAME);
 			onCreate(db);
+		
 		}
 	
 
@@ -67,7 +69,7 @@ public class AnnuaireProvider extends ContentProvider  {
 			else
 				return db.delete(
 						AnnuaireProvider.CONTENT_PROVIDER_TABLE_NAME,
-						Employe.EMPLOYE_NOM + "=" + id, selectionArgs);
+						Employe._id + "=" + id, selectionArgs);
 		} finally {
 			db.close();
 		}
@@ -88,7 +90,7 @@ public class AnnuaireProvider extends ContentProvider  {
 				
 	if (id == -1) {
 				throw new RuntimeException(String.format(
-				"%s : Failed to insert [%s] for unknown reasons.","TutosAndroidProvider", values, uri));
+				"%s : Failed to insert [%s] for unknown reasons.","AnnuaireProvider", values, uri));
 			} else {
 				return ContentUris.withAppendedId(uri, id);
 			}
@@ -110,16 +112,16 @@ public class AnnuaireProvider extends ContentProvider  {
 	public Cursor query(Uri uri, String[] projection, String selection,
 			String[] selectionArgs, String sortOrder) {
 		long id = getId(uri);
-		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		SQLiteDatabase db = dbHelper.getReadableDatabase();	
 		if (id < 0) {
 			return 	db.query(AnnuaireProvider.CONTENT_PROVIDER_TABLE_NAME,
 	projection, selection, selectionArgs, null, null,
 		sortOrder);
 		} else {
 			return 		db.query(AnnuaireProvider.CONTENT_PROVIDER_TABLE_NAME,
-		projection, Employe.EMPLOYE_NOM + "=" + id, null, null, null,
+		projection, Employe._id + "=" + id, null, null, null,
 		null);
-		}
+		} 
 	}
 	
 	
@@ -132,15 +134,15 @@ public class AnnuaireProvider extends ContentProvider  {
 	try {
 			if (id < 0)
 	return db.update( AnnuaireProvider.CONTENT_PROVIDER_TABLE_NAME,values, selection, selectionArgs);
-			else
+		else
 				return db.update(								AnnuaireProvider.CONTENT_PROVIDER_TABLE_NAME,
-				values, Employe.EMPLOYE_NOM + "=" + id, null);
+				values, Employe._id + "=" + id, null); 
 			} finally {
 				db.close();
 			}
-		}
+		} 
 	
-	
+
 	private long getId(Uri uri) {
 		String lastPathSegment = uri.getLastPathSegment();
 		if (lastPathSegment != null) {
@@ -151,6 +153,7 @@ public class AnnuaireProvider extends ContentProvider  {
 			}
 		}
 		return -1;
+		
 }
 
 
