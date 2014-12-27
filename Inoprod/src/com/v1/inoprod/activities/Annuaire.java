@@ -37,37 +37,32 @@ import com.v1.inoprod.R;
 import com.v1.inoprod.business.AnnuairePersonel.Employe;
 import com.v1.inoprod.business.AnnuaireProvider;
 
+/** Acitivité qui affiche l'annuaire du personnel autorisé 
+ * 
+ * @author Arnaud Payet
+ *
+ */
 public class Annuaire extends Activity {
 	
+	//Bouton qui permet de revenir au menu principal
 	private ImageButton boutonExit = null;
-	String columns[] = new String[] { Employe._id, Employe.EMPLOYE_NOM, Employe.EMPLOYE_PRENOM, Employe.EMPLOYE_METIER };
-
-	int[] layouts = new int[] {R.id.idEmp, R.id.nom, R.id.prenom, R.id.metier };
-
-
 	
-	
-	
-	
+	//Chaines de caractères permettant de faire une requete dans la base de données Annuaire
+	private String columns[] = new String[] { Employe._id, Employe.EMPLOYE_NOM, Employe.EMPLOYE_PRENOM, Employe.EMPLOYE_METIER };
+	private int[] layouts = new int[] {R.id.idEmp, R.id.nom, R.id.prenom, R.id.metier };
+	//Uri de AnnuaireProvider
+	private Uri url = AnnuaireProvider.CONTENT_URI;
+	// Curseur et Content Resolver à utiliser lors des requêtes
+	private Cursor cursor;
+	private ContentResolver cr; 	
 
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_annuaire);
-		
-		
-		/*
-	
-			try {
-				insertRecords();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				Toast.makeText(this, "fichier non lu", Toast.LENGTH_SHORT).show();
-			}
-	
-			
-*/
+		cr= getContentResolver(); 
+		//Affichage de l'annuaire
 		displayContentProvider();
 		
 		
@@ -80,23 +75,23 @@ public class Annuaire extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				Intent toMain = new Intent(Annuaire.this, MainActivity.class );
-				
+				Intent toMain = new Intent(Annuaire.this, MainActivity.class );		
 				startActivity(toMain);
 				
 			}
 		});
 	}
 
+	/** Genère l'affichage de l'annuaire en utilisant un SimpleCursorAdapter
+	 * Le layout GridView est récupéré puis utiliser pour afficher chacun des éléments
+	 */
 	private void displayContentProvider() {
+		//Création du SimpleCursorAdapter affilié au GridView 
 		SimpleCursorAdapter sca = new SimpleCursorAdapter( this, R.layout.grid_layout, null, columns, layouts);
 		GridView gridView = (GridView) findViewById(R.id.gridview);
 		gridView.setAdapter(sca);
-		
-		ContentResolver cr=getContentResolver(); 
-		Uri url = AnnuaireProvider.CONTENT_URI;
-		Cursor cursor=cr.query(url, columns, null, null, null);
-		
+		//Requête dans la base Annuaire
+		cursor=cr.query(url, columns, null, null, null);
 		sca.changeCursor(cursor);
 		
 		
@@ -106,34 +101,5 @@ public class Annuaire extends Activity {
 
 		
 
-	private void insertRecords() throws IOException { 
 
-		InputStream input = this.getResources().openRawResource(R.raw.annuaire_personel);
-		POIFSFileSystem fs = new POIFSFileSystem( input );
-	
-		
-        HSSFWorkbook wb = new HSSFWorkbook(fs);
-
-        HSSFSheet sheet =  wb.getSheetAt(0);
-        
-
-
-        // Iterate over each row in the sheet
-        Iterator rows = sheet.rowIterator(); 
-        rows.next();
-     
-        ContentValues contact = new ContentValues();
-        while( rows.hasNext() ) {           
-            HSSFRow row = (HSSFRow) rows.next();
-
-            contact.put(Employe.EMPLOYE_NOM,row.getCell(1).toString() );
-            contact.put(Employe.EMPLOYE_PRENOM,row.getCell(2).toString() );
-            contact.put(Employe.EMPLOYE_METIER,row.getCell(3).toString() );
-            getContentResolver().insert(AnnuaireProvider.CONTENT_URI, contact);
-            contact.clear();
-
-		
-	}
-		
-	}
 }

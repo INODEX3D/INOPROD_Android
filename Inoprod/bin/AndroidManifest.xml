@@ -24,6 +24,7 @@
             android:screenOrientation="landscape" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -52,10 +53,45 @@
         <provider
             android:name=".business.AnnuaireProvider"
             android:authorities="com.v1.inoprod.business.annuairepersonel" />
+        
+        <provider
+            android:name=".business.NomenclatureProvider"
+            android:authorities="com.v1.inoprod.business.nomenclature" />
+        <provider
+            android:name=".business.ProductionProvider"
+            android:authorities="com.v1.inoprod.business.production" />
 
         <activity
-            android:name="com.v1.inoprod.activities.LoginProfil"
+            android:name=".activities.LoginProfil"
             android:label="@string/title_activity_login_profil" >
+        </activity>
+        <activity
+            android:name=".activities.magasiniers.MainMenuMagasinier"
+            android:label="@string/title_activity_main_menu_magasinier" >
+        </activity>
+        <activity
+            android:name=".activities.magasiniers.ImportCoupeCables"
+            android:label="@string/title_activity_import_coupe_cables" >
+        </activity>
+        <activity
+            android:name=".activities.magasiniers.DebitCables"
+            android:label="@string/title_activity_debit_cables" >
+        </activity>
+        <activity
+            android:name=".activities.magasiniers.RegroupementCables"
+            android:label="@string/title_activity_regroupement_cables" >
+        </activity>
+        <activity
+            android:name=".activities.magasiniers.SaisieTracabiliteComposant"
+            android:label="@string/title_activity_saisie_tracabilite_composant" >
+        </activity>
+        <activity
+            android:name="com.v1.inoprod.activities.magasiniers.ServitudeComposants"
+            android:label="@string/title_activity_servitude_composants" >
+        </activity>
+        <activity
+            android:name="com.v1.inoprod.activities.magasiniers.KittingCablesComposants"
+            android:label="@string/title_activity_kitting_cables_composants" >
         </activity>
     </application>
 

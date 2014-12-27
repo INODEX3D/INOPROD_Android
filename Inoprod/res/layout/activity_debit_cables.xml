@@ -1,0 +1,60 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffff"
+    tools:context="${relativePackage}.${activityClass}" >
+    
+    
+    <TextView
+    android:id="@+id/textView1"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentTop="true"
+    android:layout_centerHorizontal="true"
+    android:layout_marginTop="16dp"
+    android:text="@string/debitcable"
+    android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <ImageButton
+            android:id="@+id/exitButton1"
+            android:layout_width="50dip"
+            android:layout_height="50dip"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_margin="@dimen/b12"
+            android:src="@drawable/valider9" />
+        
+        <ImageButton
+            android:id="@+id/infoButton1"
+            android:layout_width="50dip"
+            android:layout_height="50dip"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_margin="@dimen/b12"
+            android:src="@drawable/aide3" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/textView1"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="@dimen/b30"
+            android:layout_marginTop="25dp"
+            android:layout_marginRight="40dp"
+            android:layout_marginLeft="40dp"
+            android:text="Référez-vous aux instructions, affichées sur l’écran de la machine de coupe, jusqu’à la fin de la production de cette séquence
+"
+            android:textSize="@dimen/b12" />
+
+        <ImageView
+            android:id="@+id/imageView1"
+            android:layout_width="50dip"
+            android:layout_height="50dip"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_margin="@dimen/b12"
+            android:src="@drawable/chrono2" />
+
+</RelativeLayout>

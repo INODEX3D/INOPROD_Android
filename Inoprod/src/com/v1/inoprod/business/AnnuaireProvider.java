@@ -12,39 +12,56 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.util.Log;
 
-
+/** Classe derivant de Content Provider servant à la création et la manipulation de la base de données
+ * Annuaire
+ * @author Arnaud Payet
+ *
+ */
 public class AnnuaireProvider extends ContentProvider  {
 	
 
 
-	DatabaseHelper dbHelper;
+	DatabaseAnnuaire dbHelper;
 	public static final Uri CONTENT_URI = Uri.parse("content://com.v1.inoprod.business.annuairepersonel");
 
-	// Nom de notre base de données 
+	/** Nom de la base de données */
 		public static final String CONTENT_PROVIDER_DB_NAME = "annuairepersonel.db";
-	// Version de notre base de données 
+	/** Version de la base de données */
 		public static final int CONTENT_PROVIDER_DB_VERSION = 1;
-	// Nom de la table de notre base 
+	/** Nom de la table de la base de données */
 		public static final String CONTENT_PROVIDER_TABLE_NAME = "employe";
-	// Le Mime de notre content provider, la premiére partie est toujours identique 
+	/** Le Mime du content Provider */
 		public static final String CONTENT_PROVIDER_MIME = "vnd.android.cursor.item/vnd.com.v1.inoprod.business.employe";
 
 		
-	// Notre DatabaseHelper 
-	private static class DatabaseHelper extends SQLiteOpenHelper {
+	/** Classe interne comprenant la base de données SQLite qui sera utilisée 
+	 * 
+	 * @author Arnaud Payet
+	 *
+	 */
+	private static class DatabaseAnnuaire extends SQLiteOpenHelper {
 
-		// Création à partir du Context, du Nom de la table et du numéro de version 
-		DatabaseHelper(Context context) {
+		/** Création à partir du Context, du Nom de la table et du numéro de version
+		 *  
+		 * @param context
+		 */
+		DatabaseAnnuaire(Context context) {
 	super(context,AnnuaireProvider.CONTENT_PROVIDER_DB_NAME, null, AnnuaireProvider.CONTENT_PROVIDER_DB_VERSION);
 		}
 		
-		// Création des tables 
+		/** Création des tables 
+		 * @param db, SQLiteDatabase
+		 */
 		@Override
 		public void onCreate(SQLiteDatabase db) {
 	db.execSQL("CREATE TABLE " + AnnuaireProvider.CONTENT_PROVIDER_TABLE_NAME + " (" + Employe._id + " INTEGER PRIMARY KEY AUTOINCREMENT ," + Employe.EMPLOYE_NOM + " STRING ," + Employe.EMPLOYE_PRENOM + " STRING ," + Employe.EMPLOYE_METIER + " STRING " + ");");
 		}
 
-		// Cette méthode sert à gérer la montée de version de notre base 
+	
+		
+		/** Cette méthode sert à gérer la montée de version de la base 
+		 * 
+		 */
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 	db.execSQL("DROP TABLE IF EXISTS " + AnnuaireProvider.CONTENT_PROVIDER_TABLE_NAME);
@@ -86,6 +103,7 @@ public class AnnuaireProvider extends ContentProvider  {
 	public Uri insert(Uri uri, ContentValues values) {
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		try {
+			
 	long id = db.insertOrThrow(			 AnnuaireProvider.CONTENT_PROVIDER_TABLE_NAME, null, values);
 				
 	if (id == -1) {
@@ -103,7 +121,7 @@ public class AnnuaireProvider extends ContentProvider  {
 
 	@Override
 	public boolean onCreate() {
-		dbHelper = new DatabaseHelper(getContext());
+		dbHelper = new DatabaseAnnuaire(getContext());
 		return true;
 	}
 

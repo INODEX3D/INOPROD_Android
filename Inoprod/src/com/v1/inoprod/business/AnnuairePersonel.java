@@ -2,13 +2,18 @@ package com.v1.inoprod.business;
 
 import android.provider.BaseColumns;
 
-
+/**Classe définissant les colonnes de la base de données Annuaire */
 public class AnnuairePersonel  {
 	
 	public AnnuairePersonel() {
 		
 	}
 	
+	/** Classe entité de la base de données Annuaire
+	 * 
+	 * @author Arnaud Payet
+	 *
+	 */
 	public static final class Employe implements BaseColumns {
 		
 		

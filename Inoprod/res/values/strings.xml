@@ -9,5 +9,18 @@
     <string name="title_activity_annuaire">Annuaire</string>
     <string name="title_activity_login_profil">LoginProfil</string>
     <string name="scanbadge">Veuillez scanner votre badge</string>
+    <string name="title_activity_main_menu_magasinier">MainMenuMagasinier</string>
+    <string name="ordredujour">Ordre du jour</string>
+    <string name="title_activity_import_coupe_cables">ImportCoupeCables</string>
+    <string name="debitcable">Débits des câbles &amp; fils</string>
+    <string name="title_activity_debit_cables">DebitCables</string>
+    <string name="title_activity_regroupement_cables">RegroupementCables</string>
+    <string name="regroupementcables">Regroupement des câbles</string>
+    <string name="title_activity_saisie_tracabilite_composant">SaisieTracabiliteComposant</string>
+    <string name="referencearticle">Référence de l\'article</string>
+    <string name="debitscomposants">Débits des composants</string>
+    <string name="title_activity_servitude_composants">ServitudeComposants</string>
+    <string name="title_activity_kitting_cables_composants">KittingCablesComposants</string>
+    <string name="regroupementtetes">Regroupement des têtes</string>
 
 </resources>
