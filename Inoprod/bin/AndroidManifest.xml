@@ -13,6 +13,10 @@
         android:normalScreens="false"
         android:smallScreens="false" />
 
+    <uses-feature
+        android:name="android.hardware.camera.barcode"
+        android:required="false" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -53,13 +57,18 @@
         <provider
             android:name=".business.AnnuaireProvider"
             android:authorities="com.v1.inoprod.business.annuairepersonel" />
-        
         <provider
             android:name=".business.NomenclatureProvider"
             android:authorities="com.v1.inoprod.business.nomenclature" />
         <provider
             android:name=".business.ProductionProvider"
             android:authorities="com.v1.inoprod.business.production" />
+        <provider
+            android:name=".business.DureesProvider"
+            android:authorities="com.v1.inoprod.business.durees" />
+        <provider
+            android:name=".business.OutillageProvider"
+            android:authorities="com.v1.inoprod.business.outillage" />
 
         <activity
             android:name=".activities.LoginProfil"
@@ -86,12 +95,32 @@
             android:label="@string/title_activity_saisie_tracabilite_composant" >
         </activity>
         <activity
-            android:name="com.v1.inoprod.activities.magasiniers.ServitudeComposants"
+            android:name=".activities.magasiniers.ServitudeComposants"
             android:label="@string/title_activity_servitude_composants" >
         </activity>
         <activity
-            android:name="com.v1.inoprod.activities.magasiniers.KittingCablesComposants"
+            android:name=".activities.magasiniers.KittingCablesComposants"
             android:label="@string/title_activity_kitting_cables_composants" >
+        </activity>
+        <activity
+            android:name=".activities.cableur.MainMenuCableur"
+            android:label="@string/title_activity_main_menu_cableur" >
+        </activity>
+        <activity
+            android:name=".activities.cableur.RepriseBlindageTa"
+            android:label="@string/title_activity_reprise_blindage_ta" >
+        </activity>
+        <activity
+            android:name=".activities.cableur.DenudageSertissageContactTa"
+            android:label="@string/title_activity_denudage_sertissage_contact_ta" >
+        </activity>
+        <activity
+            android:name=".activities.controleur.MainMenuControleur"
+            android:label="@string/title_activity_main_menu_controleur" >
+        </activity>
+        <activity
+            android:name="com.v1.inoprod.activities.preparateur.MainMenuPreparateur"
+            android:label="@string/title_activity_main_menu_preparateur" >
         </activity>
     </application>
 

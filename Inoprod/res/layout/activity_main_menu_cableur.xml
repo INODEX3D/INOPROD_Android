@@ -5,35 +5,51 @@
     android:background="#ffffff"
     tools:context="${relativePackage}.${activityClass}" >
 
-    <TextView
+   <TextView
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
-        android:text="Menu principal profil magasiniers"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#000000" />
+        android:text="Menu principal profil opérateurs"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
     
      <ImageButton
-        android:id="@+id/infoButton1"
-        android:layout_width="50dip"
-        android:layout_height="50dip"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_margin="@dimen/b12"
-        android:src="@drawable/aide3" />
+         android:id="@+id/infoButton1"
+         android:layout_width="50dip"
+         android:layout_height="50dip"
+         android:layout_alignParentBottom="true"
+         android:layout_alignParentLeft="true"
+         android:src="@drawable/aide3" />
     
         <ImageButton
-        android:id="@+id/exitButton1"
-        android:layout_width="40dip"
-        android:layout_height="40dip"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_margin="@dimen/b12"
-        android:src="@drawable/exit" />
+            android:id="@+id/exitButton1"
+            android:layout_width="40dip"
+            android:layout_height="40dip"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/exit" />
+        
+        <ImageButton
+            android:id="@+id/imageButton1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/exitButton1"
+            android:layout_toLeftOf="@id/exitButton1"
+            android:src="@drawable/valider9" />
 
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/textView1"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="15dp"
+            android:text="Préparation de l’outillage: Veuillez vous munir des outils stipulés ci-dessous"
+            android:textSize="@dimen/b12" />
+        
+        
          <LinearLayout
         android:id="@+id/head"
         android:layout_width="wrap_content"
@@ -65,7 +81,25 @@
             android:textColor="#0000ff"
             android:textSize="@dimen/b1" />
 
-      
+        <TextView
+            android:id="@+id/textView11"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="Référence outillage"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#0000ff"
+            android:textSize="@dimen/b1" />
+
+        <TextView
+            android:id="@+id/textView12"
+            android:layout_width="44dp"
+            android:layout_height="wrap_content"
+            android:text="Numéro de série"
+            android:textAppearance="?android:attr/textAppearanceSmall" 
+            android:textColor="#0000ff"
+            android:textSize="@dimen/b1"
+            android:layout_margin="5dp"/>
         
        
 
@@ -75,9 +109,8 @@
                  android:id="@+id/titleTab"
                  android:layout_width="wrap_content"
                  android:layout_height="wrap_content"
-                 android:layout_below="@+id/textView1"
+                 android:layout_below="@+id/textView2"
                  android:layout_centerHorizontal="true"
-                 android:layout_margin="@dimen/b12"
                  android:text="Ordre du jour"
                  android:textSize="@dimen/b9" />
     

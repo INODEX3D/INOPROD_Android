@@ -87,7 +87,7 @@ public class Annuaire extends Activity {
 	 */
 	private void displayContentProvider() {
 		//Création du SimpleCursorAdapter affilié au GridView 
-		SimpleCursorAdapter sca = new SimpleCursorAdapter( this, R.layout.grid_layout, null, columns, layouts);
+		SimpleCursorAdapter sca = new SimpleCursorAdapter( this, R.layout.grid_layout_annuaire, null, columns, layouts);
 		GridView gridView = (GridView) findViewById(R.id.gridview);
 		gridView.setAdapter(sca);
 		//Requête dans la base Annuaire

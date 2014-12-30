@@ -22,5 +22,10 @@
     <string name="title_activity_servitude_composants">ServitudeComposants</string>
     <string name="title_activity_kitting_cables_composants">KittingCablesComposants</string>
     <string name="regroupementtetes">Regroupement des têtes</string>
+    <string name="title_activity_main_menu_cableur">MainMenuCableur</string>
+    <string name="title_activity_reprise_blindage_ta">RepriseBlindageTa</string>
+    <string name="title_activity_denudage_sertissage_contact_ta">DenudageSertissageContactTa</string>
+    <string name="title_activity_main_menu_controleur">MainMenuControleur</string>
+    <string name="title_activity_main_menu_preparateur">MainMenuPreparateur</string>
 
 </resources>

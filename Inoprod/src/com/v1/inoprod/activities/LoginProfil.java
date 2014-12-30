@@ -2,7 +2,10 @@ package com.v1.inoprod.activities;
 
 import com.v1.inoprod.R;
 import com.v1.inoprod.R.layout;
+import com.v1.inoprod.activities.cableur.MainMenuCableur;
+import com.v1.inoprod.activities.controleur.MainMenuControleur;
 import com.v1.inoprod.activities.magasiniers.MainMenuMagasinier;
+import com.v1.inoprod.activities.preparateur.MainMenuPreparateur;
 import com.v1.inoprod.business.AnnuaireProvider;
 import com.v1.inoprod.business.AnnuairePersonel.Employe;
 
@@ -94,11 +97,14 @@ public class LoginProfil extends Activity {
 					profil =cursor.getString(cursor.getColumnIndex(Employe.EMPLOYE_METIER));
 					//Redirection en fonction du profil connecté
 					if (profil.equals("Câbleur")) {
-						//TO DO
+						Intent toCab = new Intent(LoginProfil.this, MainMenuCableur.class );	
+						startActivity(toCab);
 					} else if (profil.equals("Contrôleur")) {
-						//TO DO
+						Intent toCon = new Intent(LoginProfil.this, MainMenuControleur.class );	
+						startActivity(toCon);
 					} else if (profil.equals("Préparateur")) {
-						//TO DO
+						Intent toPre = new Intent(LoginProfil.this, MainMenuPreparateur.class );	
+						startActivity(toPre);
 					} else if (profil.equals("Magasinier")) {
 						Intent toMag = new Intent(LoginProfil.this, MainMenuMagasinier.class );	
 						startActivity(toMag);

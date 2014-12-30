@@ -4,57 +4,191 @@
     android:layout_height="match_parent"
     android:background="#ffffff"
     tools:context="${relativePackage}.${activityClass}" >
-    
-    
-    <TextView
-    android:id="@+id/textView1"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_alignParentTop="true"
-    android:layout_centerHorizontal="true"
-    android:layout_marginTop="16dp"
-    android:text="@string/debitcable"
-    android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <ImageButton
-            android:id="@+id/exitButton1"
-            android:layout_width="50dip"
-            android:layout_height="50dip"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:layout_margin="@dimen/b12"
-            android:src="@drawable/valider9" />
-        
-        <ImageButton
-            android:id="@+id/infoButton1"
-            android:layout_width="50dip"
-            android:layout_height="50dip"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_margin="@dimen/b12"
-            android:src="@drawable/aide3" />
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:text="@string/debitcable"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView1"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="@dimen/b1"
+        android:orientation="vertical" >
 
         <TextView
-            android:id="@+id/textView2"
+            android:id="@+id/textView3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/textView1"
-            android:layout_centerHorizontal="true"
-            android:layout_margin="@dimen/b30"
-            android:layout_marginTop="25dp"
-            android:layout_marginRight="40dp"
-            android:layout_marginLeft="40dp"
-            android:text="Référez-vous aux instructions, affichées sur l’écran de la machine de coupe, jusqu’à la fin de la production de cette séquence
-"
-            android:textSize="@dimen/b12" />
+            android:text="Debit:"
+            android:textColor="#0000ff"
+            android:textSize="@dimen/b9" />
 
-        <ImageView
-            android:id="@+id/imageView1"
-            android:layout_width="50dip"
-            android:layout_height="50dip"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:layout_margin="@dimen/b12"
-            android:src="@drawable/chrono2" />
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Numéro de lot de l’article"
+            android:textColor="#0000ff"
+            android:textSize="@dimen/b9" />
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/exitButton1"
+        android:layout_width="50dip"
+        android:layout_height="50dip"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="@dimen/b12"
+        android:src="@drawable/valider9" />
+
+    <ImageButton
+        android:id="@+id/infoButton1"
+        android:layout_width="50dip"
+        android:layout_height="50dip"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_margin="@dimen/b12"
+        android:src="@drawable/aide3" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/linearLayout1"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
+      
+        android:text="Référez-vous aux instructions, affichées sur l’écran de la machine de coupe, jusqu’à la fin de la production de cette séquence
+"
+        android:textSize="@dimen/b12" />
+
+    <ImageView
+        android:id="@+id/imageView1"
+        android:layout_width="50dip"
+        android:layout_height="50dip"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/chrono2" />
+
+    <LinearLayout
+        android:id="@+id/head"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView5"
+        android:layout_toLeftOf="@id/exitButton1"
+        android:layout_toRightOf="@id/infoButton1" >
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="44dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="Numéro de fil ou cable"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#0000ff"
+            android:textSize="@dimen/b1" />
+
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="44dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="Position sur chariot"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#0000ff"
+            android:textSize="@dimen/b1"/>
+
+        <TextView
+            android:id="@+id/textView8"
+            android:layout_width="44dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="Repère éléctrique"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#0000ff"
+            android:textSize="@dimen/b1" />
+
+        <TextView
+            android:id="@+id/textView9"
+            android:layout_width="44dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="Numéro de connecteur"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#0000ff"
+            android:textSize="@dimen/b1" />
+
+        <TextView
+            android:id="@+id/textView10"
+            android:layout_width="44dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="Ordre de réalisation"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#0000ff"
+            android:textSize="@dimen/b1" />
+
+        <TextView
+            android:id="@+id/textView11"
+            android:layout_width="44dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="Longueur des coupes"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#0000ff"
+            android:textSize="@dimen/b1" />
+
+        <TextView
+            android:id="@+id/textView12"
+            android:layout_width="44dp"
+            android:layout_height="wrap_content"
+            android:text="Unité de mesure"
+            android:textAppearance="?android:attr/textAppearanceSmall" 
+            android:textColor="#0000ff"
+            android:textSize="@dimen/b1"
+            android:layout_margin="5dp"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/linearLayout1"
+        android:layout_alignBottom="@+id/textView2"
+        android:text="Etat des cables"
+        android:textSize="@dimen/b9" />
+    
+    <GridView
+        android:id="@+id/gridview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/head"  
+        android:layout_toLeftOf="@id/exitButton1"
+        android:layout_toRightOf="@id/infoButton1"     
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="30dp"
+        android:numColumns="1"
+        android:stretchMode="columnWidth" >
+    </GridView>
+
+    <TextView
+        android:id="@+id/temps"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/imageView1"
+        android:layout_alignRight="@id/imageView1"
+        android:layout_below="@id/imageView1"
+        android:textColor="#00ef00" />
 
 </RelativeLayout>

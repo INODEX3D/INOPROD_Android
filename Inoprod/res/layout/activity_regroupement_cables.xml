@@ -48,8 +48,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/imageView1"
             android:layout_centerHorizontal="true"
-            android:layout_margin="@dimen/b30"
-            android:layout_marginTop="38dp"
+            android:layout_margin="@dimen/b12"
             android:text="Regroupez les câbles par numéro de position de chariot"
             android:textSize="@dimen/b12" />
 
@@ -73,7 +72,7 @@
                     android:layout_marginRight="30dip"
                     android:text="Numéro de connecteur:"
                     android:textColor="#0000ff"
-                    android:textSize="@dimen/b12" />
+                    android:textSize="@dimen/b9" />
 
                 <TextView
                     android:id="@+id/textView4"
@@ -82,7 +81,7 @@
                     android:text="Numéro de position chariot:" 
                     android:layout_marginLeft="15dip"
                      android:textColor="#0000ff"
-                     android:textSize="@dimen/b12" />
+                     android:textSize="@dimen/b9" />
 
             </LinearLayout>
 
@@ -98,7 +97,7 @@
                     android:text="Repère électrique:" 
                      android:textColor="#0000ff"
                      android:layout_marginRight="30dip"
-                     android:textSize="@dimen/b12" />
+                     android:textSize="@dimen/b9" />
 
                 <TextView
                     android:id="@+id/textView6"
@@ -108,7 +107,7 @@
                      android:textColor="#0000ff" 
                      android:layout_marginRight="30dip"
                      android:layout_marginLeft="15dip"
-                     android:textSize="@dimen/b12" />
+                     android:textSize="@dimen/b9" />
 
                 <TextView
                     android:id="@+id/textView7"
@@ -117,10 +116,87 @@
                     android:text="Ordre de réalisation:" 
                      android:textColor="#0000ff"
                      android:layout_marginLeft="15dip"
-                     android:textSize="@dimen/b12" />
+                     android:textSize="@dimen/b9" />
 
             </LinearLayout>
+            
+             </LinearLayout>
+            
+             <LinearLayout
+        android:id="@+id/head"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/titleTab"
+        android:layout_centerHorizontal="true"
+        android:layout_toLeftOf="@id/exitButton1"
+        android:layout_toRightOf="@id/infoButton1" >
 
-        </LinearLayout>
+        
+
+        <TextView
+            android:id="@+id/textView9"
+            android:layout_width="44dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="Numéro de fil ou cable"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#0000ff"
+            android:textSize="@dimen/b1" />
+
+        <TextView
+            android:id="@+id/textView10"
+            android:layout_width="44dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="Type de cable"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#0000ff"
+            android:textSize="@dimen/b1" />
+
+        <TextView
+            android:id="@+id/textView11"
+            android:layout_width="44dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="Référence fabricant"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="#0000ff"
+            android:textSize="@dimen/b1" />
+
+        <TextView
+            android:id="@+id/textView12"
+            android:layout_width="44dp"
+            android:layout_height="wrap_content"
+            android:text="Référence interne"
+            android:textAppearance="?android:attr/textAppearanceSmall" 
+            android:textColor="#0000ff"
+            android:textSize="@dimen/b1"
+            android:layout_margin="5dp"/>
+
+    </LinearLayout>
+
+             <TextView
+                 android:id="@+id/titleTab"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_centerHorizontal="true"
+                 android:layout_below="@+id/textView2"
+                 android:text="Liste des cables presents en position"
+                 android:textSize="@dimen/b9" />
+    
+    <GridView
+        android:id="@+id/gridview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/head"  
+        android:layout_toLeftOf="@id/exitButton1"
+        android:layout_toRightOf="@id/infoButton1"     
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="30dp"
+        android:numColumns="1"
+        android:stretchMode="columnWidth" >
+    </GridView>
+
+       
 
 </RelativeLayout>
