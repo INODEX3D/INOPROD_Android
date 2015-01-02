@@ -69,6 +69,18 @@
         <provider
             android:name=".business.OutillageProvider"
             android:authorities="com.v1.inoprod.business.outillage" />
+        <provider
+            android:name=".business.SequencementProvider"
+            android:authorities="com.v1.inoprod.business.sequencement" />
+        <provider
+            android:name=".business.RaccordementProvider"
+            android:authorities="com.v1.inoprod.business.raccordement" />
+        <provider
+            android:name=".business.KittingProvider"
+            android:authorities="com.v1.inoprod.business.kitting" />
+        <provider
+            android:name=".business.BOMProvider"
+            android:authorities="com.v1.inoprod.business.bom" />
 
         <activity
             android:name=".activities.LoginProfil"
@@ -119,8 +131,12 @@
             android:label="@string/title_activity_main_menu_controleur" >
         </activity>
         <activity
-            android:name="com.v1.inoprod.activities.preparateur.MainMenuPreparateur"
+            android:name=".activities.preparateur.MainMenuPreparateur"
             android:label="@string/title_activity_main_menu_preparateur" >
+        </activity>
+        <activity
+            android:name=".InfoProduit"
+            android:label="@string/title_activity_info_produit" >
         </activity>
     </application>
 

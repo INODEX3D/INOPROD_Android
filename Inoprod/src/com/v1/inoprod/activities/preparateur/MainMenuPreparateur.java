@@ -15,12 +15,16 @@ import com.v1.inoprod.activities.MainActivity;
 import com.v1.inoprod.activities.MenuAide;
 import com.v1.inoprod.business.AnnuaireProvider;
 import com.v1.inoprod.business.DureesProvider;
+import com.v1.inoprod.business.KittingProvider;
 import com.v1.inoprod.business.NomenclatureProvider;
 import com.v1.inoprod.business.ProductionProvider;
 import com.v1.inoprod.business.AnnuairePersonel.Employe;
 import com.v1.inoprod.business.Durees.Duree;
 import com.v1.inoprod.business.Nomenclature.Cable;
 import com.v1.inoprod.business.Production.Fil;
+import com.v1.inoprod.business.RaccordementProvider;
+import com.v1.inoprod.business.SequencementProvider;
+import com.v1.inoprod.business.TableRaccordement.Raccordement;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -43,18 +47,38 @@ public class MainMenuPreparateur extends Activity {
 
 	//Bouton d'import des données
 		private Button boutonImport = null;
+		private Button boutonDebit = null;
+		private Button boutonKitting = null;
+		
+		// Curseur et Content Resolver à utiliser lors des requêtes
+		private Cursor cursor;
+		private ContentResolver cr;
 		
 		//URL des Contents Providers
 		private Uri urlNomenclature = NomenclatureProvider.CONTENT_URI;
 		private	Uri urlProduction = ProductionProvider.CONTENT_URI;
 		private	Uri urlDurees = DureesProvider.CONTENT_URI;
+		private	Uri urlRaccordement = RaccordementProvider.CONTENT_URI;
+		private	Uri urlSequencement =SequencementProvider.CONTENT_URI;
+		private	Uri urlKitting = KittingProvider.CONTENT_URI;
 		
 		//Colonnes cascadés
-		private String colProd1[] = new String [] { Fil.REPERE_ELECTRIQUE_TENANT , Fil.NUMERO_CONNECTEUR_TENANT, Fil.ORDRE_REALISATION, 
+		private String colProd1[] = new String [] { Fil.REPERE_ELECTRIQUE_TENANT , Fil.NUMERO_COMPOSANT_TENANT, Fil.ORDRE_REALISATION, 
 				Fil.ETAT_LIAISON_FIL, Fil.ETAT_LIAISON_FIL, Fil.NUMERO_REVISION_FIL, Fil.NUMERO_FIL_CABLE, Fil.TYPE_FIL_CABLE, Fil.LONGUEUR_FIL_CABLE };
 		
 		private String ColNum[] = new String [] { Cable.DESIGNATION_COMPOSANT , Cable.UNITE, Cable.REFERENCE_FABRICANT1, Cable.REFERENCE_FABRICANT2, 
 				Cable.REFERENCE_INTERNE, Cable.FOURNISSEUR_FABRICANT };
+		
+		private String ColProd2[] = new String [] { Fil.ETAT_LIAISON_FIL , Fil.NUMERO_REVISION_FIL , Fil.FIL_SENSIBLE , Fil.NUMERO_FIL_CABLE
+				 , Fil.TYPE_FIL_CABLE , Fil.NUMERO_FIL_DANS_CABLE, Fil.LONGUEUR_FIL_CABLE , Fil.COULEUR_FIL , Fil.NOM_SIGNAL , Fil.ORDRE_REALISATION
+				 , Fil.REPERE_ELECTRIQUE_TENANT , Fil.NUMERO_COMPOSANT_TENANT , Fil.NUMERO_BORNE_TENANT, Fil.TYPE_RACCORDEMENT_TENANT , Fil.REPRISE_BLINDAGE
+				 , Fil.SANS_REPRISE_BLINDAGE, Fil.REPERE_ELECTRIQUE_ABOUTISSANT , Fil.NUMERO_COMPOSANT_ABOUTISSANT , Fil.NUMERO_BORNE_ABOUTISSANT, 
+				 Fil.TYPE_RACCORDEMENT_ABOUTISSANT, Fil.TYPE_ELEMENT_RACCORDE, Fil.REFERENCE_FABRICANT2, Fil.REFERENCE_INTERNE, Fil.FICHE_INSTRUCTION,
+				 Fil.REFERENCE_CONFIGURATION_SERTISSAGE , Fil._id, Fil.REFERENCE_OUTIL_TENANT, Fil.REFERENCE_ACCESSOIRE_OUTIL_TENANT, Fil.REGLAGE_OUTIL_TENANT,
+				 Fil.REFERENCE_OUTIL_ABOUTISSANT, Fil.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT, Fil.REGLAGE_OUTIL_ABOUTISSANT, Fil.OBTURATEUR, Fil.FAUX_CONTACT,
+				 Fil.ETAT_FINALISATION_PRISE , Fil.ORIENTATION_RACCORD_ARRIERE };
+				 
+	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -96,8 +120,63 @@ public class MainMenuPreparateur extends Activity {
 	protected void creationTables() {
 		
 		ContentValues contact = new ContentValues();
+		cr= getContentResolver(); 
+		
+		//Création de la table de raccordement
+		cursor = cr.query(urlProduction, ColProd2, null, null, null);
+		if (cursor.moveToFirst()) {
+				
+		
+		do {
+			
+		contact.put(Raccordement.COULEUR_FIL, cursor.getString(cursor.getColumnIndex(Fil.COULEUR_FIL)));
+		contact.put(Raccordement.ETAT_FINALISATION_PRISE, cursor.getString(cursor.getColumnIndex(Fil.ETAT_FINALISATION_PRISE)));
+		contact.put(Raccordement.ETAT_LIAISON_FIL, cursor.getString(cursor.getColumnIndex(Fil.ETAT_LIAISON_FIL)));
+		contact.put(Raccordement.FAUX_CONTACT, cursor.getInt(cursor.getColumnIndex(Fil.FAUX_CONTACT)));
+		contact.put(Raccordement.FICHE_INSTRUCTION, cursor.getString(cursor.getColumnIndex(Fil.FICHE_INSTRUCTION)));
+		contact.put(Raccordement.FIL_SENSIBLE, cursor.getInt(cursor.getColumnIndex(Fil.FIL_SENSIBLE)));
+		contact.put(Raccordement.LONGUEUR_FIL_CABLE, cursor.getFloat(cursor.getColumnIndex(Fil.LONGUEUR_FIL_CABLE)));
+		contact.put(Raccordement.NOM_SIGNAL, cursor.getString(cursor.getColumnIndex(Fil.NOM_SIGNAL)));
+		contact.put(Raccordement.NUMERO_BORNE_ABOUTISSANT, cursor.getString(cursor.getColumnIndex(Fil.NUMERO_BORNE_ABOUTISSANT)));
+		contact.put(Raccordement.NUMERO_BORNE_TENANT, cursor.getString(cursor.getColumnIndex(Fil.NUMERO_BORNE_TENANT)));
+		contact.put(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT, cursor.getString(cursor.getColumnIndex(Fil.NUMERO_COMPOSANT_ABOUTISSANT)));
+		contact.put(Raccordement.NUMERO_COMPOSANT_TENANT, cursor.getString(cursor.getColumnIndex(Fil.NUMERO_COMPOSANT_TENANT)));
+		contact.put(Raccordement.NUMERO_FIL_CABLE, cursor.getString(cursor.getColumnIndex(Fil.NUMERO_FIL_CABLE)));
+		contact.put(Raccordement.NUMERO_FIL_DANS_CABLE, cursor.getFloat(cursor.getColumnIndex(Fil.NUMERO_FIL_DANS_CABLE)));
+		contact.put(Raccordement.NUMERO_REVISION_FIL, cursor.getFloat(cursor.getColumnIndex(Fil.NUMERO_REVISION_FIL)));
+		contact.put(Raccordement.OBTURATEUR, cursor.getInt(cursor.getColumnIndex(Fil.OBTURATEUR)));
+		contact.put(Raccordement.ORDRE_REALISATION, cursor.getString(cursor.getColumnIndex(Fil.ORDRE_REALISATION)));
+		contact.put(Raccordement.ORIENTATION_RACCORD_ARRIERE, cursor.getString(cursor.getColumnIndex(Fil.ORIENTATION_RACCORD_ARRIERE)));
+		contact.put(Raccordement.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT, cursor.getString(cursor.getColumnIndex(Fil.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT)));
+		contact.put(Raccordement.REFERENCE_ACCESSOIRE_OUTIL_TENANT, cursor.getString(cursor.getColumnIndex(Fil.REFERENCE_ACCESSOIRE_OUTIL_TENANT)));
+		contact.put(Raccordement.REFERENCE_CONFIGURATION_SERTISSAGE, cursor.getString(cursor.getColumnIndex(Fil.REFERENCE_CONFIGURATION_SERTISSAGE)));
+		contact.put(Raccordement.REFERENCE_FABRICANT2, cursor.getString(cursor.getColumnIndex(Fil.REFERENCE_FABRICANT2)));
+		contact.put(Raccordement.REFERENCE_INTERNE, cursor.getString(cursor.getColumnIndex(Fil.REFERENCE_INTERNE)));
+		contact.put(Raccordement.REFERENCE_OUTIL_ABOUTISSANT, cursor.getString(cursor.getColumnIndex(Fil.REFERENCE_OUTIL_ABOUTISSANT)));
+		contact.put(Raccordement.REFERENCE_OUTIL_TENANT, cursor.getString(cursor.getColumnIndex(Fil.REFERENCE_OUTIL_TENANT)));
+		contact.put(Raccordement.REGLAGE_OUTIL_ABOUTISSANT, cursor.getString(cursor.getColumnIndex(Fil.REGLAGE_OUTIL_ABOUTISSANT)));
+		contact.put(Raccordement.REGLAGE_OUTIL_TENANT, cursor.getString(cursor.getColumnIndex(Fil.REGLAGE_OUTIL_TENANT)));
+		contact.put(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT, cursor.getString(cursor.getColumnIndex(Fil.REPERE_ELECTRIQUE_ABOUTISSANT)));
+		contact.put(Raccordement.REPERE_ELECTRIQUE_TENANT, cursor.getString(cursor.getColumnIndex(Fil.REPERE_ELECTRIQUE_TENANT)));
+		contact.put(Raccordement.REPRISE_BLINDAGE, cursor.getString(cursor.getColumnIndex(Fil.REPRISE_BLINDAGE)));
+		contact.put(Raccordement.SANS_REPRISE_BLINDAGE, cursor.getString(cursor.getColumnIndex(Fil.SANS_REPRISE_BLINDAGE)));
+		contact.put(Raccordement.TYPE_ELEMENT_RACCORDE, cursor.getString(cursor.getColumnIndex(Fil.TYPE_ELEMENT_RACCORDE)));
+		contact.put(Raccordement.TYPE_FIL_CABLE, cursor.getString(cursor.getColumnIndex(Fil.TYPE_FIL_CABLE)));
+		contact.put(Raccordement.TYPE_RACCORDEMENT_ABOUTISSANT, cursor.getString(cursor.getColumnIndex(Fil.TYPE_RACCORDEMENT_ABOUTISSANT)));
+		contact.put(Raccordement.TYPE_RACCORDEMENT_TENANT, cursor.getString(cursor.getColumnIndex(Fil.TYPE_RACCORDEMENT_TENANT)));
+		
+		//Ajout de l'entité
+        getContentResolver().insert(urlRaccordement, contact);
+        //Ecrasement de ses données pour passer à la suivante
+        contact.clear();
+        
+		} while (cursor.moveToNext());
+		Toast.makeText(this, "Table raccordement créée", Toast.LENGTH_SHORT).show();
+		
+		} 
 		
 		//Création de la table de kitting
+		//TO DO
 		
 		
 		
@@ -251,7 +330,7 @@ public class MainMenuPreparateur extends Activity {
             contact.put(Fil.REPERE_ELECTRIQUE_TENANT,row.getCell(20).toString() );
         } catch (Exception e) {}
             try {
-            contact.put(Fil.NUMERO_CONNECTEUR_TENANT,row.getCell(21).toString() );
+            contact.put(Fil.NUMERO_COMPOSANT_TENANT,row.getCell(21).toString() );
             } catch (Exception e) {}
             try {
             contact.put(Fil.NUMERO_BORNE_TENANT,Float.parseFloat(row.getCell(22).toString()) );
@@ -269,7 +348,7 @@ public class MainMenuPreparateur extends Activity {
             contact.put(Fil.REPERE_ELECTRIQUE_ABOUTISSANT,row.getCell(26).toString() );
             } catch (Exception e) {}
             try {
-            contact.put(Fil.NUMERO_CONNECTEUR_ABOUTISSANT,row.getCell(27).toString() );
+            contact.put(Fil.NUMERO_COMPOSANT_ABOUTISSANT,row.getCell(27).toString() );
             } catch (Exception e) {}
             try {
             contact.put(Fil.NUMERO_BORNE_ABOUTISSANT,row.getCell(28).toString() );
@@ -277,73 +356,63 @@ public class MainMenuPreparateur extends Activity {
             try {
             contact.put(Fil.TYPE_RACCORDEMENT_ABOUTISSANT,row.getCell(29).toString() );
             } catch (Exception e) {}
-            try {
-            contact.put(Fil.BORNE_ACCESSOIRE_CABLAGE1,Float.parseFloat(row.getCell(30).toString()) );
-            } catch (Exception e) {}
-            try {
-            contact.put(Fil.ACCESSOIRE_CABLAGE1,row.getCell(31).toString() );
-            } catch (Exception e) {}
-            try {
-            contact.put(Fil.BORNE2_ACCESSOIRE_CABLAGE1,Float.parseFloat(row.getCell(32).toString()) );
-            } catch (Exception e) {}
-            contact.put(Fil.TYPE_ELEMENT_RACCORDE,row.getCell(33).toString() );
+            
+            contact.put(Fil.TYPE_ELEMENT_RACCORDE,row.getCell(30).toString() );
+      
         try {
-            contact.put(Fil.BORNE_ACCESSOIRE_CABLAGE2,Float.parseFloat(row.getCell(34).toString()) );
+            contact.put(Fil.REFERENCE_FABRICANT2,row.getCell(31).toString() );
         } catch (Exception e) {}
         try {
-            contact.put(Fil.ACCESSOIRE_CABLAGE2,row.getCell(35).toString() );
+            contact.put(Fil.REFERENCE_INTERNE,row.getCell(32).toString() );
         } catch (Exception e) {}
         try {
-            contact.put(Fil.BORNE2_ACCESSOIRE_CABLAGE2,Float.parseFloat(row.getCell(36).toString()) );
+            contact.put(Fil.FICHE_INSTRUCTION,row.getCell(33).toString() );
         } catch (Exception e) {}
         try {
-            contact.put(Fil.REFERENCE_FABRICANT2,row.getCell(37).toString() );
+            contact.put(Fil.REFERENCE_CONFIGURATION_SERTISSAGE,row.getCell(34).toString() );
         } catch (Exception e) {}
         try {
-            contact.put(Fil.REFERENCE_INTERNE,row.getCell(38).toString() );
+            contact.put(Fil.ACCESSOIRE_COMPOSANT1,row.getCell(35).toString() );
         } catch (Exception e) {}
         try {
-            contact.put(Fil.FICHE_INSTRUCTION,row.getCell(39).toString() );
+            contact.put(Fil.ACCESSOIRE_COMPOSANT2,row.getCell(36).toString() );
         } catch (Exception e) {}
         try {
-            contact.put(Fil.REFERENCE_CONFIGURATION_SERTISSAGE,row.getCell(40).toString() );
+            contact.put(Fil.REFERENCE_OUTIL_TENANT,row.getCell(37).toString() );
         } catch (Exception e) {}
         try {
-            contact.put(Fil.REFERENCE_OUTIL_TENANT,row.getCell(41).toString() );
+            contact.put(Fil.REFERENCE_ACCESSOIRE_OUTIL_TENANT,row.getCell(38).toString() );
         } catch (Exception e) {}
         try {
-            contact.put(Fil.REFERENCE_ACCESSOIRE_OUTIL_TENANT,row.getCell(42).toString() );
+            contact.put(Fil.REGLAGE_OUTIL_TENANT,row.getCell(39).toString() );
         } catch (Exception e) {}
         try {
-            contact.put(Fil.REGLAGE_OUTIL_TENANT,row.getCell(43).toString() );
+            contact.put(Fil.REFERENCE_OUTIL_ABOUTISSANT,row.getCell(40).toString() );
         } catch (Exception e) {}
         try {
-            contact.put(Fil.REFERENCE_OUTIL_ABOUTISSANT,row.getCell(44).toString() );
+            contact.put(Fil.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT,row.getCell(41).toString() );
         } catch (Exception e) {}
         try {
-            contact.put(Fil.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT,row.getCell(45).toString() );
+            contact.put(Fil.REGLAGE_OUTIL_ABOUTISSANT,row.getCell(42).toString() );
         } catch (Exception e) {}
         try {
-            contact.put(Fil.REGLAGE_OUTIL_ABOUTISSANT,row.getCell(46).toString() );
-        } catch (Exception e) {}
-        try {
-            if (row.getCell(47).toString().equals("X")) {
+            if (row.getCell(43).toString().equals("X")) {
                 contact.put(Fil.OBTURATEUR, true );
                 } 
         } catch (Exception e) {
                 	contact.put(Fil.OBTURATEUR, false );
         }
               try {
-            if (row.getCell(48).toString().equals("X")) {
+            if (row.getCell(44).toString().equals("X")) {
                 contact.put(Fil.FAUX_CONTACT, true );
                 } } catch (Exception e) {
                 	contact.put(Fil.FAUX_CONTACT, false );
                }
               try {
-            contact.put(Fil.ETAT_FINALISATION_PRISE,row.getCell(49).toString() );
+            contact.put(Fil.ETAT_FINALISATION_PRISE,row.getCell(45).toString() );
               } catch (Exception e) {}
               try {
-            contact.put(Fil.ORIENTATION_RACCORD_ARRIERE,row.getCell(50).toString() );
+            contact.put(Fil.ORIENTATION_RACCORD_ARRIERE,row.getCell(46).toString() );
               } catch (Exception e) {}
            
             //Ajout de l'entité

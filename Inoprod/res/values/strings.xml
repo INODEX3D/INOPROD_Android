@@ -27,5 +27,6 @@
     <string name="title_activity_denudage_sertissage_contact_ta">DenudageSertissageContactTa</string>
     <string name="title_activity_main_menu_controleur">MainMenuControleur</string>
     <string name="title_activity_main_menu_preparateur">MainMenuPreparateur</string>
+    <string name="title_activity_info_produit">InfoProduit</string>
 
 </resources>

@@ -13,7 +13,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
         android:text="Menu principal profil préparateurs"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+ />
     
      <ImageButton
             android:id="@+id/exitButton1"
@@ -27,8 +27,28 @@
          android:id="@+id/button1"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
+         android:layout_below="@+id/textView1"
+         android:layout_centerHorizontal="true"
+         android:layout_marginTop="46dp"
+         android:text="Importer les données sources" />
+
+     <Button
+         android:id="@+id/button2"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignLeft="@id/button1"
+         android:layout_alignRight="@id/button1"
          android:layout_centerHorizontal="true"
          android:layout_centerVertical="true"
-         android:text="Importer les données sources" />
+         android:text="Générer fichier débit câbles" />
+
+     <Button
+         android:id="@+id/button3"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_above="@+id/exitButton1"
+         android:layout_centerHorizontal="true"
+         android:layout_marginBottom="24dp"
+         android:text="Générer fichier kitting têtes" />
 
 </RelativeLayout>

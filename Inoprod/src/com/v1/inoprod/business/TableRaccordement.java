@@ -2,34 +2,12 @@ package com.v1.inoprod.business;
 
 import android.provider.BaseColumns;
 
-/** Classe définissant les colonnes de la base de données Production 
- * 
- * @author Arnaud Payet
- *
- */
-public class Production {
+public class TableRaccordement {
 	
-	public Production() {}
+	public TableRaccordement() {} 
 	
-	/** Entité fil de la base de données Production
-	 * 
-	 * @author Arnaud Payet
-	 *
-	 */
-	
-public static final class Fil implements BaseColumns {
-		
+	public static final class Raccordement implements BaseColumns {
 		public static final String _id = "_id";
-		public static final String DESIGNATION_PRODUIT = "DESIGNATION_PRODUIT";
-		public static final String REFERENCE_FICHIER_SOURCE = "REFERENCE_FICHIER_SOURCE";
-		public static final String NUMERO_REVISION_HARNAIS = "NUMERO_REVISION_HARNAIS";
-		public static final String NUMERO_HARNAIS_FAISCEAUX = "NUMERO_HARNAIS_FAISCEAUX";
-		public static final String REFERENCE_FABRICANT1 = "REFERENCE_FABRICANT1";
-		public static final String STANDARD = "STANDARD";
-		public static final String ZONE_ACTIVITE = "ZONE_ACTIVITE";
-		public static final String LOCALISATION1 = "LOCALISATION1";
-		public static final String LOCALISATION2 = "LOCALISATION2";
-		public static final String NUMERO_ROUTE = "NUMERO_ROUTE";
 		public static final String ETAT_LIAISON_FIL = "ETAT_LIAISON_FIL";
 		public static final String NUMERO_REVISION_FIL = "NUMERO_REVISION_FIL";
 		public static final String FIL_SENSIBLE = "FIL_SENSIBLE";
@@ -67,8 +45,15 @@ public static final class Fil implements BaseColumns {
 		public static final String FAUX_CONTACT = "FAUX_CONTACT";
 		public static final String ETAT_FINALISATION_PRISE = "ETAT_FINALISATION_PRISE";
 		public static final String ORIENTATION_RACCORD_ARRIERE = "ORIENTATION_RACCORD_ARRIERE";
-		
-		
-}
+		public static final String NUMERO_OPERATION = "NUMERO_OPERATION";
+		public static final String ZONE_ACTIVITE = "ZONE_ACTIVITE";
+		public static final String LOCALISATION1 = "LOCALISATION1";
+		public static final String NUMERO_REPERE_TABLE_CHEMINEMENT = "NUMERO_REPERE_TABLE_CHEMINEMENT";
+		public static final String NUMERO_SECTION_CHEMINEMENT = "NUMERO_SECTION_CHEMINEMENT";
+		public static final String NUMERO_CHEMINEMENT = "NUMERO_CHEMINEMENT";
+		public static final String NUMERO_POSITION_CHARIOT = "NUMERO_POSITION_CHARIOT";
+		public static final String NUMERO_SERIE_OUTIL = "NUMERO_SERIE_OUTIL";
+		public static final String NUMERO_FICHE_JALON = "NUMERO_FICHE_JALON";
+	}
 
 }

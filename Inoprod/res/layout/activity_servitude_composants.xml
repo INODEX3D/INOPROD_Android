@@ -14,7 +14,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
         android:text="@string/debitscomposants"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+ />
 
         <ImageButton
             android:id="@+id/exitButton1"

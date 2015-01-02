@@ -10,6 +10,7 @@ import com.v1.inoprod.business.AnnuaireProvider;
 import com.v1.inoprod.business.AnnuairePersonel.Employe;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
@@ -18,6 +19,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -34,6 +36,7 @@ public class LoginProfil extends Activity {
 	private ImageButton boutonConnect = null;
 	private EditText identifiant = null;
 	private EditText mdp = null;
+	private Button scan = null;
 	
 	//Uri de l'Annuaire
 	private Uri url = AnnuaireProvider.CONTENT_URI;
@@ -51,6 +54,28 @@ public class LoginProfil extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login_profil);
+		identifiant = (EditText) findViewById(R.id.editText1);
+		mdp = (EditText) findViewById(R.id.editText2);
+		
+		//Scan de l'identifiant
+		scan = (Button) findViewById(R.id.scan);
+		scan.setOnClickListener( new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				try {
+				Intent intent = new Intent("com.google.zxing.client.android.SCAN");
+		        intent.setPackage("com.google.zxing.client.android");
+		        intent.putExtra("com.google.zxing.client.android.SCAN.SCAN_MODE", "QR_CODE_MODE");
+		        startActivityForResult(intent, 0);
+				} catch (ActivityNotFoundException e) {
+		        	Toast.makeText(LoginProfil.this, "Impossible de trouver une application pour gérer le scan",Toast.LENGTH_SHORT).show();
+		        }
+				
+				
+			}
+		});
+		
 		
 		
 		//Retour menu principal
@@ -74,8 +99,7 @@ public class LoginProfil extends Activity {
 			@Override
 			public void onClick(View v) {
 				//Récuperation des EditText
-				identifiant = (EditText) findViewById(R.id.editText1);
-				mdp = (EditText) findViewById(R.id.editText2);
+				
 				cr= getContentResolver(); 
 				
 				//Recuperation du texte renseigné
@@ -119,4 +143,20 @@ public class LoginProfil extends Activity {
 			}
 		});
 	}
+	
+	
+	//Récupération du code barre scanné
+	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+	    if (requestCode == 0) {
+	        if (resultCode == RESULT_OK) {
+	            String contents = intent.getStringExtra("SCAN_RESULT");
+	            identifiant.setText(contents);
+	            String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
+	        } else if (resultCode == RESULT_CANCELED) {
+	        	Toast.makeText(LoginProfil.this, "Echec du scan de l'identifiant", Toast.LENGTH_SHORT).show();
+	        }
+	    }
+	}
+	
+	
 }

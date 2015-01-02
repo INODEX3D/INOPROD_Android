@@ -21,7 +21,7 @@
             android:textSize="@dimen/b1" />
 
         <TextView
-            android:id="@+id/referanceFabricant"
+            android:id="@+id/referenceFabricant"
             android:layout_width="44dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
