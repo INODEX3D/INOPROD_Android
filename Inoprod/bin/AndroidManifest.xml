@@ -81,6 +81,9 @@
         <provider
             android:name=".business.BOMProvider"
             android:authorities="com.v1.inoprod.business.bom" />
+        <provider
+            android:name=".business.CheminementProvider"
+            android:authorities="com.v1.inoprod.business.cheminement" />
 
         <activity
             android:name=".activities.LoginProfil"
@@ -135,7 +138,7 @@
             android:label="@string/title_activity_main_menu_preparateur" >
         </activity>
         <activity
-            android:name=".InfoProduit"
+            android:name="com.v1.inoprod.activities.InfoProduit"
             android:label="@string/title_activity_info_produit" >
         </activity>
     </application>

@@ -30,7 +30,7 @@ public class ServitudeComposants extends Activity {
 	
 	
 	private String columns[] = new String[] { BOM.REPERE_ELECTRIQUE_TENANT, 
-			BOM.NUMERO_CONNECTEUR_TENANT, BOM.NUMERO_POSITION_CHARIOT, BOM.ORDRE_REALISATION, BOM.QUANTITE,
+			BOM.NUMERO_COMPOSANT, BOM.NUMERO_POSITION_CHARIOT, BOM.ORDRE_REALISATION, BOM.QUANTITE,
 			BOM.UNITE, BOM.NUMERO_LOT_SCANNE};
 	private int[] layouts = new int[] { R.id.repereElectrique, R.id.numeroConnecteur, R.id.positionChariot,
 			R.id.quantite, R.id.uniteMesure, R.id.numeroLot};

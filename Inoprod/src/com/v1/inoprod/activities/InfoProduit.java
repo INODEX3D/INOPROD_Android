@@ -1,4 +1,7 @@
-package com.v1.inoprod;
+package com.v1.inoprod.activities;
+
+import com.v1.inoprod.R;
+import com.v1.inoprod.R.layout;
 
 import android.app.Activity;
 import android.os.Bundle;

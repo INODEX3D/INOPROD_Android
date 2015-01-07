@@ -96,4 +96,12 @@
 
     </GridView>
 
+    <ImageButton
+        android:id="@+id/imageButton1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/exitButton1"
+        android:layout_toLeftOf="@+id/exitButton1"
+        android:src="@drawable/valider9" />
+
 </RelativeLayout>

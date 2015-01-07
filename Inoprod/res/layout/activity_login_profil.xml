@@ -34,7 +34,9 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="15dp"
             android:ems="10"
-            android:inputType="textPersonName" />
+            />
+        
+        
 
         <ImageView
             android:id="@+id/imageView1"

@@ -39,6 +39,7 @@ public static final class Fil implements BaseColumns {
 		public static final String NUMERO_FIL_DANS_CABLE = "NUMERO_FIL_DANS_CABLE";
 		public static final String COULEUR_FIL = "COULEUR_FIL";
 		public static final String NOM_SIGNAL = "NOM_SIGNAL";
+		public static final String NORME_CABLE = "NORME_CABLE";
 		public static final String ORDRE_REALISATION = "ORDRE_REALISATION";
 		public static final String REPERE_ELECTRIQUE_TENANT = "REPERE_ELECTRIQUE_TENANT";
 		public static final String NUMERO_COMPOSANT_TENANT = "NUMERO_COMPOSANT_TENANT";

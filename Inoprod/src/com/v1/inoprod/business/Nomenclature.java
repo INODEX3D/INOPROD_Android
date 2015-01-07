@@ -28,9 +28,11 @@ public class Nomenclature {
 		public static final String STANDARD = "STANDARD";
 		public static final String EQUIPEMENT = "EQUIPEMENT";
 		public static final String REPERE_ELECTRIQUE = "REPERE_ELECTRIQUE";
-		public static final String NUMERO_CONNECTEUR = "NUMERO_CONNECTEUR";
+		public static final String NUMERO_COMPOSANT= "NUMERO_COMPOSANT";
+		public static final String NORME_CABLE = "NORME_CABLE";
 		public static final String ORDRE_REALISATION = "ORDRE_REALISATION";
 		public static final String ACCESSOIRE_CABLAGE = "ACCESSOIRE_CABLAGE";
+		public static final String ACCESSOIRE_COMPOSANT = "ACCESSOIRE_COMPOSANT";
 		public static final String DESIGNATION_COMPOSANT = "DESIGNATION_COMPOSANT";
 		public static final String FAMILLE_PRODUIT = "FAMILLE_PRODUIT";
 		public static final String REFERENCE_FABRICANT2 = "REFERENCE_FABRICANT2";

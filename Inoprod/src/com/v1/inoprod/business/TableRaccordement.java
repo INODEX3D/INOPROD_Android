@@ -12,6 +12,7 @@ public class TableRaccordement {
 		public static final String NUMERO_REVISION_FIL = "NUMERO_REVISION_FIL";
 		public static final String FIL_SENSIBLE = "FIL_SENSIBLE";
 		public static final String NUMERO_FIL_CABLE = "NUMERO_FIL_CABLE";
+		public static final String NORME_CABLE = "NORME_CABLE";
 		public static final String TYPE_FIL_CABLE = "TYPE_FIL_CABLE";
 		public static final String LONGUEUR_FIL_CABLE = "LONGUEUR_FIL_CABLE";
 		public static final String NUMERO_FIL_DANS_CABLE = "NUMERO_FIL_DANS_CABLE";

@@ -38,7 +38,7 @@ public class DebitCables extends Activity {
 		private String columnsDuree[] = new String[] { Duree._id, Duree.CODE_OPERATION , Duree.DUREE_THEORIQUE};
 		
 		private String columns[] = new String[] { Kitting.NUMERO_FIL_CABLE, Kitting.NUMERO_POSITION_CHARIOT, Kitting.REPERE_ELECTRIQUE_TENANT, 
-				Kitting.NUMERO_CONNECTEUR_TENANT, Kitting.ORDRE_REALISATION, Kitting.LONGUEUR_FIL_CABLE, Kitting.UNITE};
+				Kitting.NUMERO_COMPOSANT, Kitting.ORDRE_REALISATION, Kitting.LONGUEUR_FIL_CABLE, Kitting.UNITE};
 		private int[] layouts = new int[] { R.id.numeroFil, R.id.positionChariot, R.id.repereElectrique, R.id.numeroConnecteur, R.id.ordreRealisation,
 				R.id.longueurCoupe, R.id.uniteMesure};
 

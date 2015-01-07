@@ -60,6 +60,7 @@ public class ProductionProvider extends ContentProvider {
 			+ Fil.NUMERO_COMPOSANT_ABOUTISSANT + " STRING,"
 			+ Fil.NUMERO_COMPOSANT_TENANT + " STRING,"
 		    + Fil.NUMERO_FIL_CABLE + " STRING,"
+		    + Fil.NORME_CABLE + " STRING,"
 			+ Fil.NUMERO_FIL_DANS_CABLE + " STRING,"
 			+ Fil.NUMERO_HARNAIS_FAISCEAUX + " FLOAT," 
 			+ Fil.NUMERO_REVISION_HARNAIS + " FLOAT,"

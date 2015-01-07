@@ -56,6 +56,7 @@ public class RaccordementProvider extends ContentProvider {
 			+ Raccordement.NUMERO_BORNE_ABOUTISSANT + " FLOAT,"
 			+ Raccordement.NUMERO_BORNE_TENANT + " FLOAT,"
 			+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " STRING,"
+			+ Raccordement.NORME_CABLE + " STRING,"
 			+ Raccordement.NUMERO_COMPOSANT_TENANT + " STRING,"
 		    + Raccordement.NUMERO_FIL_CABLE + " STRING,"
 			+ Raccordement.NUMERO_FIL_DANS_CABLE + " STRING,"
