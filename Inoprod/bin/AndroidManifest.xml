@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.v1.inoprod"
+    package="com.inodex.inoprod"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -16,6 +16,8 @@
     <uses-feature
         android:name="android.hardware.camera.barcode"
         android:required="false" />
+    
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"
@@ -56,34 +58,34 @@
 
         <provider
             android:name=".business.AnnuaireProvider"
-            android:authorities="com.v1.inoprod.business.annuairepersonel" />
+            android:authorities="com.inodex.inoprod.business.annuairepersonel" />
         <provider
             android:name=".business.NomenclatureProvider"
-            android:authorities="com.v1.inoprod.business.nomenclature" />
+            android:authorities="com.inodex.inoprod.business.nomenclature" />
         <provider
             android:name=".business.ProductionProvider"
-            android:authorities="com.v1.inoprod.business.production" />
+            android:authorities="com.inodex.inoprod.business.production" />
         <provider
             android:name=".business.DureesProvider"
-            android:authorities="com.v1.inoprod.business.durees" />
+            android:authorities="com.inodex.inoprod.business.durees" />
         <provider
             android:name=".business.OutillageProvider"
-            android:authorities="com.v1.inoprod.business.outillage" />
+            android:authorities="com.inodex.inoprod.business.outillage" />
         <provider
             android:name=".business.SequencementProvider"
-            android:authorities="com.v1.inoprod.business.sequencement" />
+            android:authorities="com.inodex.inoprod.business.sequencement" />
         <provider
             android:name=".business.RaccordementProvider"
-            android:authorities="com.v1.inoprod.business.raccordement" />
+            android:authorities="com.inodex.inoprod.business.raccordement" />
         <provider
             android:name=".business.KittingProvider"
-            android:authorities="com.v1.inoprod.business.kitting" />
+            android:authorities="com.inodex.inoprod.business.kitting" />
         <provider
             android:name=".business.BOMProvider"
-            android:authorities="com.v1.inoprod.business.bom" />
+            android:authorities="com.inodex.inoprod.business.bom" />
         <provider
             android:name=".business.CheminementProvider"
-            android:authorities="com.v1.inoprod.business.cheminement" />
+            android:authorities="com.inodex.inoprod.business.cheminement" />
 
         <activity
             android:name=".activities.LoginProfil"
@@ -138,7 +140,7 @@
             android:label="@string/title_activity_main_menu_preparateur" >
         </activity>
         <activity
-            android:name="com.v1.inoprod.activities.InfoProduit"
+            android:name="com.inodex.inoprod.activities.InfoProduit"
             android:label="@string/title_activity_info_produit" >
         </activity>
     </application>

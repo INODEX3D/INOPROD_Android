@@ -12,8 +12,7 @@
              android:layout_alignParentTop="true"
              android:layout_centerHorizontal="true"
              android:layout_marginTop="16dp"
-             android:text="Reprise de blindage des têtes A"
- />
+             android:text="@string/repriseBlindageTa" />
 
         <ImageButton
             android:id="@+id/exitButton1"
@@ -47,7 +46,7 @@
             android:layout_below="@+id/imageView1"
             android:layout_centerHorizontal="true"
             android:layout_margin="7dp"
-            android:text="Veuillez scanner un des numéros de câble blindé"
+            android:text="@string/instructionRepriseBlindage"
             android:textSize="@dimen/b12" />
 
         <LinearLayout
@@ -68,7 +67,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="60dp"
-                    android:text="Numéro de connecteur"
+                    android:text="@string/numeroConnecteur"
                     android:textColor="#0000ff"
                     android:textSize="@dimen/b9" />
 
@@ -77,7 +76,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="15dip"
-                    android:text="Numéro de position chariot:"
+                    android:text="@string/numeroPositionChariot"
                     android:textColor="#0000ff"
                     android:textSize="@dimen/b9" />
 
@@ -93,7 +92,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="30dip"
-                    android:text="Repère électrique"
+                    android:text="@string/repereElectrique"
                     android:textColor="#0000ff"
                     android:textSize="@dimen/b9" />
 
@@ -132,7 +131,7 @@
             android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Statut de la liaison"
+            android:text="@string/statutLiaison"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b5" />
@@ -142,7 +141,7 @@
             android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="N° Révision liaison"
+            android:text="@string/numeroRevisionLiaison"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b5" />
@@ -152,7 +151,7 @@
             android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="N° de cable"
+            android:text="@string/numeroFilCable"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b5" />
@@ -162,7 +161,7 @@
             android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Type de cable"
+            android:text="@string/typeCable"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b5" />
@@ -172,7 +171,7 @@
             android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="N° de fil de reprise"
+            android:text="@string/numeroReprise"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b5" />
@@ -182,7 +181,7 @@
             android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Type de fil de reprise"
+            android:text="@string/typeFilReprise"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b5" />
@@ -192,7 +191,7 @@
             android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Réference fabricant du manchon"
+            android:text="@string/referenceFabricantManchon"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b5" />
@@ -202,7 +201,7 @@
             android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Réference interne du manchon"
+            android:text="@string/referenceInterneManchon"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b5" />
@@ -212,7 +211,7 @@
             android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Réference outillage"
+            android:text="@string/referenceOutillage"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b5" />
@@ -222,7 +221,7 @@
             android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="N° Série outillage"
+            android:text="@string/numeroSerieOutillage"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b5" />
@@ -232,7 +231,7 @@
             android:layout_width="30dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Réglage temperature"
+            android:text="@string/reglageTemperature"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b5" />

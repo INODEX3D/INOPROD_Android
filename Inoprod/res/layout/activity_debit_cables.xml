@@ -28,7 +28,6 @@
             android:id="@+id/textView3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Debit:"
             android:textColor="#0000ff"
             android:textSize="@dimen/b9" />
 
@@ -36,7 +35,7 @@
             android:id="@+id/textView4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Numéro de lot de l’article"
+            android:text="@string/numeroLotArticle"
             android:textColor="#0000ff"
             android:textSize="@dimen/b9" />
     </LinearLayout>
@@ -93,7 +92,7 @@
             android:layout_width="44dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Numéro de fil ou cable"
+            android:text="@string/numeroFilCable"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b1" />
@@ -103,17 +102,17 @@
             android:layout_width="44dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Position sur chariot"
+            android:text="@string/positionChariot"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/b1"/>
+            android:textSize="@dimen/b1" />
 
         <TextView
             android:id="@+id/textView8"
             android:layout_width="44dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Repère éléctrique"
+            android:text="@string/repereElectrique"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b1" />
@@ -123,7 +122,7 @@
             android:layout_width="44dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Numéro de connecteur"
+            android:text="@string/numeroConnecteur"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b1" />
@@ -133,7 +132,7 @@
             android:layout_width="44dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Ordre de réalisation"
+            android:text="@string/ordreRealisation"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b1" />
@@ -143,7 +142,7 @@
             android:layout_width="44dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Longueur des coupes"
+            android:text="@string/longueurCoupe"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b1" />
@@ -152,11 +151,11 @@
             android:id="@+id/textView12"
             android:layout_width="44dp"
             android:layout_height="wrap_content"
-            android:text="Unité de mesure"
-            android:textAppearance="?android:attr/textAppearanceSmall" 
+            android:layout_margin="5dp"
+            android:text="@string/unite"
+            android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/b1"
-            android:layout_margin="5dp"/>
+            android:textSize="@dimen/b1" />
 
     </LinearLayout>
 
@@ -164,9 +163,9 @@
         android:id="@+id/textView5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/linearLayout1"
         android:layout_alignBottom="@+id/textView2"
-        android:text="Etat des cables"
+        android:layout_alignLeft="@+id/linearLayout1"
+        android:text="@string/etatCable"
         android:textSize="@dimen/b9" />
     
     <GridView

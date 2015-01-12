@@ -21,7 +21,7 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_margin="@dimen/b12"
-        android:text="Annuaire du personnel autorisé"
+        android:text="@string/annuairePersonnel"
         android:textSize="@dimen/basicima" />
 
     <GridView
@@ -49,35 +49,34 @@
         <TextView
             android:id="@+id/textView1"
             android:layout_width="100dp"
-            android:layout_height="wrap_content"   
-            android:textColor="#0000ff"
-            android:text="Matricule" 
+            android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            />
+            android:text="@string/matricule"
+            android:textColor="#0000ff" />
 
         <TextView
             android:id="@+id/textView2"
             android:layout_width="100dp"
-            android:layout_height="wrap_content"   
-            android:textColor="#0000ff"
-            android:text="Nom" 
-            android:layout_margin="5dp"/>
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="@string/nom"
+            android:textColor="#0000ff" />
 
         <TextView
             android:id="@+id/textView3"
             android:layout_width="100dp"
-            android:layout_height="wrap_content"   
-            android:textColor="#0000ff"
-            android:text="Prénom" 
-            android:layout_margin="5dp"/>
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="@string/prenom"
+            android:textColor="#0000ff" />
 
         <TextView
             android:id="@+id/textView4"
             android:layout_width="100dp"
-            android:layout_height="wrap_content"   
-            android:textColor="#0000ff"
-            android:text="Profil métier" 
-            android:layout_margin="5dp"/>
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:text="@string/profilMetier"
+            android:textColor="#0000ff" />
 
     </LinearLayout>
 

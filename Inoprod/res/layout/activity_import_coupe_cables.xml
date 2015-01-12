@@ -22,8 +22,7 @@
                 android:layout_centerHorizontal="true"
                 android:layout_centerVertical="true"
                 android:layout_margin="@dimen/b30"
-                android:text="Importer le fichier « débit câble » dans la machine de coupe et valider seulement après le débit du premier câble 
-" />
+                android:text="@string/instructionImportCables" />
 
             <ImageButton
                 android:id="@+id/imageButton1"

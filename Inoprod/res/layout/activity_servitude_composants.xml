@@ -48,7 +48,7 @@
             android:layout_below="@+id/imageView1"
             android:layout_centerHorizontal="true"
             android:layout_margin="7dp"
-            android:text="Veuillez effectuer  la servitude de la référence par position de chariot "
+            android:text="@string/instructionServitude"
             android:textSize="@dimen/b12" />
 
         <LinearLayout
@@ -69,7 +69,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="60dp"
-                    android:text="Désignation"
+                    android:text="@string/designation"
                     android:textColor="#0000ff"
                     android:textSize="@dimen/b9" />
 
@@ -78,7 +78,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="15dip"
-                    android:text="Fabricant/Fournisseur:"
+                    android:text="@string/fabricantFournisseur"
                     android:textColor="#0000ff"
                     android:textSize="@dimen/b9" />
 
@@ -94,7 +94,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="30dip"
-                    android:text="Référence fabricant:"
+                    android:text="@string/referenceFabricant"
                     android:textColor="#0000ff"
                     android:textSize="@dimen/b9" />
 
@@ -104,7 +104,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="15dip"
                     android:layout_marginRight="30dip"
-                    android:text="Référence interne"
+                    android:text="@string/referenceInterne"
                     android:textColor="#0000ff"
                     android:textSize="@dimen/b9" />
 
@@ -113,7 +113,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="15dip"
-                    android:text="Réf imposée"
+                    android:text="@string/referenceImposee"
                     android:textColor="#0000ff"
                     android:textSize="@dimen/b9" />
 
@@ -130,14 +130,12 @@
         android:layout_toLeftOf="@id/exitButton1"
         android:layout_toRightOf="@id/infoButton1" >
 
-        
-
         <TextView
             android:id="@+id/textView9"
             android:layout_width="44dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Repère électrique "
+            android:text="@string/repereElectrique"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b1" />
@@ -147,7 +145,7 @@
             android:layout_width="44dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Numéro de connecteur"
+            android:text="@string/numeroConnecteur"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b1" />
@@ -157,7 +155,7 @@
             android:layout_width="44dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Position sur chariot"
+            android:text="@string/positionChariot"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b1" />
@@ -166,51 +164,41 @@
             android:id="@+id/textView12"
             android:layout_width="44dp"
             android:layout_height="wrap_content"
-            android:text="Ordre de réalisation"
-            android:textAppearance="?android:attr/textAppearanceSmall" 
+            android:layout_margin="5dp"
+            android:text="@string/ordreRealisation"
+            android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/b1"
-            android:layout_margin="5dp"/>
+            android:textSize="@dimen/b1" />
         
         <TextView
             android:id="@+id/temps"
             android:layout_width="35dp"
             android:layout_height="wrap_content"
-            android:text="Quantité"
-            android:textAppearance="?android:attr/textAppearanceSmall" 
+            android:layout_margin="5dp"
+            android:text="@string/quantite"
+            android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/b1"
-            android:layout_margin="5dp"/>
+            android:textSize="@dimen/b1" />
         
         <TextView
             android:id="@+id/textView14"
             android:layout_width="35dp"
             android:layout_height="wrap_content"
-            android:text="Unité de mesure"
-            android:textAppearance="?android:attr/textAppearanceSmall" 
+            android:layout_margin="5dp"
+            android:text="@string/unite"
+            android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/b1"
-            android:layout_margin="5dp"/>
+            android:textSize="@dimen/b1" />
         
         <TextView
             android:id="@+id/textView15"
             android:layout_width="44dp"
             android:layout_height="wrap_content"
-            android:text="Numéro de lot"
-            android:textAppearance="?android:attr/textAppearanceSmall" 
+            android:layout_margin="5dp"
+            android:text="@string/numeroLot"
+            android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/b1"
-            android:layout_margin="5dp"/>
-        
-        <TextView
-            android:id="@+id/textView16"
-            android:layout_width="30dp"
-            android:layout_height="wrap_content"
-            android:text="Article servi"
-            android:textAppearance="?android:attr/textAppearanceSmall" 
-            android:textColor="#0000ff"
-            android:textSize="@dimen/b1"
-            android:layout_margin="5dp"/>
+            android:textSize="@dimen/b1" />
 
     </LinearLayout>
 
@@ -220,7 +208,7 @@
                  android:layout_height="wrap_content"
                  android:layout_below="@+id/textView2"
                  android:layout_centerHorizontal="true"
-                 android:text="Etats des débits"
+                 android:text="@string/etatDebits"
                  android:textSize="@dimen/b9" />
     
     <GridView
@@ -245,5 +233,15 @@
             android:layout_alignRight="@+id/gridview"
             android:layout_alignTop="@+id/exitButton1"
             android:src="@drawable/pause31" />
+
+        <ImageButton
+            android:id="@+id/imageButton2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignTop="@+id/imageButton1"
+            android:layout_toLeftOf="@+id/imageButton1"
+            android:layout_toRightOf="@+id/textView1"
+            android:src="@drawable/valider9" />
 
 </RelativeLayout>

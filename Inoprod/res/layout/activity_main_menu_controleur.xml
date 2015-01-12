@@ -5,16 +5,14 @@
     android:background="#ffffff"
     tools:context="${relativePackage}.${activityClass}" >
     
-    
      <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"
-        android:text="Menu principal profil contrôleurs"
- />
+         android:id="@+id/textView1"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignParentTop="true"
+         android:layout_centerHorizontal="true"
+         android:layout_marginTop="16dp"
+         android:text="@string/menuControleurs" />
     
      <ImageButton
          android:id="@+id/infoButton1"
@@ -47,7 +45,7 @@
             android:layout_below="@+id/textView1"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="15dp"
-            android:text="Phase opératoire suivante"
+            android:text="@string/phaseOperatoireSuivante"
             android:textSize="@dimen/b12" />
         
         
@@ -60,14 +58,12 @@
         android:layout_toLeftOf="@id/exitButton1"
         android:layout_toRightOf="@id/infoButton1" >
 
-        
-
         <TextView
             android:id="@+id/textView9"
             android:layout_width="44dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Ordre des opérations"
+            android:text="@string/ordreOperation"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b1" />
@@ -77,7 +73,7 @@
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Opérations à réaliser"
+            android:text="@string/operationsRealiser"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b1" />
@@ -87,7 +83,7 @@
             android:layout_width="60dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:text="Référence outillage"
+            android:text="@string/referenceOutillage"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b1" />
@@ -96,13 +92,11 @@
             android:id="@+id/textView12"
             android:layout_width="44dp"
             android:layout_height="wrap_content"
-            android:text="Numéro de série"
-            android:textAppearance="?android:attr/textAppearanceSmall" 
+            android:layout_margin="5dp"
+            android:text="@string/numeroSerie"
+            android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/b1"
-            android:layout_margin="5dp"/>
-        
-       
+            android:textSize="@dimen/b1" />
 
     </LinearLayout>
 
@@ -112,7 +106,7 @@
                  android:layout_height="wrap_content"
                  android:layout_below="@+id/textView2"
                  android:layout_centerHorizontal="true"
-                 android:text="Ordre du jour"
+                 android:text="@string/ordreJour"
                  android:textSize="@dimen/b9" />
     
     <GridView

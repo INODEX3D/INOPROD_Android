@@ -6,14 +6,13 @@
     tools:context="${relativePackage}.${activityClass}" >
     
        <TextView
-       android:id="@+id/textView1"
-       android:layout_width="wrap_content"
-       android:layout_height="wrap_content"
-       android:layout_alignParentTop="true"
-       android:layout_centerHorizontal="true"
-       android:layout_marginTop="16dp"
-       android:text="Informations produit" />
-       
+           android:id="@+id/textView1"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_alignParentTop="true"
+           android:layout_centerHorizontal="true"
+           android:layout_marginTop="16dp"
+           android:text="@string/infoProduit" />
        
                <ImageButton
             android:id="@+id/exitButton1"
@@ -48,7 +47,7 @@
                            android:layout_width="wrap_content"
                            android:layout_height="wrap_content"
                            android:layout_marginRight="@dimen/b30"
-                           android:text="Designation produit:"
+                           android:text="@string/designationProduit"
                            android:textColor="#0000ff"
                            android:textSize="@dimen/b12" />
 
@@ -57,7 +56,7 @@
                            android:layout_width="wrap_content"
                            android:layout_height="wrap_content"
                            android:layout_marginRight="@dimen/b30"
-                           android:text="Numéro de harnais:"
+                           android:text="@string/numeroHarnais"
                            android:textColor="#0000ff"
                            android:textSize="@dimen/b12" />
 
@@ -65,7 +64,7 @@
                            android:id="@+id/textView6"
                            android:layout_width="wrap_content"
                            android:layout_height="wrap_content"
-                           android:text="Standard de fabrication:"
+                           android:text="@string/standard"
                            android:textColor="#0000ff"
                            android:textSize="@dimen/b12" />
  
@@ -82,7 +81,7 @@
                            android:layout_width="wrap_content"
                            android:layout_height="wrap_content"
                            android:layout_marginRight="@dimen/b30"
-                           android:text="Numéro de série:"
+                           android:text="@string/numeroSerie"
                            android:textColor="#0000ff"
                            android:textSize="@dimen/b12" />
 
@@ -91,7 +90,7 @@
                            android:layout_width="wrap_content"
                            android:layout_height="wrap_content"
                            android:layout_marginRight="@dimen/b30"
-                           android:text="Numéro de traitement:"
+                           android:text="@string/numeroTraitement"
                            android:textColor="#0000ff"
                            android:textSize="@dimen/b12" />
 
@@ -99,7 +98,7 @@
                            android:id="@+id/textView6a"
                            android:layout_width="wrap_content"
                            android:layout_height="wrap_content"
-                           android:text="Numéro de révision harnais:"
+                           android:text="@string/numeroRevisionHarnais"
                            android:textColor="#0000ff"
                            android:textSize="@dimen/b12" />
  
@@ -111,7 +110,7 @@
                        android:layout_width="wrap_content"
                        android:layout_height="wrap_content"
                        android:layout_margin="@dimen/b5"
-                       android:text="Reférence fichier source:"
+                       android:text="@string/referenceFichierSource"
                        android:textColor="#0000ff"
                        android:textSize="@dimen/b12" />
                    

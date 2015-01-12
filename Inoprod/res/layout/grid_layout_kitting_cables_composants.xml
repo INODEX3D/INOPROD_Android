@@ -7,12 +7,13 @@
     
     
     <TextView
-            android:id="@+id/numeroFil"
+            android:id="@+id/numeroCable"
             android:layout_width="44dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
 
-            android:textSize="@dimen/b1" />
+            android:textSize="@dimen/b1" 
+             android:textColor="#000000"/>
 
         <TextView
             android:id="@+id/typeCable"
@@ -20,7 +21,8 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
 
-            android:textSize="@dimen/b1" />
+            android:textSize="@dimen/b1"
+             android:textColor="#000000" />
 
         <TextView
             android:id="@+id/designation"
@@ -28,7 +30,8 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
 
-            android:textSize="@dimen/b1" />
+            android:textSize="@dimen/b1"
+             android:textColor="#000000" />
 
         <TextView
             android:id="@+id/referenceFabricant"
@@ -36,7 +39,8 @@
             android:layout_height="wrap_content"
 
             android:textSize="@dimen/b1"
-            android:layout_margin="5dp"/>
+            android:layout_margin="5dp"
+             android:textColor="#000000"/>
         
         <TextView
             android:id="@+id/referenceInterne"
@@ -44,7 +48,8 @@
             android:layout_height="wrap_content"
 
             android:textSize="@dimen/b1"
-            android:layout_margin="5dp"/>
+            android:layout_margin="5dp"
+             android:textColor="#000000"/>
         
         <TextView
             android:id="@+id/quantite"
@@ -52,7 +57,8 @@
             android:layout_height="wrap_content"
 
             android:textSize="@dimen/b1"
-            android:layout_margin="5dp"/>
+            android:layout_margin="5dp"
+             android:textColor="#000000"/>
         
 
         
@@ -62,7 +68,8 @@
             android:layout_height="wrap_content"
 
             android:textSize="@dimen/b1"
-            android:layout_margin="5dp"/>
+            android:layout_margin="5dp"
+             android:textColor="#000000"/>
     
 
 </LinearLayout>

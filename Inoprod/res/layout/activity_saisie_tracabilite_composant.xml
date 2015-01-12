@@ -40,10 +40,9 @@
             android:layout_below="@+id/textView1"
             android:layout_centerHorizontal="true"
             android:layout_margin="@dimen/b30"
-         
-            android:layout_marginRight="40dp"
             android:layout_marginLeft="40dp"
-            android:text="Veuillez scanner ou saisir la référence composant figurant sur l’emballage"
+            android:layout_marginRight="40dp"
+            android:text="@string/instructionSaisieTracabilite"
             android:textSize="@dimen/b12" />
 
         <LinearLayout
@@ -57,17 +56,14 @@
                 android:id="@+id/textView3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#0000ff" 
-                android:text="Debit:"
-                android:textSize="@dimen/b12" 
-                />
+                android:textColor="#0000ff"
+                android:textSize="@dimen/b12" />
 
             <TextView
                 android:id="@+id/textView4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#0000ff" 
-                android:text="Reference:"
+                android:textColor="#0000ff"
                 android:textSize="@dimen/b12" />
 
         </LinearLayout>
@@ -95,12 +91,12 @@
         </EditText>
         
          <Button
-            android:id="@+id/scan"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/editText1"
-            android:layout_toRightOf="@+id/editText1"
-            android:text="Scan" />
+             android:id="@+id/scan"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_alignBottom="@+id/editText1"
+             android:layout_toRightOf="@+id/editText1"
+             android:text="@string/scan" />
          
          <EditText
             android:id="@+id/editText2"
@@ -110,29 +106,25 @@
              android:layout_centerHorizontal="true"
             android:layout_margin="10dp"
             android:ems="10"
-            >
-
-            <requestFocus />
-        </EditText>
-        
+            />
+      
          <Button
-            android:id="@+id/scan1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/editText2"
-            android:layout_toRightOf="@+id/editText2"
-            android:text="Scan" />
-         
+             android:id="@+id/scan1"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_alignBottom="@+id/editText2"
+             android:layout_toRightOf="@+id/editText2"
+             android:text="Scan" />
          
           <TextView
-            android:id="@+id/textView6"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@+id/editText1"
-            android:layout_alignBottom="@+id/editText1"
-            android:layout_margin="@dimen/b5"
-            android:layout_toLeftOf="@+id/editText1"
-            android:text="Référence" />
+              android:id="@+id/textView6"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_alignBaseline="@+id/editText1"
+              android:layout_alignBottom="@+id/editText1"
+              android:layout_margin="@dimen/b5"
+              android:layout_toLeftOf="@+id/editText1"
+              android:text="@string/reference" />
 
         <TextView
             android:id="@+id/textView5"
@@ -142,6 +134,6 @@
             android:layout_alignBottom="@+id/editText2"
             android:layout_margin="@dimen/b5"
             android:layout_toLeftOf="@+id/editText2"
-            android:text="Numéro de lot" />
+            android:text="@string/numeroLot" />
 
 </RelativeLayout>
