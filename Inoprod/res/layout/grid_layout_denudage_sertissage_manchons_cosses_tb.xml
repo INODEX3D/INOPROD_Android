@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+     android:orientation="horizontal" >
+    
+     <TextView
+            android:id="@+id/statutLiaison"
+            android:layout_width="35dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+    		android:textColor="#000000"
+            android:textSize="@dimen/b7" />
+
+        <TextView
+            android:id="@+id/numeroRevisionLiaison"
+            android:layout_width="35dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+
+            android:textSize="@dimen/b5"
+             android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/typeCable1"
+            android:layout_width="35dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="7dp"
+   
+            android:textSize="@dimen/b5"
+             android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/numeroFil1"
+            android:layout_width="35dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="7dp"
+ 
+            android:textSize="@dimen/b5" 
+             android:textColor="#000000"/>
+        
+        <TextView
+            android:id="@+id/numeroFilDansCable1"
+            android:layout_width="35dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+ 
+            android:textSize="@dimen/b7"
+             android:textColor="#000000" />
+        
+        <TextView
+            android:id="@+id/couleurFil1"
+            android:layout_width="35dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+    
+            android:textSize="@dimen/b7" 
+             android:textColor="#000000"/>
+        
+          <TextView
+            android:id="@+id/numeroBorne"
+            android:layout_width="35dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+    
+            android:textSize="@dimen/b7" 
+             android:textColor="#000000"/>
+          
+          
+                <TextView
+            android:id="@+id/typeCable2"
+            android:layout_width="35dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="7dp"
+   
+            android:textSize="@dimen/b5"
+             android:textColor="#000000" />
+
+        <TextView
+            android:id="@+id/numeroFil2"
+            android:layout_width="35dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="7dp"
+ 
+            android:textSize="@dimen/b5" 
+             android:textColor="#000000"/>
+        
+        <TextView
+            android:id="@+id/numeroFilDansCable2"
+            android:layout_width="35dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+ 
+            android:textSize="@dimen/b7"
+             android:textColor="#000000" />
+        
+        <TextView
+            android:id="@+id/couleurFil2"
+            android:layout_width="35dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+    
+            android:textSize="@dimen/b7" 
+             android:textColor="#000000"/>
+        
+      
+    
+
+</LinearLayout>
+

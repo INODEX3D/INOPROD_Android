@@ -81,7 +81,7 @@ public class KittingCablesComposants extends Activity {
 			BOM.ORDRE_REALISATION, BOM.QUANTITE, BOM.UNITE,
 			BOM.NUMERO_LOT_SCANNE, BOM.NUMERO_DEBIT, BOM.DESIGNATION_COMPOSANT,
 			BOM.FOURNISSEUR_FABRICANT, BOM.REFERENCE_IMPOSEE,
-			BOM.REFERENCE_INTERNE, BOM.REFERENCE_FABRICANT2, BOM._id };
+			BOM.REFERENCE_INTERNE, BOM.REFERENCE_FABRICANT2, BOM._id, BOM.NUMERO_POSITION_CHARIOT };
 	private int[] layouts = new int[] { R.id.numeroCable, R.id.typeCable,
 			R.id.designation, R.id.referenceFabricant, R.id.referenceInterne,
 			R.id.quantite, R.id.uniteMesure };
@@ -142,11 +142,11 @@ public class KittingCablesComposants extends Activity {
 					.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
 
 			// Affichage des éléments du regroupement en cours
-			try {
+	/*		try {
 				numeroChariot.append(cursorA.getString(cursorA
-						.getColumnIndex(Kitting.NUMERO_POSITION_CHARIOT)));
+						.getColumnIndex(Cheminement.)));
 			} catch (NullPointerException e) {
-			}
+			} */
 			try {
 				numeroComposant.append(cursorA.getString(cursorA
 						.getColumnIndex(Cheminement.NUMERO_COMPOSANT)));

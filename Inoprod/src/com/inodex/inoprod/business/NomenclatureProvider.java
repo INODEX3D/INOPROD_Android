@@ -1,7 +1,5 @@
 package com.inodex.inoprod.business;
 
-
-
 import com.inodex.inoprod.business.AnnuairePersonel.Employe;
 import com.inodex.inoprod.business.Nomenclature.Cable;
 
@@ -15,7 +13,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.util.Log;
 
-
 /**
  * Classe derivant de Content Provider servant à la création et la manipulation
  * de la base nomenclature
@@ -24,70 +21,69 @@ import android.util.Log;
  * 
  */
 public class NomenclatureProvider extends ContentProvider {
-	
+
 	DatabaseNomenclature dbHelper;
-	public static final Uri CONTENT_URI = Uri.parse("content://com.inodex.inoprod.business.nomenclature");
+	public static final Uri CONTENT_URI = Uri
+			.parse("content://com.inodex.inoprod.business.nomenclature");
 
-	// Nom de notre base de données 
-		public static final String CONTENT_PROVIDER_DB_NAME = "nomenclature.db";
-	// Version de notre base de données 
-		public static final int CONTENT_PROVIDER_DB_VERSION = 1;
-	// Nom de la table de notre base 
-		public static final String CONTENT_PROVIDER_TABLE_NAME = "cable";
-	// Le Mime de notre content provider, la premiére partie est toujours identique 
-		public static final String CONTENT_PROVIDER_MIME = "vnd.android.cursor.item/vnd.com.inodex.inoprod.business.cable";
+	// Nom de notre base de données
+	public static final String CONTENT_PROVIDER_DB_NAME = "nomenclature.db";
+	// Version de notre base de données
+	public static final int CONTENT_PROVIDER_DB_VERSION = 1;
+	// Nom de la table de notre base
+	public static final String CONTENT_PROVIDER_TABLE_NAME = "cable";
+	// Le Mime de notre content provider, la premiére partie est toujours
+	// identique
+	public static final String CONTENT_PROVIDER_MIME = "vnd.android.cursor.item/vnd.com.inodex.inoprod.business.cable";
 
-	
-	// Notre DatabaseHelper 
+	// Notre DatabaseHelper
 	private static class DatabaseNomenclature extends SQLiteOpenHelper {
 
-		// Création à partir du Context, du Nom de la table et du numéro de version 
+		// Création à partir du Context, du Nom de la table et du numéro de
+		// version
 		DatabaseNomenclature(Context context) {
-	super(context,NomenclatureProvider.CONTENT_PROVIDER_DB_NAME, null, NomenclatureProvider.CONTENT_PROVIDER_DB_VERSION);
+			super(context, NomenclatureProvider.CONTENT_PROVIDER_DB_NAME, null,
+					NomenclatureProvider.CONTENT_PROVIDER_DB_VERSION);
 		}
-		
-		// Création des tables 
+
+		// Création des tables
 		@Override
 		public void onCreate(SQLiteDatabase db) {
-	db.execSQL("CREATE TABLE " + NomenclatureProvider.CONTENT_PROVIDER_TABLE_NAME + " (" 
-		+ Cable._id + " INTEGER PRIMARY KEY AUTOINCREMENT, " 
-		+ Cable.ACCESSOIRE_CABLAGE + " STRING, "
-		+ Cable.ACCESSOIRE_COMPOSANT + " STRING, "
-		+ Cable.NORME_CABLE + " STRING, "
-		+ Cable.DESIGNATION_COMPOSANT + " STRING, "
-		+ Cable.DESIGNATION_PRODUIT + " STRING, "
-		+ Cable.EQUIPEMENT + " STRING, "
-		+ Cable.FAMILLE_PRODUIT + " STRING, "
-		+ Cable.FOURNISSEUR_FABRICANT + " STRING, "
-		+ Cable.NUMERO_COMPOSANT + " STRING, "
-		+ Cable.NUMERO_HARNAIS_FAISCEAUX + " FLOAT," 
-		+ Cable.NUMERO_REVISION_HARNAIS + " FLOAT," 
-		+ Cable.ORDRE_REALISATION + " STRING, "
-		+ Cable.QUANTITE + " FLOAT,"
-		+ Cable.REFERENCE_FABRICANT1 + " STRING, "
-		+ Cable.REFERENCE_FABRICANT2 + " STRING, "
-		+ Cable.REFERENCE_FICHIER_SOURCE + " STRING, "
-		+ Cable.REFERENCE_IMPOSEE + " BOOLEAN, "
-		+ Cable.REFERENCE_INTERNE + " STRING, "
-		+ Cable.REPERE_ELECTRIQUE + " STRING, "
-		+ Cable.STANDARD + " FLOAT,"
-		+ Cable.UNITE + " STRING" + ");");
-		
+			db.execSQL("CREATE TABLE "
+					+ NomenclatureProvider.CONTENT_PROVIDER_TABLE_NAME + " ("
+					+ Cable._id + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+					+ Cable.ACCESSOIRE_CABLAGE + " STRING, "
+					+ Cable.ACCESSOIRE_COMPOSANT + " STRING, "
+					+ Cable.NORME_CABLE + " STRING, "
+					+ Cable.DESIGNATION_COMPOSANT + " STRING, "
+					+ Cable.DESIGNATION_PRODUIT + " STRING, "
+					+ Cable.EQUIPEMENT + " STRING, " + Cable.FAMILLE_PRODUIT
+					+ " STRING, " + Cable.FOURNISSEUR_FABRICANT + " STRING, "
+					+ Cable.NUMERO_COMPOSANT + " STRING, "
+					+ Cable.NUMERO_HARNAIS_FAISCEAUX + " FLOAT,"
+					+ Cable.NUMERO_REVISION_HARNAIS + " FLOAT,"
+					+ Cable.ORDRE_REALISATION + " STRING, " + Cable.QUANTITE
+					+ " FLOAT," + Cable.REFERENCE_FABRICANT1 + " STRING, "
+					+ Cable.REFERENCE_FABRICANT2 + " STRING, "
+					+ Cable.REFERENCE_FICHIER_SOURCE + " STRING, "
+					+ Cable.REFERENCE_IMPOSEE + " BOOLEAN, "
+					+ Cable.REFERENCE_INTERNE + " STRING, "
+					+ Cable.REPERE_ELECTRIQUE + " STRING, " + Cable.STANDARD
+					+ " FLOAT," + Cable.UNITE + " STRING" + ");");
+
 		}
 
-		// Cette méthode sert à gérer la montée de version de notre base 
+		// Cette méthode sert à gérer la montée de version de notre base
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-	db.execSQL("DROP TABLE IF EXISTS " + NomenclatureProvider.CONTENT_PROVIDER_TABLE_NAME);
+			db.execSQL("DROP TABLE IF EXISTS "
+					+ NomenclatureProvider.CONTENT_PROVIDER_TABLE_NAME);
 			onCreate(db);
-		
-		}
-	
 
-	
+		}
+
 	}
 
-	
 	/**
 	 * Création de la base de données
 	 * 
@@ -99,7 +95,6 @@ public class NomenclatureProvider extends ContentProvider {
 		return true;
 	}
 
-	
 	/**
 	 * Requete d'éléments de la base de données
 	 * 
@@ -118,20 +113,19 @@ public class NomenclatureProvider extends ContentProvider {
 	@Override
 	public Cursor query(Uri uri, String[] projection, String selection,
 			String[] selectionArgs, String sortOrder) {
-			long id = getId(uri);
-			SQLiteDatabase db = dbHelper.getReadableDatabase();	
-			if (id < 0) {
-				return 	db.query(NomenclatureProvider.CONTENT_PROVIDER_TABLE_NAME,
-		projection, selection, selectionArgs, null, null,
-			sortOrder);
-			} else {
-				return 		db.query(NomenclatureProvider.CONTENT_PROVIDER_TABLE_NAME,
-			projection, Cable._id + "=" + id, null, null, null,
-			null);
-			} 
+		long id = getId(uri);
+		SQLiteDatabase db = dbHelper.getReadableDatabase();
+		if (id < 0) {
+			return db
+					.query(NomenclatureProvider.CONTENT_PROVIDER_TABLE_NAME,
+							projection, selection, selectionArgs, null, null,
+							sortOrder);
+		} else {
+			return db.query(NomenclatureProvider.CONTENT_PROVIDER_TABLE_NAME,
+					projection, Cable._id + "=" + id, null, null, null, null);
+		}
 	}
 
-	
 	/**
 	 * Permet d'obtenir le MIME de la base
 	 * 
@@ -157,22 +151,24 @@ public class NomenclatureProvider extends ContentProvider {
 	public Uri insert(Uri uri, ContentValues values) {
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		try {
-			
-	long id = db.insertOrThrow(	NomenclatureProvider.CONTENT_PROVIDER_TABLE_NAME, null, values);
-				
-	if (id == -1) {
+
+			long id = db.insertOrThrow(
+					NomenclatureProvider.CONTENT_PROVIDER_TABLE_NAME, null,
+					values);
+
+			if (id == -1) {
 				throw new RuntimeException(String.format(
-				"%s : Failed to insert [%s] for unknown reasons.","NomenclatureProvider", values, uri));
+						"%s : Failed to insert [%s] for unknown reasons.",
+						"NomenclatureProvider", values, uri));
 			} else {
 				return ContentUris.withAppendedId(uri, id);
 			}
-			
-	} finally {
-				db.close();
-			}
+
+		} finally {
+			db.close();
+		}
 	}
 
-	
 	/**
 	 * Suppression d'un élément de la base de données
 	 * 
@@ -202,7 +198,6 @@ public class NomenclatureProvider extends ContentProvider {
 		}
 	}
 
-	
 	/**
 	 * Mise à jour d'éléments de la base de données
 	 * 
@@ -221,19 +216,21 @@ public class NomenclatureProvider extends ContentProvider {
 			String[] selectionArgs) {
 		long id = getId(uri);
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
-		
-	try {
+
+		try {
 			if (id < 0)
-	return db.update( NomenclatureProvider.CONTENT_PROVIDER_TABLE_NAME,values, selection, selectionArgs);
-		else
-				return db.update(NomenclatureProvider.CONTENT_PROVIDER_TABLE_NAME,
-				values, Cable._id + "=" + id, null); 
-			} finally {
-				db.close();
-			}
+				return db.update(
+						NomenclatureProvider.CONTENT_PROVIDER_TABLE_NAME,
+						values, selection, selectionArgs);
+			else
+				return db.update(
+						NomenclatureProvider.CONTENT_PROVIDER_TABLE_NAME,
+						values, Cable._id + "=" + id, null);
+		} finally {
+			db.close();
+		}
 	}
-	
-	
+
 	/**
 	 * Obtention de l'id à partir d'une Uri
 	 * 
@@ -251,7 +248,7 @@ public class NomenclatureProvider extends ContentProvider {
 			}
 		}
 		return -1;
-		
-}
+
+	}
 
 }

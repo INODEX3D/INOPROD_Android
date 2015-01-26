@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -29,23 +30,28 @@ import android.widget.Toast;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.activities.MainActivity;
-import com.inodex.inoprod.activities.magasiniers.MainMenuMagasinier;
 import com.inodex.inoprod.business.BOMProvider;
+import com.inodex.inoprod.business.ChariotProvider;
 import com.inodex.inoprod.business.CheminementProvider;
 import com.inodex.inoprod.business.Durees.Duree;
 import com.inodex.inoprod.business.DureesProvider;
 import com.inodex.inoprod.business.KittingProvider;
 import com.inodex.inoprod.business.Nomenclature.Cable;
 import com.inodex.inoprod.business.NomenclatureProvider;
+import com.inodex.inoprod.business.Outillage.Outil;
+import com.inodex.inoprod.business.OutillageProvider;
 import com.inodex.inoprod.business.Production.Fil;
 import com.inodex.inoprod.business.ProductionProvider;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
+import com.inodex.inoprod.business.SupportProvider;
 import com.inodex.inoprod.business.TableBOM.BOM;
+import com.inodex.inoprod.business.TableChariots.Chariot;
 import com.inodex.inoprod.business.TableCheminement.Cheminement;
 import com.inodex.inoprod.business.TableKittingCable.Kitting;
 import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
+import com.inodex.inoprod.business.TableSupport.Support;
 
 /**
  * Menu principal du profil préparateur. Il gère l'import des données sources
@@ -85,6 +91,9 @@ public class MainMenuPreparateur extends Activity {
 	private Uri urlKitting = KittingProvider.CONTENT_URI;
 	private Uri urlBOM = BOMProvider.CONTENT_URI;
 	private Uri urlCheminement = CheminementProvider.CONTENT_URI;
+	private Uri urlOutillage = OutillageProvider.CONTENT_URI;
+	private Uri urlSupport = SupportProvider.CONTENT_URI;
+	private Uri urlChariot = ChariotProvider.CONTENT_URI;
 
 	/** Colonnes utilisés pour les requêtes */
 
@@ -149,6 +158,20 @@ public class MainMenuPreparateur extends Activity {
 	private String colKit4[] = new String[] { Kitting._id,
 			Kitting.NUMERO_POSITION_CHARIOT, Kitting.NORME_CABLE };
 
+	private String colOut[] = new String[] { Outil._id, Outil.AFFECTATION,
+			Outil.CODE_BARRE, Outil.COMMENTAIRES, Outil.CONSTRUCTEUR,
+			Outil.DERNIERE_OPERATION, Outil.IDENTIFICATION, Outil.INTITULE,
+			Outil.NUMERO_SERIE, Outil.PERIODE, Outil.PROCHAINE_OPERATION,
+			Outil.PROPRIETAIRE, Outil.SECTION, Outil.TYPE, Outil.UNITE };
+
+	private String colSup[] = new String[] { Support._id, Support.AFFECTATION,
+			Support.CODE_TAG, Support.DIAMETRE_ADMISSIBLE,
+			Support.NUMERO_SERIE, Support.TYPE_SUPPORT };
+
+	private String colCha[] = new String[] { Chariot._id, Chariot.CODE_TAG,
+			Chariot.CONNECTEUR_POSITIONNE, Chariot.FACE_CHARIOT,
+			Chariot.NUMERO_CHARIOT, Chariot.POSITION_NUMERO };
+
 	private String clause, rep, norme, numeroOperation, num, gamme, rang,
 			rang_1, descriptionOperation, num1, referenceCourante;
 	private int debit, indice, chemin, numeroCheminement;
@@ -169,34 +192,38 @@ public class MainMenuPreparateur extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				AlertDialog.Builder builder = new AlertDialog.Builder(MainMenuPreparateur.this);
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						MainMenuPreparateur.this);
 				builder.setMessage("Êtes-vous sur de vouloir quitter le profil ?");
 				builder.setCancelable(false);
-				builder.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
+				builder.setPositiveButton("Oui",
+						new DialogInterface.OnClickListener() {
 
-					public void onClick(DialogInterface dialog, int which) {
-						Intent toMain = new Intent(MainMenuPreparateur.this,
-								MainActivity.class);
-						startActivity(toMain);
-							finish();
+							public void onClick(DialogInterface dialog,
+									int which) {
+								Intent toMain = new Intent(
+										MainMenuPreparateur.this,
+										MainActivity.class);
+								startActivity(toMain);
+								finish();
 
-						}
+							}
 
+						});
 
-				});
+				builder.setNegativeButton("Non",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
 
-				builder.setNegativeButton("Non", new DialogInterface.OnClickListener() {
-					public void onClick(final DialogInterface dialog, final int id) {
+								dialog.cancel();
 
-						dialog.cancel();
-
-					}
-				});
+							}
+						});
 				builder.show();
-				
+
 			}
 
-			
 		});
 
 		// Import des données et créations des tables
@@ -547,16 +574,17 @@ public class MainMenuPreparateur extends Activity {
 								null, null);
 
 						if (cursorB.moveToFirst()) {
-							numeroCheminement =cursorB.getInt(cursorB.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
-							contact.put(
-									Kitting.NUMERO_CHEMINEMENT,
+							numeroCheminement = cursorB
+									.getInt(cursorB
+											.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
+							contact.put(Kitting.NUMERO_CHEMINEMENT,
 									numeroCheminement);
-							contact.put(Kitting.NUMERO_POSITION_CHARIOT, "CH1-1-A" +numeroCheminement);
+							contact.put(Kitting.NUMERO_POSITION_CHARIOT,
+									"CH1-1-A" + numeroCheminement);
 						} else {
-							contact.put(Kitting.NUMERO_POSITION_CHARIOT, "CH1-2-A");
+							contact.put(Kitting.NUMERO_POSITION_CHARIOT,
+									"CH1-2-A");
 						}
-
-						
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlKitting, contact);
@@ -693,11 +721,12 @@ public class MainMenuPreparateur extends Activity {
 						.query(urlCheminement, ColChem1, clause, null, null);
 
 				if (cursorB.moveToFirst()) {
-					numeroCheminement =cursorB.getInt(cursorB.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
-					contact.put(
-							BOM.NUMERO_CHEMINEMENT,
-							numeroCheminement);
-					contact.put(BOM.NUMERO_POSITION_CHARIOT, "CH1-1-A" +numeroCheminement);
+					numeroCheminement = cursorB
+							.getInt(cursorB
+									.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
+					contact.put(BOM.NUMERO_CHEMINEMENT, numeroCheminement);
+					contact.put(BOM.NUMERO_POSITION_CHARIOT, "CH1-1-A"
+							+ numeroCheminement);
 				} else {
 					Log.e("Cheminement", "Pas de cheminement trouvé");
 				}
@@ -859,7 +888,202 @@ public class MainMenuPreparateur extends Activity {
 					Toast.LENGTH_SHORT).show();
 			return false;
 		}
+
+		try {
+			insertRecordsOutillage();
+		} catch (IOException e) {
+			Toast.makeText(this, "Fichier Outillage non lu", Toast.LENGTH_SHORT)
+					.show();
+			return false;
+		}
+
 		return true;
+
+	}
+
+	private void insertRecordsOutillage() throws IOException {
+		// Création d'un InputStream vers le fichier Excel
+		InputStream input = this.getResources().openRawResource(
+				R.raw.table_outillage);
+		// Interpretation du fichier a l'aide de Apache POI
+		POIFSFileSystem fs = new POIFSFileSystem(input);
+		HSSFWorkbook wb = new HSSFWorkbook(fs);
+
+		// Feuille outillages
+		HSSFSheet sheet = wb.getSheetAt(0);
+		ContentValues contact = new ContentValues();
+		// Iteration sur chacune des lignes du fichier
+		Iterator rows = sheet.rowIterator();
+		rows.next();
+		HSSFRow row = (HSSFRow) rows.next();
+		HashMap<String, Integer> colonnes = new HashMap<String, Integer>();
+		// Stockage des indices des colonnes
+		for (int i = 0; i < row.getLastCellNum(); i++) {
+			colonnes.put(row.getCell(i).toString(), i);
+
+		}
+
+		while (rows.hasNext()) {
+			row = (HSSFRow) rows.next();
+			try {
+				contact.put(Outil.AFFECTATION,
+						row.getCell(colonnes.get("affectation")).toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Outil.CODE_BARRE,
+						row.getCell(colonnes.get("code_barre")).toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Outil.COMMENTAIRES,
+						row.getCell(colonnes.get("Commentaires")).toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Outil.CONSTRUCTEUR,
+						row.getCell(colonnes.get("constructeur")).toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Outil.DERNIERE_OPERATION,
+						row.getCell(colonnes.get("derniere operation"))
+								.toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Outil.IDENTIFICATION, row.getCell(
+						colonnes.get("Identification")).toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Outil.INTITULE,
+						row.getCell(colonnes.get("intitule")).toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Outil.NUMERO_SERIE,
+						row.getCell(colonnes.get("n_serie")).toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Outil.PERIODE, Float.parseFloat(row.getCell(
+						colonnes.get("periode")).toString()));
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Outil.PROCHAINE_OPERATION,
+						row.getCell(colonnes.get("prochaine operation"))
+								.toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Outil.PROPRIETAIRE,
+						row.getCell(colonnes.get("proprietaire")).toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Outil.SECTION, row.getCell(colonnes.get("section"))
+						.toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Outil.TYPE, row.getCell(colonnes.get("type"))
+						.toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Outil.UNITE, row.getCell(colonnes.get("unite"))
+						.toString());
+			} catch (NullPointerException e) {
+			}
+
+			// Ajout de l'entité
+			getContentResolver().insert(urlOutillage, contact);
+			// Ecrasement de ses données pour passer à la suivante
+			contact.clear();
+
+		}
+		
+		
+
+		// Feuille Support
+		sheet = wb.getSheetAt(1);
+		rows = sheet.rowIterator();
+		row = (HSSFRow) rows.next();
+		colonnes = new HashMap<String, Integer>();
+		// Stockage des indices des colonnes
+		for (int i = 0; i < row.getLastCellNum(); i++) {
+			colonnes.put(row.getCell(i).toString(), i);
+
+		}
+
+		while (rows.hasNext()) {
+			row = (HSSFRow) rows.next();
+			try {
+				contact.put(Support.AFFECTATION,
+						row.getCell(colonnes.get("Affectation")).toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Support.CODE_TAG,
+						row.getCell(colonnes.get("Code TAG")).toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Support.DIAMETRE_ADMISSIBLE,
+						row.getCell(colonnes.get("Diamètre admissible")).toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Support.NUMERO_SERIE,
+						row.getCell(colonnes.get("Numéro de série du support")).toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Support.TYPE_SUPPORT,
+						row.getCell(colonnes.get("Type de support")).toString());
+			} catch (NullPointerException e) {
+			}
+
+			// Ajout de l'entité
+			getContentResolver().insert(urlSupport, contact);
+			// Ecrasement de ses données pour passer à la suivante
+			contact.clear();
+
+		} 
+		
+		
+		//Genération des numéros de chariot
+		 contact = new ContentValues();
+		String localisations[] = new String[] { "A","B","C","D","E", "F", "G","H","I","J"};
+		for (int i=0; i< localisations.length ; i++) {
+			for (int j=1; j<=7; j++) {
+				contact.put(Chariot.FACE_CHARIOT, "Face 1");
+				contact.put(Chariot.NUMERO_CHARIOT, "Chariot 1");
+				contact.put(Chariot.POSITION_NUMERO, "CH1-1-"+ localisations[i] + j);
+				getContentResolver().insert(urlChariot, contact);
+				contact.clear();
+				
+				contact.put(Chariot.FACE_CHARIOT, "Face 2");
+				contact.put(Chariot.NUMERO_CHARIOT, "Chariot 1");
+				contact.put(Chariot.POSITION_NUMERO, "CH1-1-"+ localisations[i] + j);
+				getContentResolver().insert(urlChariot, contact);
+				contact.clear();
+				
+				contact.put(Chariot.FACE_CHARIOT, "Face 1");
+				contact.put(Chariot.NUMERO_CHARIOT, "Chariot 2");
+				contact.put(Chariot.POSITION_NUMERO, "CH1-1-"+ localisations[i] + j);
+				getContentResolver().insert(urlChariot, contact);
+				contact.clear();
+				
+				contact.put(Chariot.FACE_CHARIOT, "Face 2");
+				contact.put(Chariot.NUMERO_CHARIOT, "Chariot 2");
+				contact.put(Chariot.POSITION_NUMERO, "CH1-1-"+ localisations[i] + j);
+				getContentResolver().insert(urlChariot, contact);
+				contact.clear();
+			}
+		}
 
 	}
 
@@ -935,207 +1159,302 @@ public class MainMenuPreparateur extends Activity {
 		Iterator rows = sheet.rowIterator();
 		// On ne rentre pas la première ligne qui ne comporte que les entêtes
 		// des colonnes
-		rows.next();
+		HSSFRow row = (HSSFRow) rows.next();
+		HashMap<String, Integer> colonnes = new HashMap<String, Integer>();
+
+		// Stockage des indices des colonnes
+		for (int i = 0; i < row.getLastCellNum(); i++) {
+			colonnes.put(row.getCell(i).toString(), i);
+
+		}
 
 		ContentValues contact = new ContentValues();
 		// Parcours des lignes
 		while (rows.hasNext()) {
-			HSSFRow row = (HSSFRow) rows.next();
+			row = (HSSFRow) rows.next();
 			// Ajout des données correspondantes
 			// Les nombreux try/catch permettent d'éviter des
 			// NullPointerException causées par les cellules vides
-			contact.put(Fil.DESIGNATION_PRODUIT, row.getCell(0).toString());
-			contact.put(Fil.REFERENCE_FICHIER_SOURCE, row.getCell(1).toString());
-			contact.put(Fil.NUMERO_REVISION_HARNAIS,
-					Float.parseFloat(row.getCell(2).toString()));
-			contact.put(Fil.NUMERO_HARNAIS_FAISCEAUX,
-					Float.parseFloat(row.getCell(3).toString()));
-			contact.put(Fil.REFERENCE_FABRICANT1, row.getCell(4).toString());
-			contact.put(Fil.STANDARD,
-					Float.parseFloat(row.getCell(5).toString()));
-			contact.put(Fil.ZONE_ACTIVITE, row.getCell(6).toString());
-			contact.put(Fil.LOCALISATION1, row.getCell(7).toString());
-			contact.put(Fil.LOCALISATION2,
-					Float.parseFloat((row.getCell(8).toString())));
+			contact.put(Fil.DESIGNATION_PRODUIT,
+					row.getCell(colonnes.get("Designation_produit (1)"))
+							.toString());
+			contact.put(Fil.REFERENCE_FICHIER_SOURCE,
+					row.getCell(colonnes.get("Reference_fichier_source (2)"))
+							.toString());
+			contact.put(Fil.NUMERO_REVISION_HARNAIS, Float.parseFloat(row
+					.getCell(colonnes.get("Numero_revision_harnais (4)"))
+					.toString()));
+			contact.put(Fil.NUMERO_HARNAIS_FAISCEAUX, Float.parseFloat(row
+					.getCell(colonnes.get("Numero_harnais_faisceaux (6)"))
+					.toString()));
+			contact.put(Fil.REFERENCE_FABRICANT1,
+					row.getCell(colonnes.get("Reference_fabricant (17)"))
+							.toString());
+			contact.put(Fil.STANDARD, Float.parseFloat(row.getCell(
+					colonnes.get("Standard (21)")).toString()));
+			contact.put(Fil.ZONE_ACTIVITE,
+					row.getCell(colonnes.get("Zone-activité (67)")).toString());
+			contact.put(Fil.LOCALISATION1,
+					row.getCell(colonnes.get("Localisation_1 (68)")).toString());
+			contact.put(Fil.LOCALISATION2, Float.parseFloat((row
+					.getCell(colonnes.get("Localisation_2 (69)")).toString())));
 			try {
-				contact.put(Fil.NUMERO_ROUTE, row.getCell(9).toString());
+				contact.put(Fil.NUMERO_ROUTE,
+						row.getCell(colonnes.get("Numero_route (62)"))
+								.toString());
 			} catch (Exception e) {
 			}
-			contact.put(Fil.ETAT_LIAISON_FIL, row.getCell(10).toString());
-			contact.put(Fil.NUMERO_REVISION_FIL,
-					Float.parseFloat(row.getCell(11).toString()));
+			contact.put(Fil.ETAT_LIAISON_FIL,
+					row.getCell(colonnes.get("Etat_liaison_fil (3)"))
+							.toString());
+			contact.put(Fil.NUMERO_REVISION_FIL, Float.parseFloat(row.getCell(
+					colonnes.get("Numero_revision_fil (5)")).toString()));
 			try {
-				if (row.getCell(12).toString().equals("X")) {
+				if (row.getCell(colonnes.get("Fil_sensible (66)")).toString()
+						.equals("X")) {
 					contact.put(Fil.FIL_SENSIBLE, true);
 				}
 			} catch (Exception e) {
 				contact.put(Fil.FIL_SENSIBLE, false);
 			}
 			try {
-				contact.put(Fil.NUMERO_FIL_CABLE, row.getCell(13).toString());
+				contact.put(Fil.NUMERO_FIL_CABLE,
+						row.getCell(colonnes.get("Numero_fil_cable (13)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.NORME_CABLE, row.getCell(14).toString());
+				contact.put(Fil.NORME_CABLE,
+						row.getCell(colonnes.get("Norme_cable (72)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.TYPE_FIL_CABLE, row.getCell(16).toString());
+				contact.put(Fil.TYPE_FIL_CABLE,
+						row.getCell(colonnes.get("Type_fil_cable (15)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.LONGUEUR_FIL_CABLE,
-						Float.parseFloat(row.getCell(17).toString()));
+				contact.put(Fil.LONGUEUR_FIL_CABLE, Float.parseFloat(row
+						.getCell(colonnes.get("Longueur_fil_cable (16)"))
+						.toString()));
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.NUMERO_FIL_DANS_CABLE, row.getCell(18)
-						.toString());
+				contact.put(Fil.NUMERO_FIL_DANS_CABLE,
+						row.getCell(colonnes.get("Numero_fil_dans_cable (54)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.COULEUR_FIL, row.getCell(19).toString());
+				contact.put(Fil.COULEUR_FIL,
+						row.getCell(colonnes.get("Couleur_fil (34)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.ORDRE_REALISATION, row.getCell(21).toString());
+				contact.put(Fil.ORDRE_REALISATION,
+						row.getCell(colonnes.get("Ordre de réalisation (24)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.REPERE_ELECTRIQUE_TENANT, row.getCell(22)
-						.toString());
+				contact.put(
+						Fil.REPERE_ELECTRIQUE_TENANT,
+						row.getCell(
+								colonnes.get("Repère electrique tenant (8)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.NUMERO_COMPOSANT_TENANT, row.getCell(23)
-						.toString());
+				contact.put(
+						Fil.NUMERO_COMPOSANT_TENANT,
+						row.getCell(
+								colonnes.get("Numéro de composant tenant (9)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.NUMERO_BORNE_TENANT,
-						Float.parseFloat(row.getCell(24).toString()));
+				contact.put(Fil.NUMERO_BORNE_TENANT, Float.parseFloat(row
+						.getCell(colonnes.get("Numero_borne_tenant (43)"))
+						.toString()));
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.TYPE_RACCORDEMENT_TENANT, row.getCell(25)
-						.toString());
+				contact.put(
+						Fil.TYPE_RACCORDEMENT_TENANT,
+						row.getCell(
+								colonnes.get("Type_raccordement_tenant (45)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.REPRISE_BLINDAGE, row.getCell(26).toString());
+				contact.put(Fil.REPRISE_BLINDAGE,
+						row.getCell(colonnes.get("Reprise_blindage (37)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.SANS_REPRISE_BLINDAGE, row.getCell(27)
-						.toString());
+				contact.put(Fil.SANS_REPRISE_BLINDAGE,
+						row.getCell(colonnes.get("Sans_Reprise_blindage (83)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.REPERE_ELECTRIQUE_ABOUTISSANT, row.getCell(28)
-						.toString());
+				contact.put(
+						Fil.REPERE_ELECTRIQUE_ABOUTISSANT,
+						row.getCell(
+								colonnes.get("Repère electrique aboutissant (11)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.NUMERO_COMPOSANT_ABOUTISSANT, row.getCell(29)
-						.toString());
+				contact.put(
+						Fil.NUMERO_COMPOSANT_ABOUTISSANT,
+						row.getCell(
+								colonnes.get("Numéro de composant aboutissant (12)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.NUMERO_BORNE_ABOUTISSANT, row.getCell(30)
-						.toString());
+				contact.put(
+						Fil.NUMERO_BORNE_ABOUTISSANT,
+						row.getCell(
+								colonnes.get("Numero_Borne_aboutissant (48)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.TYPE_RACCORDEMENT_ABOUTISSANT, row.getCell(31)
-						.toString());
+				contact.put(
+						Fil.TYPE_RACCORDEMENT_ABOUTISSANT,
+						row.getCell(
+								colonnes.get("Type_raccordement_aboutissant (50)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.TYPE_ELEMENT_RACCORDE, row.getCell(32)
-						.toString());
+				contact.put(Fil.TYPE_ELEMENT_RACCORDE,
+						row.getCell(colonnes.get("Type_element_raccorde (46)"))
+								.toString());
 			} catch (Exception e) {
 			}
 
 			try {
-				contact.put(Fil.REFERENCE_FABRICANT2, row.getCell(33)
-						.toString());
+				contact.put(Fil.REFERENCE_FABRICANT2,
+						row.getCell(colonnes.get("Reference_fabricant (18)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.REFERENCE_INTERNE, row.getCell(34).toString());
+				contact.put(Fil.REFERENCE_INTERNE,
+						row.getCell(colonnes.get("Reference_interne (19)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.FICHE_INSTRUCTION, row.getCell(35).toString());
+				contact.put(Fil.FICHE_INSTRUCTION,
+						row.getCell(colonnes.get("Fiche_instruction (25)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.REFERENCE_CONFIGURATION_SERTISSAGE, row
-						.getCell(36).toString());
+				contact.put(
+						Fil.REFERENCE_CONFIGURATION_SERTISSAGE,
+						row.getCell(
+								colonnes.get("reference_configuration_sertissage (26)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.ACCESSOIRE_COMPOSANT1, row.getCell(37)
-						.toString());
+				contact.put(
+						Fil.ACCESSOIRE_COMPOSANT1,
+						row.getCell(colonnes.get("Accessoire_composant_1 (42)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.ACCESSOIRE_COMPOSANT2, row.getCell(38)
-						.toString());
+				contact.put(
+						Fil.ACCESSOIRE_COMPOSANT2,
+						row.getCell(colonnes.get("Accessoire_composant_2 (44)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.REFERENCE_OUTIL_TENANT, row.getCell(39)
-						.toString());
+				contact.put(
+						Fil.REFERENCE_OUTIL_TENANT,
+						row.getCell(colonnes.get("Référence_outil_tenant (27)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.REFERENCE_ACCESSOIRE_OUTIL_TENANT,
-						row.getCell(40).toString());
+				contact.put(
+						Fil.REFERENCE_ACCESSOIRE_OUTIL_TENANT,
+						row.getCell(
+								colonnes.get("Référence_accessoire_outil_tenant (28)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.REGLAGE_OUTIL_TENANT, row.getCell(41)
-						.toString());
+				contact.put(Fil.REGLAGE_OUTIL_TENANT,
+						row.getCell(colonnes.get("Reglage_outil_tenant (29)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.REFERENCE_OUTIL_ABOUTISSANT, row.getCell(42)
-						.toString());
+				contact.put(
+						Fil.REFERENCE_OUTIL_ABOUTISSANT,
+						row.getCell(
+								colonnes.get("Référence_outil_aboutissant (30)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT, row
-						.getCell(43).toString());
+				contact.put(
+						Fil.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT,
+						row.getCell(
+								colonnes.get("Référence_accessoire_outil_aboutissant (31)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.REGLAGE_OUTIL_ABOUTISSANT, row.getCell(44)
-						.toString());
+				contact.put(
+						Fil.REGLAGE_OUTIL_ABOUTISSANT,
+						row.getCell(
+								colonnes.get("Reglage_outil_aboutissant (32)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				if (row.getCell(45).toString().equals("X")) {
+				if (row.getCell(colonnes.get("Obturateur (39)")).toString()
+						.equals("X")) {
 					contact.put(Fil.OBTURATEUR, true);
 				}
 			} catch (Exception e) {
 				contact.put(Fil.OBTURATEUR, false);
 			}
 			try {
-				if (row.getCell(46).toString().equals("X")) {
+				if (row.getCell(colonnes.get("Faux-contact (40)")).toString()
+						.equals("X")) {
 					contact.put(Fil.FAUX_CONTACT, true);
 				}
 			} catch (Exception e) {
 				contact.put(Fil.FAUX_CONTACT, false);
 			}
 			try {
-				contact.put(Fil.ETAT_FINALISATION_PRISE, row.getCell(47)
-						.toString());
+				contact.put(
+						Fil.ETAT_FINALISATION_PRISE,
+						row.getCell(
+								colonnes.get("Etat_finalisation_prise (64)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.ORIENTATION_RACCORD_ARRIERE, row.getCell(48)
-						.toString());
+				contact.put(
+						Fil.ORIENTATION_RACCORD_ARRIERE,
+						row.getCell(
+								colonnes.get("Orientation_raccord_arriere (65)"))
+								.toString());
 			} catch (Exception e) {
 			}
 
@@ -1165,63 +1484,98 @@ public class MainMenuPreparateur extends Activity {
 
 		// Iteration sur chacune des lignes du fichier
 		Iterator rows = sheet.rowIterator();
-		// On ne rentre pas la première ligne qui ne comporte que les entêtes
-		// des colonnes
-		rows.next();
+		HSSFRow row = (HSSFRow) rows.next();
+		HashMap<String, Integer> colonnes = new HashMap<String, Integer>();
 
+		// Stockage des indices des colonnes
+		for (int i = 0; i < row.getLastCellNum(); i++) {
+			colonnes.put(row.getCell(i).toString(), i);
+
+		}
 		ContentValues contact = new ContentValues();
 		// Parcours des lignes
 		while (rows.hasNext()) {
-			HSSFRow row = (HSSFRow) rows.next();
+			row = (HSSFRow) rows.next();
 			// Ajout des données correspondantes
 			// Les nombreux try/catch permettent d'éviter des
 			// NullPointerException causées par les cellules vides
-			contact.put(Cable.DESIGNATION_PRODUIT, row.getCell(0).toString());
-			contact.put(Cable.REFERENCE_FICHIER_SOURCE, row.getCell(1)
-					.toString());
-			contact.put(Cable.NUMERO_REVISION_HARNAIS,
-					Float.parseFloat(row.getCell(2).toString()));
-			contact.put(Cable.NUMERO_HARNAIS_FAISCEAUX,
-					Float.parseFloat(row.getCell(3).toString()));
-			contact.put(Cable.REFERENCE_FABRICANT1, row.getCell(4).toString());
-			contact.put(Cable.STANDARD,
-					Float.parseFloat(row.getCell(5).toString()));
+			contact.put(Cable.DESIGNATION_PRODUIT,
+					row.getCell(colonnes.get("Designation_produit (1)"))
+							.toString());
+			contact.put(Cable.REFERENCE_FICHIER_SOURCE,
+					row.getCell(colonnes.get("Reference_fichier_source (2)"))
+							.toString());
+			contact.put(Cable.NUMERO_REVISION_HARNAIS, Float.parseFloat(row
+					.getCell(colonnes.get("Numero_revision_harnais (4)"))
+					.toString()));
+			contact.put(Cable.NUMERO_HARNAIS_FAISCEAUX, Float.parseFloat(row
+					.getCell(colonnes.get("Numero_harnais_faisceaux (6)"))
+					.toString()));
+			contact.put(Cable.REFERENCE_FABRICANT1,
+					row.getCell(colonnes.get("Reference_fabricant (17)"))
+							.toString());
+			contact.put(Cable.STANDARD, Float.parseFloat(row.getCell(
+					colonnes.get("Standard (21)")).toString()));
 			try {
-				contact.put(Cable.EQUIPEMENT, row.getCell(6).toString());
+				contact.put(Cable.EQUIPEMENT,
+						row.getCell(colonnes.get("Equipement (7)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Cable.REPERE_ELECTRIQUE, row.getCell(7).toString());
+				contact.put(Cable.REPERE_ELECTRIQUE,
+						row.getCell(colonnes.get("Repère_electrique (8 & 11)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Cable.NUMERO_COMPOSANT, row.getCell(8).toString());
+				contact.put(Cable.NUMERO_COMPOSANT,
+						row.getCell(colonnes.get("Numéro_composant (9 & 12)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Cable.NORME_CABLE, row.getCell(9).toString());
+				contact.put(Cable.NORME_CABLE,
+						row.getCell(colonnes.get("Norme_cable (72)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Cable.ACCESSOIRE_CABLAGE, row.getCell(10)
-						.toString());
+				contact.put(
+						Cable.ACCESSOIRE_CABLAGE,
+						row.getCell(
+								colonnes.get("Accessoire_cablage (49 & 63 & 81 & 82)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Cable.ACCESSOIRE_COMPOSANT, row.getCell(11)
-						.toString());
+				contact.put(
+						Cable.ACCESSOIRE_COMPOSANT,
+						row.getCell(
+								colonnes.get("Accessoire_composant (37 & 42 & 44)"))
+								.toString());
 			} catch (Exception e) {
 			}
-			contact.put(Cable.DESIGNATION_COMPOSANT, row.getCell(12).toString());
-			contact.put(Cable.FAMILLE_PRODUIT, row.getCell(13).toString());
-			contact.put(Cable.REFERENCE_FABRICANT2, row.getCell(14).toString());
-			contact.put(Cable.FOURNISSEUR_FABRICANT, row.getCell(15).toString());
+			contact.put(Cable.DESIGNATION_COMPOSANT,
+					row.getCell(colonnes.get("Designation_composant (80)"))
+							.toString());
+			contact.put(Cable.FAMILLE_PRODUIT,
+					row.getCell(colonnes.get("Famille_produit (71)"))
+							.toString());
+			contact.put(Cable.REFERENCE_FABRICANT2,
+					row.getCell(colonnes.get(" Reference_fabricant (18)"))
+							.toString());
+			contact.put(Cable.FOURNISSEUR_FABRICANT,
+					row.getCell(colonnes.get("Fournisseur_Fabricant (73)"))
+							.toString());
 			try {
-				contact.put(Cable.REFERENCE_INTERNE, row.getCell(16).toString());
+				contact.put(Cable.REFERENCE_INTERNE,
+						row.getCell(colonnes.get("Reference_interne (19)"))
+								.toString());
 			} catch (Exception e) {
 			}
 			try {
-				if (row.getCell(17).toString().equals("X")) {
+				if (row.getCell(colonnes.get("Reference_imposee (76)"))
+						.toString().equals("X")) {
 					contact.put(Cable.REFERENCE_IMPOSEE, true);
 				}
 
@@ -1229,11 +1583,14 @@ public class MainMenuPreparateur extends Activity {
 				contact.put(Cable.REFERENCE_IMPOSEE, false);
 			}
 			try {
-				contact.put(Cable.QUANTITE,
-						Float.parseFloat(row.getCell(18).toString()));
+				contact.put(
+						Cable.QUANTITE,
+						Float.parseFloat(row.getCell(
+								colonnes.get("Quantite (70 & 74)")).toString()));
 			} catch (Exception e) {
 			}
-			contact.put(Cable.UNITE, row.getCell(19).toString());
+			contact.put(Cable.UNITE, row.getCell(colonnes.get("Unite (78)"))
+					.toString());
 
 			// Ajout de l'entité
 			getContentResolver().insert(urlNomenclature, contact);
@@ -1265,59 +1622,28 @@ public class MainMenuPreparateur extends Activity {
 		HSSFWorkbook wb = new HSSFWorkbook();
 		HSSFSheet sheet = wb.createSheet("Débit");
 
-		int columnIndex;
+		int columnIndex = 0;
+		
+		// Génération des en têtes 
+		HSSFRow row = sheet.createRow(0);
+		for (int i=0; i<colKitGen1.length; i++) {
+			row.createCell((short) columnIndex++)
+			.setCellValue(colKitGen1[i]);
+		}
+		
+		
 		cursor = cr.query(urlKitting, colKitGen1, null, null, Kitting._id);
 		if (cursor.moveToFirst()) {
 			do {
 				columnIndex = 0;
-				HSSFRow row = sheet.createRow((short) cursor.getPosition());
-				row.createCell((short) columnIndex++)
-						.setCellValue(
-								cursor.getString(cursor
-										.getColumnIndex(Kitting.NUMERO_POSITION_CHARIOT)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(Kitting.NUMERO_COMPOSANT)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(Kitting.REPERE_ELECTRIQUE)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(Kitting.ORDRE_REALISATION)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(Kitting.ETAT_LIAISON_FIL)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(Kitting.NUMERO_FIL_CABLE)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(Kitting.NUMERO_REVISION_FIL)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(Kitting.REFERENCE_INTERNE)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(Kitting.TYPE_FIL_CABLE)));
-				row.createCell((short) columnIndex++)
-						.setCellValue(
-								cursor.getString(cursor
-										.getColumnIndex(Kitting.DESIGNATION_COMPOSANT)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(Kitting.LONGUEUR_FIL_CABLE)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor.getColumnIndex(Kitting.UNITE)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(Kitting.REFERENCE_FABRICANT1)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(Kitting.REFERENCE_FABRICANT2)));
-				row.createCell((short) columnIndex++)
-						.setCellValue(
-								cursor.getString(cursor
-										.getColumnIndex(Kitting.FOURNISSEUR_FABRICANT)));
+				row = sheet.createRow((short) cursor.getPosition()+1);
+				for (int i=0; i<colKitGen1.length; i++) {
+					row.createCell((short) columnIndex++)
+					.setCellValue(cursor.getString(cursor
+							.getColumnIndex(colKitGen1[i])));
+				}
+				
+
 			} while (cursor.moveToNext());
 
 		} else {
@@ -1327,39 +1653,27 @@ public class MainMenuPreparateur extends Activity {
 
 		sheet = wb.createSheet("Regroupement");
 		wb.getSheetAt(1);
+		
+		columnIndex = 0;
+		
+		// Génération des en têtes 
+		row = sheet.createRow(0);
+		for (int i=0; i<colKitGen2.length; i++) {
+			row.createCell((short) columnIndex++)
+			.setCellValue(colKitGen2[i]);
+		}
+		
 		cursor = cr.query(urlKitting, colKitGen2, null, null, Kitting._id);
 		if (cursor.moveToFirst()) {
 			do {
 				columnIndex = 0;
-				HSSFRow row = sheet.createRow((short) cursor.getPosition());
-				row.createCell((short) columnIndex++)
-						.setCellValue(
-								cursor.getString(cursor
-										.getColumnIndex(Kitting.NUMERO_POSITION_CHARIOT)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(Kitting.NUMERO_COMPOSANT)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(Kitting.REPERE_ELECTRIQUE)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(Kitting.ORDRE_REALISATION)));
-
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(Kitting.NUMERO_FIL_CABLE)));
-
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(Kitting.REFERENCE_INTERNE)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(Kitting.TYPE_FIL_CABLE)));
-
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(Kitting.REFERENCE_FABRICANT2)));
+				row = sheet.createRow((short) cursor.getPosition()+1);
+				for (int i=0; i<colKitGen2.length; i++) {
+					row.createCell((short) columnIndex++)
+					.setCellValue(cursor.getString(cursor
+							.getColumnIndex(colKitGen2[i])));
+				}
+				
 
 			} while (cursor.moveToNext());
 
@@ -1400,43 +1714,26 @@ public class MainMenuPreparateur extends Activity {
 		HSSFWorkbook wb = new HSSFWorkbook();
 		HSSFSheet sheet = wb.createSheet("Débit");
 
-		int columnIndex;
+int columnIndex = 0;
+		
+		// Génération des en têtes 
+		HSSFRow row = sheet.createRow(0);
+		for (int i=0; i<colBOMGen1.length; i++) {
+			row.createCell((short) columnIndex++)
+			.setCellValue(colBOMGen1[i]);
+		}
+
 		cursor = cr.query(urlBOM, colBOMGen1, null, null, BOM._id);
 		if (cursor.moveToFirst()) {
 			do {
 				columnIndex = 0;
-				HSSFRow row = sheet.createRow((short) cursor.getPosition());
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(BOM.NUMERO_COMPOSANT)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(BOM.REPERE_ELECTRIQUE_TENANT)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(BOM.NUMERO_POSITION_CHARIOT)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(BOM.ORDRE_REALISATION)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(BOM.REFERENCE_IMPOSEE)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor.getColumnIndex(BOM.UNITE)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(BOM.FAMILLE_PRODUIT)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor.getColumnIndex(BOM.QUANTITE)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(BOM.REFERENCE_FABRICANT2)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(BOM.REFERENCE_INTERNE)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(BOM.FOURNISSEUR_FABRICANT)));
+				row = sheet.createRow((short) cursor.getPosition()+1);
+				for (int i=0; i<colBOMGen1.length; i++) {
+					row.createCell((short) columnIndex++)
+					.setCellValue(cursor.getString(cursor
+							.getColumnIndex(colBOMGen1[i])));
+				}
+				
 
 			} while (cursor.moveToNext());
 
@@ -1447,31 +1744,27 @@ public class MainMenuPreparateur extends Activity {
 
 		sheet = wb.createSheet("Regroupement");
 		wb.getSheetAt(1);
+		
+		columnIndex = 0;
+		
+		// Génération des en têtes 
+		row = sheet.createRow(0);
+		for (int i=0; i<colBOMGen2.length; i++) {
+			row.createCell((short) columnIndex++)
+			.setCellValue(colBOMGen2[i]);
+		}
+		
 		cursor = cr.query(urlBOM, colBOMGen2, null, null, BOM._id);
 		if (cursor.moveToFirst()) {
 			do {
 				columnIndex = 0;
-				HSSFRow row = sheet.createRow((short) cursor.getPosition());
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(BOM.NUMERO_POSITION_CHARIOT)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(BOM.NUMERO_COMPOSANT)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(BOM.REPERE_ELECTRIQUE_TENANT)));
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(BOM.ORDRE_REALISATION)));
-
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(BOM.REFERENCE_INTERNE)));
-
-				row.createCell((short) columnIndex++).setCellValue(
-						cursor.getString(cursor
-								.getColumnIndex(BOM.REFERENCE_FABRICANT2)));
+				row = sheet.createRow((short) cursor.getPosition()+1);
+				for (int i=0; i<colBOMGen2.length; i++) {
+					row.createCell((short) columnIndex++)
+					.setCellValue(cursor.getString(cursor
+							.getColumnIndex(colBOMGen2[i])));
+				}
+				
 
 			} while (cursor.moveToNext());
 

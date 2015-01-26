@@ -11,21 +11,22 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.inodex.inoprod.business.Outillage.Outil;
+import com.inodex.inoprod.business.TableSupport.Support;
 
-public class OutillageProvider extends ContentProvider {
+public class SupportProvider extends ContentProvider {
 
-	DatabaseOutillage dbHelper;
+	DatabaseSupport dbHelper;
 	public static final Uri CONTENT_URI = Uri
-			.parse("content://com.inodex.inoprod.business.outillage");
+			.parse("content://com.inodex.inoprod.business.support");
 
 	/** Nom de la base de données */
-	public static final String CONTENT_PROVIDER_DB_NAME = "outillage.db";
+	public static final String CONTENT_PROVIDER_DB_NAME = "support.db";
 	/** Version de la base de données */
 	public static final int CONTENT_PROVIDER_DB_VERSION = 1;
 	/** Nom de la table de la base de données */
-	public static final String CONTENT_PROVIDER_TABLE_NAME = "outil";
+	public static final String CONTENT_PROVIDER_TABLE_NAME = "support";
 	/** Le Mime du content Provider */
-	public static final String CONTENT_PROVIDER_MIME = "vnd.android.cursor.item/vnd.com.inodex.inoprod.business.outil";
+	public static final String CONTENT_PROVIDER_MIME = "vnd.android.cursor.item/vnd.com.inodex.inoprod.business.support";
 
 	/**
 	 * Classe interne comprenant la base de données SQLite qui sera utilisée
@@ -33,7 +34,7 @@ public class OutillageProvider extends ContentProvider {
 	 * @author Arnaud Payet
 	 * 
 	 */
-	private static class DatabaseOutillage extends SQLiteOpenHelper {
+	private static class DatabaseSupport extends SQLiteOpenHelper {
 
 		/**
 		 * Création à partir du Context, du Nom de la table et du numéro de
@@ -41,9 +42,9 @@ public class OutillageProvider extends ContentProvider {
 		 * 
 		 * @param context
 		 */
-		DatabaseOutillage(Context context) {
-			super(context, OutillageProvider.CONTENT_PROVIDER_DB_NAME, null,
-					OutillageProvider.CONTENT_PROVIDER_DB_VERSION);
+		DatabaseSupport(Context context) {
+			super(context, SupportProvider.CONTENT_PROVIDER_DB_NAME, null,
+					SupportProvider.CONTENT_PROVIDER_DB_VERSION);
 		}
 
 		/**
@@ -55,18 +56,12 @@ public class OutillageProvider extends ContentProvider {
 		@Override
 		public void onCreate(SQLiteDatabase db) {
 			db.execSQL("CREATE TABLE "
-					+ OutillageProvider.CONTENT_PROVIDER_TABLE_NAME + " ("
-					+ Outil._id + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-					+ Outil.AFFECTATION + " STRING," + Outil.CODE_BARRE
-					+ " STRING," + Outil.COMMENTAIRES + " STRING,"
-					+ Outil.CONSTRUCTEUR + " STRING,"
-					+ Outil.DERNIERE_OPERATION + " STRING,"
-					+ Outil.IDENTIFICATION + " STRING," + Outil.INTITULE
-					+ " STRING," + Outil.NUMERO_SERIE + " STRING,"
-					+ Outil.PERIODE + " FLOAT," + Outil.PROCHAINE_OPERATION
-					+ " STRING," + Outil.PROPRIETAIRE + " STRING,"
-					+ Outil.SECTION + " STRING," + Outil.TYPE + " STRING,"
-					+ Outil.UNITE + " STRING" + ");");
+					+ SupportProvider.CONTENT_PROVIDER_TABLE_NAME + " ("
+					+ Support._id + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+					+ Support.AFFECTATION + " STRING," + Support.CODE_TAG
+					+ " STRING," + Support.DIAMETRE_ADMISSIBLE + " STRING,"
+					+ Support.NUMERO_SERIE + " STRING," + Support.TYPE_SUPPORT
+					+ " STRING" + ");");
 		}
 
 		/**
@@ -76,7 +71,7 @@ public class OutillageProvider extends ContentProvider {
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 			db.execSQL("DROP TABLE IF EXISTS "
-					+ OutillageProvider.CONTENT_PROVIDER_TABLE_NAME);
+					+ SupportProvider.CONTENT_PROVIDER_TABLE_NAME);
 			onCreate(db);
 
 		}
@@ -85,7 +80,7 @@ public class OutillageProvider extends ContentProvider {
 
 	@Override
 	public boolean onCreate() {
-		dbHelper = new DatabaseOutillage(getContext());
+		dbHelper = new DatabaseSupport(getContext());
 		return true;
 	}
 
@@ -96,18 +91,18 @@ public class OutillageProvider extends ContentProvider {
 		SQLiteDatabase db = dbHelper.getReadableDatabase();
 		if (id < 0) {
 			return db
-					.query(OutillageProvider.CONTENT_PROVIDER_TABLE_NAME,
+					.query(SupportProvider.CONTENT_PROVIDER_TABLE_NAME,
 							projection, selection, selectionArgs, null, null,
 							sortOrder);
 		} else {
-			return db.query(OutillageProvider.CONTENT_PROVIDER_TABLE_NAME,
-					projection, Outil._id + "=" + id, null, null, null, null);
+			return db.query(SupportProvider.CONTENT_PROVIDER_TABLE_NAME,
+					projection, Support._id + "=" + id, null, null, null, null);
 		}
 	}
 
 	@Override
 	public String getType(Uri uri) {
-		return OutillageProvider.CONTENT_PROVIDER_MIME;
+		return SupportProvider.CONTENT_PROVIDER_MIME;
 	}
 
 	@Override
@@ -117,13 +112,13 @@ public class OutillageProvider extends ContentProvider {
 
 			long id = db
 					.insertOrThrow(
-							OutillageProvider.CONTENT_PROVIDER_TABLE_NAME,
+							SupportProvider.CONTENT_PROVIDER_TABLE_NAME,
 							null, values);
 
 			if (id == -1) {
 				throw new RuntimeException(String.format(
 						"%s : Failed to insert [%s] for unknown reasons.",
-						"OutillageProvider", values, uri));
+						"SupportProvider", values, uri));
 			} else {
 				return ContentUris.withAppendedId(uri, id);
 			}
@@ -139,11 +134,11 @@ public class OutillageProvider extends ContentProvider {
 		SQLiteDatabase db = dbHelper.getWritableDatabase();
 		try {
 			if (id < 0)
-				return db.delete(OutillageProvider.CONTENT_PROVIDER_TABLE_NAME,
+				return db.delete(SupportProvider.CONTENT_PROVIDER_TABLE_NAME,
 						selection, selectionArgs);
 			else
-				return db.delete(OutillageProvider.CONTENT_PROVIDER_TABLE_NAME,
-						Outil._id + "=" + id, selectionArgs);
+				return db.delete(SupportProvider.CONTENT_PROVIDER_TABLE_NAME,
+						Support._id + "=" + id, selectionArgs);
 		} finally {
 			db.close();
 		}
@@ -157,27 +152,29 @@ public class OutillageProvider extends ContentProvider {
 
 		try {
 			if (id < 0)
-				return db.update(OutillageProvider.CONTENT_PROVIDER_TABLE_NAME,
+				return db.update(SupportProvider.CONTENT_PROVIDER_TABLE_NAME,
 						values, selection, selectionArgs);
 			else
-				return db.update(OutillageProvider.CONTENT_PROVIDER_TABLE_NAME,
-						values, Outil._id + "=" + id, null);
+				return db.update(SupportProvider.CONTENT_PROVIDER_TABLE_NAME,
+						values, Support._id + "=" + id, null);
 		} finally {
 			db.close();
 		}
 	}
-
+	
+	
 	private long getId(Uri uri) {
 		String lastPathSegment = uri.getLastPathSegment();
 		if (lastPathSegment != null) {
 			try {
 				return Long.parseLong(lastPathSegment);
 			} catch (NumberFormatException e) {
-				Log.e("OutillageProvider", "Number Format Exception : " + e);
+				Log.e("SupportProvider", "Number Format Exception : " + e);
 			}
 		}
 		return -1;
 
 	}
+
 
 }

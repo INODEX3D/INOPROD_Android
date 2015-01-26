@@ -16,8 +16,8 @@
     <uses-feature
         android:name="android.hardware.camera.barcode"
         android:required="false" />
-    
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -71,6 +71,12 @@
         <provider
             android:name=".business.OutillageProvider"
             android:authorities="com.inodex.inoprod.business.outillage" />
+         <provider
+            android:name=".business.SupportProvider"
+            android:authorities="com.inodex.inoprod.business.support" />
+         <provider
+            android:name=".business.ChariotProvider"
+            android:authorities="com.inodex.inoprod.business.chariots" />
         <provider
             android:name=".business.SequencementProvider"
             android:authorities="com.inodex.inoprod.business.sequencement" />
@@ -140,8 +146,64 @@
             android:label="@string/title_activity_main_menu_preparateur" >
         </activity>
         <activity
-            android:name="com.inodex.inoprod.activities.InfoProduit"
+            android:name=".activities.InfoProduit"
             android:label="@string/title_activity_info_produit" >
+        </activity>
+        <activity
+            android:name=".activities.cableur.FinalisationTa"
+            android:label="@string/title_activity_finalisation_ta" >
+        </activity>
+        <activity
+            android:name=".activities.cableur.TriAboutissantsTa"
+            android:label="@string/title_activity_tri_aboutissants_ta" >
+        </activity>
+        <activity
+            android:name=".activities.cableur.PreparationTa"
+            android:label="@string/title_activity_preparation_ta" >
+        </activity>
+        <activity
+            android:name=".activities.cableur.DenudageSertissageEnfichageTa"
+            android:label="@string/title_activity_denudage_sertissage_enfichage_ta" >
+        </activity>
+        <activity
+            android:name=".activities.cableur.EnfichagesTa"
+            android:label="@string/title_activity_enfichages_ta" >
+        </activity>
+        <activity
+            android:name=".activities.cableur.CheminementTa"
+            android:label="@string/title_activity_cheminement_ta" >
+        </activity>
+        <activity
+            android:name=".activities.cableur.PositionnementTaTab"
+            android:label="@string/title_activity_positionnement_ta_tab" >
+        </activity>
+        <activity
+            android:name=".activities.cableur.CheminementFilAFil"
+            android:label="@string/title_activity_cheminement_fil_afil" >
+        </activity>
+        <activity
+            android:name=".activities.cableur.Frettage"
+            android:label="@string/title_activity_frettage" >
+        </activity>
+        <activity
+            android:name=".activities.cableur.DenudageSertissageManchonsCossesTb"
+            android:label="@string/title_activity_denudage_sertissage_manchons_cosses_tb" >
+        </activity>
+        <activity
+            android:name=".activities.controleur.ControleFinalisationTa"
+            android:label="@string/title_activity_controle_finalisation_ta" >
+        </activity>
+        <activity
+            android:name=".activities.controleur.ControleSertissageTa"
+            android:label="@string/title_activity_controle_sertissage_ta" >
+        </activity>
+        <activity
+            android:name=".activities.controleur.ControleRetentionTa"
+            android:label="@string/title_activity_controle_retention_ta" >
+        </activity>
+        <activity
+            android:name="com.inodex.inoprod.activities.controleur.ControleFinalHarnais"
+            android:label="@string/title_activity_controle_final_harnais" >
         </activity>
     </application>
 
