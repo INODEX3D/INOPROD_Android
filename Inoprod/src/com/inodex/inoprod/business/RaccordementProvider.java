@@ -88,7 +88,8 @@ public class RaccordementProvider extends ContentProvider {
 			+ Raccordement.NUMERO_SECTION_CHEMINEMENT +  " FLOAT,"
 			+ Raccordement.NUMERO_POSITION_CHARIOT +  " STRING,"	
 			+ Raccordement.NUMERO_SERIE_OUTIL +  " FLOAT,"	
-			+ Raccordement.NUMERO_FICHE_JALON +  " STRING"	
+			+ Raccordement.NUMERO_FICHE_JALON +  " STRING,"
+			+ Raccordement.DESIGNATION + " STRING"
 			+ ");");
 			
 			}

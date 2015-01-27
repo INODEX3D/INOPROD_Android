@@ -182,5 +182,6 @@
     <string name="valeurPousse">Valeur de poussée</string>
     <string name="title_activity_controle_final_harnais">ControleFinalHarnais</string>
     <string name="controleFinalHarnais">Contrôle de final harnais</string>
+    <string name="articleServi">Article servi</string>
 
 </resources>

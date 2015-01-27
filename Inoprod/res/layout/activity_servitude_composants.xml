@@ -15,14 +15,6 @@
         android:layout_marginTop="16dp"
         android:text="@string/debitscomposants"
  />
-
-        <ImageButton
-            android:id="@+id/exitButton1"
-            android:layout_width="50dip"
-            android:layout_height="50dip"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:src="@drawable/pause21" />
         
         <ImageButton
             android:id="@+id/infoButton1"
@@ -199,6 +191,16 @@
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
             android:textSize="@dimen/b1" />
+        
+                <TextView
+                    android:id="@+id/textView16"
+                    android:layout_width="40dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:text="@string/articleServi"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="#0000ff"
+                    android:textSize="@dimen/b1" />
 
     </LinearLayout>
 
@@ -213,13 +215,11 @@
     
     <GridView
         android:id="@+id/gridview"
-        android:layout_width="wrap_content"
+        android:layout_width="360dp"
         android:layout_height="wrap_content"
         android:layout_above="@id/imageButton1"
         android:layout_below="@+id/head"
-        android:layout_centerHorizontal="true"
         android:layout_margin="5dp"
-        android:layout_toLeftOf="@id/exitButton1"
         android:layout_toRightOf="@id/infoButton1"
         android:numColumns="1"
         android:stretchMode="columnWidth" >
@@ -230,8 +230,8 @@
             android:id="@+id/imageButton1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignRight="@+id/gridview"
             android:layout_alignTop="@+id/exitButton1"
+            android:layout_toLeftOf="@id/exitButton1"
             android:src="@drawable/pause31" />
 
         <ImageButton
@@ -241,7 +241,24 @@
             android:layout_alignParentBottom="true"
             android:layout_alignTop="@+id/imageButton1"
             android:layout_toLeftOf="@+id/imageButton1"
-            android:layout_toRightOf="@+id/textView1"
             android:src="@drawable/valider9" />
+
+        <ImageButton
+            android:id="@+id/exitButton1"
+            android:layout_width="50dip"
+            android:layout_height="50dip"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:src="@drawable/pause21" />
+
+        <LinearLayout
+            android:id="@+id/layout_servi"
+            android:layout_width="45dp"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/gridview"
+            android:layout_toRightOf="@+id/gridview"
+            android:orientation="vertical" >
+
+        </LinearLayout>
 
 </RelativeLayout>

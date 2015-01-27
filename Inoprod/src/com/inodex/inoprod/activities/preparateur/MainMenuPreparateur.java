@@ -132,7 +132,7 @@ public class MainMenuPreparateur extends Activity {
 			Fil.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT,
 			Fil.REGLAGE_OUTIL_ABOUTISSANT, Fil.OBTURATEUR, Fil.FAUX_CONTACT,
 			Fil.ETAT_FINALISATION_PRISE, Fil.ORIENTATION_RACCORD_ARRIERE,
-			Fil.ZONE_ACTIVITE, Fil._id };
+			Fil.ZONE_ACTIVITE, Fil._id, Fil.DESIGNATION_PRODUIT };
 
 	private String colNom3[] = new String[] { Cable.NORME_CABLE,
 			Cable.EQUIPEMENT, Cable._id, Cable.NUMERO_COMPOSANT,
@@ -173,8 +173,9 @@ public class MainMenuPreparateur extends Activity {
 			Chariot.NUMERO_CHARIOT, Chariot.POSITION_NUMERO };
 
 	private String clause, rep, norme, numeroOperation, num, gamme, rang,
-			rang_1, descriptionOperation, num1, referenceCourante;
-	private int debit, indice, chemin, numeroCheminement;
+			rang_1, descriptionOperation, num1, referenceCourante,
+			numeroChariot, numeroComposant;
+	private int debit, indice, chemin, numeroCheminement, indiceChariot;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -295,6 +296,8 @@ public class MainMenuPreparateur extends Activity {
 
 		ContentValues contact = new ContentValues();
 
+		indiceChariot = 1;
+
 		// Création de la table de cheminement
 		chemin = 1;
 		// Aboutissant
@@ -360,7 +363,194 @@ public class MainMenuPreparateur extends Activity {
 
 		}
 
+		// Création de la table de kitting
+		debit = 1;
+		indice = 1;
+		numeroOperation = "1-000";
+		gamme = "Kitting";
+		rang = "Kitting câble";
+		cursor = cr.query(urlNomenclature, colNom1, null, null, null);
+		if (cursor.moveToFirst()) {
+			do {
+				// clause = new String(Chariot._id + "='" + indiceChariot++ +
+				// "'");
+				cursorB = cr.query(urlChariot, colCha, null, null, Chariot._id
+						+ " ASC");
+				if (cursorB.moveToFirst()) {
+					cursorB.moveToPosition(indiceChariot++);
+					numeroChariot = cursorB.getString(cursorB
+							.getColumnIndex(Chariot.POSITION_NUMERO));
+
+				}
+
+				norme = cursor.getString(cursor
+						.getColumnIndex(Cable.NORME_CABLE));
+				clause = new String(Fil.NORME_CABLE + "='" + norme + "' AND "
+						+ Fil.REPERE_ELECTRIQUE_TENANT + "!='" + "null" + "'"
+						+ " GROUP BY " + Fil.NUMERO_FIL_CABLE);
+
+				rang_1 = "Débit "
+						+ cursor.getString(cursor
+								.getColumnIndex(Cable.DESIGNATION_COMPOSANT))
+						+ " Référence "
+						+ cursor.getString(cursor
+								.getColumnIndex(Cable.REFERENCE_FABRICANT2))
+						+ " ("
+						+ cursor.getString(cursor
+								.getColumnIndex(Cable.REFERENCE_INTERNE)) + ")";
+				cursorA = cr.query(urlProduction, colProd1, clause, null, null);
+				if (cursorA.moveToFirst()) {
+					do {
+						num = numeroOperation + Integer.toString(indice++);
+						contact.put(Kitting.NUMERO_POSITION_CHARIOT,
+								numeroChariot);
+						contact.put(
+								Kitting.DESIGNATION_COMPOSANT,
+								cursor.getString(cursor
+										.getColumnIndex(Cable.DESIGNATION_COMPOSANT)));
+						contact.put(Kitting.NORME_CABLE, cursor
+								.getString(cursor
+										.getColumnIndex(Cable.NORME_CABLE)));
+						contact.put(Kitting.UNITE, cursor.getString(cursor
+								.getColumnIndex(Cable.UNITE)));
+						contact.put(
+								Kitting.REFERENCE_FABRICANT1,
+								cursor.getString(cursor
+										.getColumnIndex(Cable.REFERENCE_FABRICANT1)));
+						contact.put(
+								Kitting.REFERENCE_FABRICANT2,
+								cursor.getString(cursor
+										.getColumnIndex(Cable.REFERENCE_FABRICANT2)));
+						contact.put(
+								Kitting.REFERENCE_INTERNE,
+								cursor.getString(cursor
+										.getColumnIndex(Cable.REFERENCE_INTERNE)));
+						contact.put(
+								Kitting.FOURNISSEUR_FABRICANT,
+								cursor.getString(cursor
+										.getColumnIndex(Cable.FOURNISSEUR_FABRICANT)));
+
+						contact.put(
+								Kitting.REPERE_ELECTRIQUE,
+								cursorA.getString(cursorA
+										.getColumnIndex(Fil.REPERE_ELECTRIQUE_TENANT)));
+
+						contact.put(
+								Kitting.NUMERO_COMPOSANT,
+								cursorA.getString(cursorA
+										.getColumnIndex(Fil.NUMERO_COMPOSANT_TENANT)));
+
+						contact.put(Kitting.ORDRE_REALISATION, cursorA
+								.getString(cursorA
+										.getColumnIndex(Fil.ORDRE_REALISATION)));
+						contact.put(
+								Kitting.NUMERO_REVISION_FIL,
+								cursorA.getFloat(cursorA
+										.getColumnIndex(Fil.NUMERO_REVISION_FIL)));
+						contact.put(Kitting.ETAT_LIAISON_FIL, cursorA
+								.getString(cursorA
+										.getColumnIndex(Fil.ETAT_LIAISON_FIL)));
+						contact.put(Kitting.NUMERO_FIL_CABLE, cursorA
+								.getString(cursorA
+										.getColumnIndex(Fil.NUMERO_FIL_CABLE)));
+						contact.put(Kitting.TYPE_FIL_CABLE, cursorA
+								.getString(cursorA
+										.getColumnIndex(Fil.TYPE_FIL_CABLE)));
+						contact.put(Kitting.NUMERO_DEBIT, debit);
+						contact.put(Kitting.NUMERO_OPERATION, num);
+
+						// Numéro cheminement
+						clause = new String(Cheminement.NUMERO_COMPOSANT + "='"
+								+ contact.getAsString(Kitting.NUMERO_COMPOSANT)
+								+ "'");
+						cursorB = cr.query(urlCheminement, ColChem1, clause,
+								null, null);
+
+						if (cursorB.moveToFirst()) {
+							numeroCheminement = cursorB
+									.getInt(cursorB
+											.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
+							contact.put(Kitting.NUMERO_CHEMINEMENT,
+									numeroCheminement);
+
+						}
+
+						// Ajout de l'entité
+						getContentResolver().insert(urlKitting, contact);
+						// Ecrasement de ses données pour passer à la suivante
+						contact.clear();
+
+						// num1= numeroOperation + Integer.toString(indice++);
+						descriptionOperation = "Débit du fil n°"
+								+ cursorA.getString(cursorA
+										.getColumnIndex(Fil.NUMERO_FIL_CABLE));
+
+						// Ajout des opérations à la table de séquencement
+						contact.put(Operation.GAMME, gamme);
+						contact.put(Operation.RANG_1, rang);
+						contact.put(Operation.RANG_1_1, rang_1);
+						contact.put(Operation.DESCRIPTION_OPERATION,
+								descriptionOperation);
+						contact.put(Operation.NUMERO_OPERATION, num);
+
+						// Ajout de l'entité
+						getContentResolver().insert(urlSequencement, contact);
+						// Ecrasement de ses données pour passer à la suivante
+						contact.clear();
+
+					} while (cursorA.moveToNext());
+
+					debit++;
+				}
+
+			} while (cursor.moveToNext());
+
+			// Regroupement des cables
+			clause = new String(Kitting.NUMERO_CHEMINEMENT + "!='" + "null"
+					+ "'" + " GROUP BY " + Kitting.NUMERO_CHEMINEMENT);
+			cursor = cr.query(urlKitting, colKit3, clause, null, null);
+			rang_1 = "Regroupement câbles";
+			if (cursor.moveToFirst()) {
+				do {
+					num1 = numeroOperation + Integer.toString(indice++);
+					descriptionOperation = "Regroupement des câbles "
+							+ cursor.getString(cursor
+									.getColumnIndex(Kitting.ORDRE_REALISATION))
+							+ " connecteur "
+							+ cursor.getString(cursor
+									.getColumnIndex(Kitting.NUMERO_COMPOSANT))
+							+ " ("
+							+ cursor.getString(cursor
+									.getColumnIndex(Kitting.REPERE_ELECTRIQUE))
+							+ ")";
+
+					// Ajout des opérations à la table de séquencement
+					contact.put(Operation.GAMME, gamme);
+					contact.put(Operation.RANG_1, rang);
+					contact.put(Operation.RANG_1_1, rang_1);
+					contact.put(Operation.DESCRIPTION_OPERATION,
+							descriptionOperation);
+					contact.put(Operation.NUMERO_OPERATION, num1);
+
+					// Ajout de l'entité
+					getContentResolver().insert(urlSequencement, contact);
+					// Ecrasement de ses données pour passer à la suivante
+					contact.clear();
+
+				} while (cursor.moveToNext());
+			} else {
+				Toast.makeText(this, "Regroupement non établi",
+						Toast.LENGTH_SHORT).show();
+
+			}
+
+			Toast.makeText(this, "Table kitting créée", Toast.LENGTH_SHORT)
+					.show();
+		}
+
 		// Création de la table de raccordement
+		int indiceTenant = 1;
+		int indiceAboutissant = 1;
 		cursor = cr.query(urlProduction, ColProd2, null, null, null);
 		if (cursor.moveToFirst()) {
 
@@ -391,6 +581,8 @@ public class MainMenuPreparateur extends Activity {
 				contact.put(Raccordement.NUMERO_BORNE_TENANT, cursor
 						.getString(cursor
 								.getColumnIndex(Fil.NUMERO_BORNE_TENANT)));
+				contact.put(Raccordement.DESIGNATION, cursor.getString(cursor
+						.getColumnIndex(Fil.DESIGNATION_PRODUIT)));
 				contact.put(
 						Raccordement.NUMERO_COMPOSANT_ABOUTISSANT,
 						cursor.getString(cursor
@@ -471,6 +663,46 @@ public class MainMenuPreparateur extends Activity {
 						.getString(cursor
 								.getColumnIndex(Fil.TYPE_RACCORDEMENT_TENANT)));
 
+				// Numéro Position Chariot
+				clause = new String(Kitting.NUMERO_FIL_CABLE + "='"
+						+ contact.getAsString(Raccordement.NUMERO_FIL_CABLE)
+						+ "'");
+				cursorB = cr.query(urlKitting, colKit3, clause, null, null);
+
+				if (cursorB.moveToFirst()) {
+					contact.put(
+							Raccordement.NUMERO_POSITION_CHARIOT,
+							cursorB.getString(cursorB
+									.getColumnIndex(Kitting.NUMERO_POSITION_CHARIOT)));
+				}
+
+				// Numéro cheminement + Numéro Opération
+				if (contact.getAsString(Raccordement.NUMERO_COMPOSANT_TENANT) != null) {
+					numeroComposant = contact
+							.getAsString(Raccordement.NUMERO_COMPOSANT_TENANT);
+					contact.put(Raccordement.NUMERO_OPERATION, "4-000"
+							+ indiceTenant++);
+				} else {
+					numeroComposant = contact
+							.getAsString(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT);
+					contact.put(Raccordement.NUMERO_OPERATION, "7-000"
+							+ indiceAboutissant++);
+				}
+
+				clause = new String(Cheminement.NUMERO_COMPOSANT + "='"
+						+ numeroComposant + "'");
+				cursorB = cr
+						.query(urlCheminement, ColChem1, clause, null, null);
+
+				if (cursorB.moveToFirst()) {
+					numeroCheminement = cursorB
+							.getInt(cursorB
+									.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
+					contact.put(Raccordement.NUMERO_CHEMINEMENT,
+							numeroCheminement);
+
+				}
+
 				// Ajout de l'entité
 				getContentResolver().insert(urlRaccordement, contact);
 				// Ecrasement de ses données pour passer à la suivante
@@ -481,181 +713,6 @@ public class MainMenuPreparateur extends Activity {
 					.show();
 		} else {
 			Toast.makeText(this, "Erreur raccordement", Toast.LENGTH_SHORT)
-					.show();
-		}
-
-		// Création de la table de kitting
-		debit = 1;
-		indice = 1;
-		numeroOperation = "1-000";
-		gamme = "Kitting";
-		rang = "Kitting câble";
-		cursor = cr.query(urlNomenclature, colNom1, null, null, null);
-		if (cursor.moveToFirst()) {
-			do {
-
-				norme = cursor.getString(cursor
-						.getColumnIndex(Cable.NORME_CABLE));
-				clause = new String(Fil.NORME_CABLE + "='" + norme + "' AND "
-						+ Fil.REPERE_ELECTRIQUE_TENANT + "!='" + "null" + "'"
-						+ " GROUP BY " + Fil.NUMERO_FIL_CABLE);
-				rang_1 = "Débit "
-						+ cursor.getString(cursor
-								.getColumnIndex(Cable.DESIGNATION_COMPOSANT))
-						+ " Référence "
-						+ cursor.getString(cursor
-								.getColumnIndex(Cable.REFERENCE_FABRICANT2))
-						+ " ("
-						+ cursor.getString(cursor
-								.getColumnIndex(Cable.REFERENCE_INTERNE)) + ")";
-				cursorA = cr.query(urlProduction, colProd1, clause, null, null);
-				if (cursorA.moveToFirst()) {
-					do {
-						num = numeroOperation + Integer.toString(indice++);
-						contact.put(
-								Kitting.DESIGNATION_COMPOSANT,
-								cursor.getString(cursor
-										.getColumnIndex(Cable.DESIGNATION_COMPOSANT)));
-						contact.put(Kitting.NORME_CABLE, cursor
-								.getString(cursor
-										.getColumnIndex(Cable.NORME_CABLE)));
-						contact.put(Kitting.UNITE, cursor.getString(cursor
-								.getColumnIndex(Cable.UNITE)));
-						contact.put(
-								Kitting.REFERENCE_FABRICANT1,
-								cursor.getString(cursor
-										.getColumnIndex(Cable.REFERENCE_FABRICANT1)));
-						contact.put(
-								Kitting.REFERENCE_FABRICANT2,
-								cursor.getString(cursor
-										.getColumnIndex(Cable.REFERENCE_FABRICANT2)));
-						contact.put(
-								Kitting.REFERENCE_INTERNE,
-								cursor.getString(cursor
-										.getColumnIndex(Cable.REFERENCE_INTERNE)));
-						contact.put(
-								Kitting.FOURNISSEUR_FABRICANT,
-								cursor.getString(cursor
-										.getColumnIndex(Cable.FOURNISSEUR_FABRICANT)));
-
-						contact.put(
-								Kitting.REPERE_ELECTRIQUE,
-								cursorA.getString(cursorA
-										.getColumnIndex(Fil.REPERE_ELECTRIQUE_TENANT)));
-
-						contact.put(
-								Kitting.NUMERO_COMPOSANT,
-								cursorA.getString(cursorA
-										.getColumnIndex(Fil.NUMERO_COMPOSANT_TENANT)));
-
-						contact.put(Kitting.ORDRE_REALISATION, cursorA
-								.getString(cursorA
-										.getColumnIndex(Fil.ORDRE_REALISATION)));
-						contact.put(
-								Kitting.NUMERO_REVISION_FIL,
-								cursorA.getFloat(cursorA
-										.getColumnIndex(Fil.NUMERO_REVISION_FIL)));
-						contact.put(Kitting.ETAT_LIAISON_FIL, cursorA
-								.getString(cursorA
-										.getColumnIndex(Fil.ETAT_LIAISON_FIL)));
-						contact.put(Kitting.NUMERO_FIL_CABLE, cursorA
-								.getString(cursorA
-										.getColumnIndex(Fil.NUMERO_FIL_CABLE)));
-						contact.put(Kitting.TYPE_FIL_CABLE, cursorA
-								.getString(cursorA
-										.getColumnIndex(Fil.TYPE_FIL_CABLE)));
-						contact.put(Kitting.NUMERO_DEBIT, debit);
-						contact.put(Kitting.NUMERO_OPERATION, num);
-
-						clause = new String(Cheminement.NUMERO_COMPOSANT + "='"
-								+ contact.getAsString(Kitting.NUMERO_COMPOSANT)
-								+ "'");
-						cursorB = cr.query(urlCheminement, ColChem1, clause,
-								null, null);
-
-						if (cursorB.moveToFirst()) {
-							numeroCheminement = cursorB
-									.getInt(cursorB
-											.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
-							contact.put(Kitting.NUMERO_CHEMINEMENT,
-									numeroCheminement);
-							contact.put(Kitting.NUMERO_POSITION_CHARIOT,
-									"CH1-1-A" + numeroCheminement);
-						} else {
-							contact.put(Kitting.NUMERO_POSITION_CHARIOT,
-									"CH1-2-A");
-						}
-
-						// Ajout de l'entité
-						getContentResolver().insert(urlKitting, contact);
-						// Ecrasement de ses données pour passer à la suivante
-						contact.clear();
-
-						// num1= numeroOperation + Integer.toString(indice++);
-						descriptionOperation = "Débit du fil n°"
-								+ cursorA.getString(cursorA
-										.getColumnIndex(Fil.NUMERO_FIL_CABLE));
-
-						// Ajout des opérations à la table de séquencement
-						contact.put(Operation.GAMME, gamme);
-						contact.put(Operation.RANG_1, rang);
-						contact.put(Operation.RANG_1_1, rang_1);
-						contact.put(Operation.DESCRIPTION_OPERATION,
-								descriptionOperation);
-						contact.put(Operation.NUMERO_OPERATION, num);
-
-						// Ajout de l'entité
-						getContentResolver().insert(urlSequencement, contact);
-						// Ecrasement de ses données pour passer à la suivante
-						contact.clear();
-
-					} while (cursorA.moveToNext());
-
-					debit++;
-				}
-
-			} while (cursor.moveToNext());
-
-			// Regroupement des cables
-			clause = new String(Kitting.NUMERO_CHEMINEMENT + "!='" + "null"
-					+ "'" + " GROUP BY " + Kitting.NUMERO_CHEMINEMENT);
-			cursor = cr.query(urlKitting, colKit3, clause, null, null);
-			rang_1 = "Regroupement câbles";
-			if (cursor.moveToFirst()) {
-				do {
-					num1 = numeroOperation + Integer.toString(indice++);
-					descriptionOperation = "Regroupement des câbles "
-							+ cursor.getString(cursor
-									.getColumnIndex(Kitting.ORDRE_REALISATION))
-							+ " connecteur "
-							+ cursor.getString(cursor
-									.getColumnIndex(Kitting.NUMERO_COMPOSANT))
-							+ " ("
-							+ cursor.getString(cursor
-									.getColumnIndex(Kitting.REPERE_ELECTRIQUE))
-							+ ")";
-
-					// Ajout des opérations à la table de séquencement
-					contact.put(Operation.GAMME, gamme);
-					contact.put(Operation.RANG_1, rang);
-					contact.put(Operation.RANG_1_1, rang_1);
-					contact.put(Operation.DESCRIPTION_OPERATION,
-							descriptionOperation);
-					contact.put(Operation.NUMERO_OPERATION, num1);
-
-					// Ajout de l'entité
-					getContentResolver().insert(urlSequencement, contact);
-					// Ecrasement de ses données pour passer à la suivante
-					contact.clear();
-
-				} while (cursor.moveToNext());
-			} else {
-				Toast.makeText(this, "Regroupement non établi",
-						Toast.LENGTH_SHORT).show();
-
-			}
-
-			Toast.makeText(this, "Table kitting créée", Toast.LENGTH_SHORT)
 					.show();
 		}
 
@@ -952,8 +1009,8 @@ public class MainMenuPreparateur extends Activity {
 			} catch (NullPointerException e) {
 			}
 			try {
-				contact.put(Outil.IDENTIFICATION, row.getCell(
-						colonnes.get("Identification")).toString());
+				contact.put(Outil.IDENTIFICATION,
+						row.getCell(colonnes.get("Identification")).toString());
 			} catch (NullPointerException e) {
 			}
 			try {
@@ -1004,8 +1061,6 @@ public class MainMenuPreparateur extends Activity {
 			contact.clear();
 
 		}
-		
-		
 
 		// Feuille Support
 		sheet = wb.getSheetAt(1);
@@ -1032,12 +1087,14 @@ public class MainMenuPreparateur extends Activity {
 			}
 			try {
 				contact.put(Support.DIAMETRE_ADMISSIBLE,
-						row.getCell(colonnes.get("Diamètre admissible")).toString());
+						row.getCell(colonnes.get("Diamètre admissible"))
+								.toString());
 			} catch (NullPointerException e) {
 			}
 			try {
 				contact.put(Support.NUMERO_SERIE,
-						row.getCell(colonnes.get("Numéro de série du support")).toString());
+						row.getCell(colonnes.get("Numéro de série du support"))
+								.toString());
 			} catch (NullPointerException e) {
 			}
 			try {
@@ -1051,35 +1108,52 @@ public class MainMenuPreparateur extends Activity {
 			// Ecrasement de ses données pour passer à la suivante
 			contact.clear();
 
-		} 
-		
-		
-		//Genération des numéros de chariot
-		 contact = new ContentValues();
-		String localisations[] = new String[] { "A","B","C","D","E", "F", "G","H","I","J"};
-		for (int i=0; i< localisations.length ; i++) {
-			for (int j=1; j<=7; j++) {
+		}
+
+		// Genération des numéros de chariot
+		contact = new ContentValues();
+		String localisations[] = new String[] { "A", "B", "C", "D", "E", "F",
+				"G", "H", "I", "J" };
+		for (int i = 0; i < localisations.length; i++) {
+			for (int j = 1; j <= 7; j++) {
 				contact.put(Chariot.FACE_CHARIOT, "Face 1");
 				contact.put(Chariot.NUMERO_CHARIOT, "Chariot 1");
-				contact.put(Chariot.POSITION_NUMERO, "CH1-1-"+ localisations[i] + j);
+				contact.put(Chariot.POSITION_NUMERO, "CH1-1-"
+						+ localisations[i] + j);
 				getContentResolver().insert(urlChariot, contact);
 				contact.clear();
-				
+			}
+		}
+		for (int i = 0; i < localisations.length; i++) {
+			for (int j = 1; j <= 7; j++) {
+
 				contact.put(Chariot.FACE_CHARIOT, "Face 2");
 				contact.put(Chariot.NUMERO_CHARIOT, "Chariot 1");
-				contact.put(Chariot.POSITION_NUMERO, "CH1-1-"+ localisations[i] + j);
+				contact.put(Chariot.POSITION_NUMERO, "CH1-2-"
+						+ localisations[i] + j);
 				getContentResolver().insert(urlChariot, contact);
 				contact.clear();
-				
+
+			}
+		}
+		for (int i = 0; i < localisations.length; i++) {
+			for (int j = 1; j <= 7; j++) {
+
 				contact.put(Chariot.FACE_CHARIOT, "Face 1");
 				contact.put(Chariot.NUMERO_CHARIOT, "Chariot 2");
-				contact.put(Chariot.POSITION_NUMERO, "CH1-1-"+ localisations[i] + j);
+				contact.put(Chariot.POSITION_NUMERO, "CH2-1-"
+						+ localisations[i] + j);
 				getContentResolver().insert(urlChariot, contact);
 				contact.clear();
-				
+			}
+		}
+		for (int i = 0; i < localisations.length; i++) {
+			for (int j = 1; j <= 7; j++) {
+
 				contact.put(Chariot.FACE_CHARIOT, "Face 2");
 				contact.put(Chariot.NUMERO_CHARIOT, "Chariot 2");
-				contact.put(Chariot.POSITION_NUMERO, "CH1-1-"+ localisations[i] + j);
+				contact.put(Chariot.POSITION_NUMERO, "CH2-2-"
+						+ localisations[i] + j);
 				getContentResolver().insert(urlChariot, contact);
 				contact.clear();
 			}
@@ -1623,26 +1697,23 @@ public class MainMenuPreparateur extends Activity {
 		HSSFSheet sheet = wb.createSheet("Débit");
 
 		int columnIndex = 0;
-		
-		// Génération des en têtes 
+
+		// Génération des en têtes
 		HSSFRow row = sheet.createRow(0);
-		for (int i=0; i<colKitGen1.length; i++) {
-			row.createCell((short) columnIndex++)
-			.setCellValue(colKitGen1[i]);
+		for (int i = 0; i < colKitGen1.length; i++) {
+			row.createCell((short) columnIndex++).setCellValue(colKitGen1[i]);
 		}
-		
-		
+
 		cursor = cr.query(urlKitting, colKitGen1, null, null, Kitting._id);
 		if (cursor.moveToFirst()) {
 			do {
 				columnIndex = 0;
-				row = sheet.createRow((short) cursor.getPosition()+1);
-				for (int i=0; i<colKitGen1.length; i++) {
-					row.createCell((short) columnIndex++)
-					.setCellValue(cursor.getString(cursor
-							.getColumnIndex(colKitGen1[i])));
+				row = sheet.createRow((short) cursor.getPosition() + 1);
+				for (int i = 0; i < colKitGen1.length; i++) {
+					row.createCell((short) columnIndex++).setCellValue(
+							cursor.getString(cursor
+									.getColumnIndex(colKitGen1[i])));
 				}
-				
 
 			} while (cursor.moveToNext());
 
@@ -1653,27 +1724,25 @@ public class MainMenuPreparateur extends Activity {
 
 		sheet = wb.createSheet("Regroupement");
 		wb.getSheetAt(1);
-		
+
 		columnIndex = 0;
-		
-		// Génération des en têtes 
+
+		// Génération des en têtes
 		row = sheet.createRow(0);
-		for (int i=0; i<colKitGen2.length; i++) {
-			row.createCell((short) columnIndex++)
-			.setCellValue(colKitGen2[i]);
+		for (int i = 0; i < colKitGen2.length; i++) {
+			row.createCell((short) columnIndex++).setCellValue(colKitGen2[i]);
 		}
-		
+
 		cursor = cr.query(urlKitting, colKitGen2, null, null, Kitting._id);
 		if (cursor.moveToFirst()) {
 			do {
 				columnIndex = 0;
-				row = sheet.createRow((short) cursor.getPosition()+1);
-				for (int i=0; i<colKitGen2.length; i++) {
-					row.createCell((short) columnIndex++)
-					.setCellValue(cursor.getString(cursor
-							.getColumnIndex(colKitGen2[i])));
+				row = sheet.createRow((short) cursor.getPosition() + 1);
+				for (int i = 0; i < colKitGen2.length; i++) {
+					row.createCell((short) columnIndex++).setCellValue(
+							cursor.getString(cursor
+									.getColumnIndex(colKitGen2[i])));
 				}
-				
 
 			} while (cursor.moveToNext());
 
@@ -1714,26 +1783,24 @@ public class MainMenuPreparateur extends Activity {
 		HSSFWorkbook wb = new HSSFWorkbook();
 		HSSFSheet sheet = wb.createSheet("Débit");
 
-int columnIndex = 0;
-		
-		// Génération des en têtes 
+		int columnIndex = 0;
+
+		// Génération des en têtes
 		HSSFRow row = sheet.createRow(0);
-		for (int i=0; i<colBOMGen1.length; i++) {
-			row.createCell((short) columnIndex++)
-			.setCellValue(colBOMGen1[i]);
+		for (int i = 0; i < colBOMGen1.length; i++) {
+			row.createCell((short) columnIndex++).setCellValue(colBOMGen1[i]);
 		}
 
 		cursor = cr.query(urlBOM, colBOMGen1, null, null, BOM._id);
 		if (cursor.moveToFirst()) {
 			do {
 				columnIndex = 0;
-				row = sheet.createRow((short) cursor.getPosition()+1);
-				for (int i=0; i<colBOMGen1.length; i++) {
-					row.createCell((short) columnIndex++)
-					.setCellValue(cursor.getString(cursor
-							.getColumnIndex(colBOMGen1[i])));
+				row = sheet.createRow((short) cursor.getPosition() + 1);
+				for (int i = 0; i < colBOMGen1.length; i++) {
+					row.createCell((short) columnIndex++).setCellValue(
+							cursor.getString(cursor
+									.getColumnIndex(colBOMGen1[i])));
 				}
-				
 
 			} while (cursor.moveToNext());
 
@@ -1744,27 +1811,25 @@ int columnIndex = 0;
 
 		sheet = wb.createSheet("Regroupement");
 		wb.getSheetAt(1);
-		
+
 		columnIndex = 0;
-		
-		// Génération des en têtes 
+
+		// Génération des en têtes
 		row = sheet.createRow(0);
-		for (int i=0; i<colBOMGen2.length; i++) {
-			row.createCell((short) columnIndex++)
-			.setCellValue(colBOMGen2[i]);
+		for (int i = 0; i < colBOMGen2.length; i++) {
+			row.createCell((short) columnIndex++).setCellValue(colBOMGen2[i]);
 		}
-		
+
 		cursor = cr.query(urlBOM, colBOMGen2, null, null, BOM._id);
 		if (cursor.moveToFirst()) {
 			do {
 				columnIndex = 0;
-				row = sheet.createRow((short) cursor.getPosition()+1);
-				for (int i=0; i<colBOMGen2.length; i++) {
-					row.createCell((short) columnIndex++)
-					.setCellValue(cursor.getString(cursor
-							.getColumnIndex(colBOMGen2[i])));
+				row = sheet.createRow((short) cursor.getPosition() + 1);
+				for (int i = 0; i < colBOMGen2.length; i++) {
+					row.createCell((short) columnIndex++).setCellValue(
+							cursor.getString(cursor
+									.getColumnIndex(colBOMGen2[i])));
 				}
-				
 
 			} while (cursor.moveToNext());
 

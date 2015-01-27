@@ -7,12 +7,14 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.Time;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -63,9 +65,10 @@ public class ServitudeComposants extends Activity {
 
 	/** Elements à récuperer de la vue */
 	private TextView designation, referenceImposee, fournisseur,
-			referenceFabricant, referenceInterne;
+			referenceFabricant, referenceInterne, servi;
 	private ImageButton petitePause, grandePause, infoButton, boutonCheck;
 	private GridView gridView;
+	private LinearLayout layoutServi;
 
 	/** Colonnes utilisés pour les requêtes */
 	private String columnsSeq[] = new String[] { Operation._id,
@@ -106,6 +109,7 @@ public class ServitudeComposants extends Activity {
 		referenceFabricant = (TextView) findViewById(R.id.textView5);
 		referenceInterne = (TextView) findViewById(R.id.textView6);
 		referenceImposee = (TextView) findViewById(R.id.textView7);
+		layoutServi = (LinearLayout) findViewById(R.id.layout_servi);
 
 		// Récuperation du numéro d'opération courant
 		clause = new String(Operation._id + "='" + opId[indiceCourant] + "'");
@@ -232,7 +236,12 @@ public class ServitudeComposants extends Activity {
 
 		gridView.setAdapter(sca);
 
-	
+		servi = new TextView(ServitudeComposants.this);
+		servi.setWidth(44);
+		servi.setHeight(30);
+		servi.setTextColor(Color.RED);
+		servi.setTextScaleX(9);
+		layoutServi.addView(servi);
 
 		// Affichage des cables à débiter ou dèja débité
 		clause = new String(BOM.NUMERO_DEBIT + "='" + numeroDebit + "' AND "

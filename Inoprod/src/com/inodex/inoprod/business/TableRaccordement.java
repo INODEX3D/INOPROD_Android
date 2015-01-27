@@ -55,6 +55,7 @@ public class TableRaccordement {
 		public static final String NUMERO_POSITION_CHARIOT = "NUMERO_POSITION_CHARIOT";
 		public static final String NUMERO_SERIE_OUTIL = "NUMERO_SERIE_OUTIL";
 		public static final String NUMERO_FICHE_JALON = "NUMERO_FICHE_JALON";
+		public static final String DESIGNATION = "DESIGNATION";
 	}
 
 }
