@@ -14,6 +14,7 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -69,6 +70,15 @@ import com.inodex.inoprod.business.TableSupport.Support;
 
 public class MainMenuPreparateur extends Activity {
 
+	private final static int PROGRESS_DIALOG_ID = 0;
+	private final static int MAX_SIZE = 100;
+	private final static int PROGRESSION = 0;
+
+	private Thread mProgress = null;
+
+	private int mProgression = 0;
+	private ProgressDialog mProgressBar = null;
+
 	/** Nom de l'opérateur */
 	private String nomPrenomOperateur[] = null;
 
@@ -112,7 +122,9 @@ public class MainMenuPreparateur extends Activity {
 	private String ColChem1[] = new String[] { Cheminement._id,
 			Cheminement.NUMERO_COMPOSANT,
 			Cheminement.NUMERO_SECTION_CHEMINEMENT,
-			Cheminement.REPERE_ELECTRIQUE };
+			Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT,
+			Cheminement.REPERE_ELECTRIQUE, Cheminement.ZONE_ACTIVITE,
+			Cheminement.LOCALISATION1 };
 
 	private String ColProd2[] = new String[] { Fil.ETAT_LIAISON_FIL,
 			Fil.NUMERO_REVISION_FIL, Fil.FIL_SENSIBLE, Fil.NUMERO_FIL_CABLE,
@@ -172,10 +184,26 @@ public class MainMenuPreparateur extends Activity {
 			Chariot.CONNECTEUR_POSITIONNE, Chariot.FACE_CHARIOT,
 			Chariot.NUMERO_CHARIOT, Chariot.POSITION_NUMERO };
 
+	private String colRac[] = new String[] { Raccordement._id,
+			Raccordement.NUMERO_BORNE_TENANT,
+			Raccordement.NUMERO_BORNE_ABOUTISSANT,
+			Raccordement.NUMERO_CHEMINEMENT,
+			Raccordement.NUMERO_SECTION_CHEMINEMENT,
+			Raccordement.NUMERO_COMPOSANT_TENANT,
+			Raccordement.NUMERO_COMPOSANT_ABOUTISSANT,
+			Raccordement.ORDRE_REALISATION, Raccordement.FAUX_CONTACT,
+			Raccordement.OBTURATEUR, Raccordement.REPRISE_BLINDAGE,
+			Raccordement.SANS_REPRISE_BLINDAGE, Raccordement.FIL_SENSIBLE,
+			Raccordement.ZONE_ACTIVITE,
+			Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT,
+			Raccordement.REPERE_ELECTRIQUE_TENANT, Raccordement.FIL_SENSIBLE,
+			Raccordement.REFERENCE_FABRICANT2 };
+
 	private String clause, rep, norme, numeroOperation, num, gamme, rang,
 			rang_1, descriptionOperation, num1, referenceCourante,
 			numeroChariot, numeroComposant;
-	private int debit, indice, chemin, numeroCheminement, indiceChariot;
+	private int debit, indice, chemin, numeroCheminement, indiceChariotA,
+			indiceChariotB;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -239,6 +267,7 @@ public class MainMenuPreparateur extends Activity {
 							"Import des fichiers sources réussis",
 							Toast.LENGTH_SHORT).show();
 					creationTables();
+					generationTableSequencement();
 				}
 
 			}
@@ -296,7 +325,8 @@ public class MainMenuPreparateur extends Activity {
 
 		ContentValues contact = new ContentValues();
 
-		indiceChariot = 1;
+		indiceChariotA = 1;
+		indiceChariotB = 1;
 
 		// Création de la table de cheminement
 		chemin = 1;
@@ -372,16 +402,9 @@ public class MainMenuPreparateur extends Activity {
 		cursor = cr.query(urlNomenclature, colNom1, null, null, null);
 		if (cursor.moveToFirst()) {
 			do {
+				indiceChariotA++;
 				// clause = new String(Chariot._id + "='" + indiceChariot++ +
 				// "'");
-				cursorB = cr.query(urlChariot, colCha, null, null, Chariot._id
-						+ " ASC");
-				if (cursorB.moveToFirst()) {
-					cursorB.moveToPosition(indiceChariot++);
-					numeroChariot = cursorB.getString(cursorB
-							.getColumnIndex(Chariot.POSITION_NUMERO));
-
-				}
 
 				norme = cursor.getString(cursor
 						.getColumnIndex(Cable.NORME_CABLE));
@@ -401,6 +424,7 @@ public class MainMenuPreparateur extends Activity {
 				cursorA = cr.query(urlProduction, colProd1, clause, null, null);
 				if (cursorA.moveToFirst()) {
 					do {
+
 						num = numeroOperation + Integer.toString(indice++);
 						contact.put(Kitting.NUMERO_POSITION_CHARIOT,
 								numeroChariot);
@@ -443,6 +467,26 @@ public class MainMenuPreparateur extends Activity {
 						contact.put(Kitting.ORDRE_REALISATION, cursorA
 								.getString(cursorA
 										.getColumnIndex(Fil.ORDRE_REALISATION)));
+
+						// Attribution du numéro positionchariot
+						String face;
+						if (contact.getAsString(Kitting.ORDRE_REALISATION)
+								.equals("Tête A")) {
+							face = "Face 1";
+						} else {
+							face = "Face 2";
+						}
+						clause = Chariot.FACE_CHARIOT + "='" + face + "'";
+
+						cursorB = cr.query(urlChariot, colCha, clause, null,
+								Chariot._id + " ASC");
+						if (cursorB.moveToFirst()) {
+							cursorB.moveToPosition(indiceChariotA);
+							numeroChariot = cursorB.getString(cursorB
+									.getColumnIndex(Chariot.POSITION_NUMERO));
+
+						}
+
 						contact.put(
 								Kitting.NUMERO_REVISION_FIL,
 								cursorA.getFloat(cursorA
@@ -680,13 +724,11 @@ public class MainMenuPreparateur extends Activity {
 				if (contact.getAsString(Raccordement.NUMERO_COMPOSANT_TENANT) != null) {
 					numeroComposant = contact
 							.getAsString(Raccordement.NUMERO_COMPOSANT_TENANT);
-					contact.put(Raccordement.NUMERO_OPERATION, "4-000"
-							+ indiceTenant++);
+
 				} else {
 					numeroComposant = contact
 							.getAsString(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT);
-					contact.put(Raccordement.NUMERO_OPERATION, "7-000"
-							+ indiceAboutissant++);
+
 				}
 
 				clause = new String(Cheminement.NUMERO_COMPOSANT + "='"
@@ -700,7 +742,16 @@ public class MainMenuPreparateur extends Activity {
 									.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
 					contact.put(Raccordement.NUMERO_CHEMINEMENT,
 							numeroCheminement);
-
+					contact.put(Raccordement.ZONE_ACTIVITE, cursorB
+							.getString(cursorB
+									.getColumnIndex(Cheminement.ZONE_ACTIVITE)));
+					contact.put(Raccordement.LOCALISATION1, cursorB
+							.getString(cursorB
+									.getColumnIndex(Cheminement.LOCALISATION1)));
+					contact.put(
+							Raccordement.NUMERO_REPERE_TABLE_CHEMINEMENT,
+							cursorB.getString(cursorB
+									.getColumnIndex(Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT)));
 				}
 
 				// Ajout de l'entité
@@ -918,16 +969,11 @@ public class MainMenuPreparateur extends Activity {
 	 * @return Réussite de l'import
 	 */
 	private boolean importSources() {
-
-		// Import des durées
-		try {
-			insertRecordsDurees();
-		} catch (IOException e) {
-			Toast.makeText(this, "Fichier Durees non lu", Toast.LENGTH_SHORT)
-					.show();
-			return false;
-		}
-
+		/*
+		 * // Import des durées try { insertRecordsDurees(); } catch
+		 * (IOException e) { Toast.makeText(this, "Fichier Durees non lu",
+		 * Toast.LENGTH_SHORT) .show(); return false; }
+		 */
 		// Import de la base Production
 		try {
 			insertRecordsProduction();
@@ -1853,6 +1899,548 @@ public class MainMenuPreparateur extends Activity {
 		}
 
 		return true;
+
+	}
+
+	private void generationTableSequencement() {
+
+		ContentValues contact = new ContentValues();
+		indice = 1;
+
+		String numeroComposant;
+		gamme = "Raccordement tête A";
+		numeroOperation = "4-000";
+		// Filtre par connecteur et N° cheminement
+		clause = Raccordement.ORDRE_REALISATION + "='" + "Tête A"
+				+ "' GROUP BY " + Raccordement.NUMERO_COMPOSANT_TENANT;
+		cursor = cr.query(urlRaccordement, colRac, clause, null,
+				Raccordement.NUMERO_CHEMINEMENT);
+		if (cursor.moveToFirst()) {
+			do {
+				numeroComposant = cursor.getString(cursor
+						.getColumnIndex(Raccordement.NUMERO_COMPOSANT_TENANT));
+
+				rang = cursor.getString(cursor
+						.getColumnIndex(Raccordement.ZONE_ACTIVITE));
+
+				rang_1 = "Connecteur " + numeroComposant;
+
+				// Recherche des obturateurs
+				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
+						+ numeroComposant + "' AND " + Raccordement.OBTURATEUR
+						+ "='" + 1 + "'";
+				cursorA = cr.query(urlRaccordement, colRac, clause, null,
+						Raccordement._id);
+				if (cursorA.moveToFirst()) {
+					do {
+						descriptionOperation = "Préparation Tête A  "
+								+ cursorA
+										.getString(cursorA
+												.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT));
+
+						// Ajout des opérations à la table de séquencement
+						num1 = numeroOperation + Integer.toString(indice++);
+						contact.put(Operation.GAMME, gamme);
+						contact.put(Operation.RANG_1, rang);
+						contact.put(Operation.RANG_1_1, rang_1);
+						contact.put(Operation.DESCRIPTION_OPERATION,
+								descriptionOperation);
+						contact.put(Operation.NUMERO_OPERATION, num1);
+
+						// Ajout de l'entité
+						getContentResolver().insert(urlSequencement, contact);
+						// Ecrasement de ses données pour passer à la suivante
+						contact.clear();
+
+						contact.put(Raccordement.NUMERO_OPERATION, num1);
+						cr.update(
+								urlRaccordement,
+								contact,
+								Raccordement._id
+										+ "='"
+										+ cursorA.getInt(cursorA
+												.getColumnIndex(Raccordement._id))
+										+ "'", null);
+
+						contact.clear();
+
+					} while (cursorA.moveToNext());
+				}
+
+				// Recherche des faux contacts
+				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
+						+ numeroComposant + "' AND "
+						+ Raccordement.FAUX_CONTACT + "='" + 1 + "'";
+				cursorA = cr.query(urlRaccordement, colRac, clause, null,
+						Raccordement._id);
+				if (cursorA.moveToFirst()) {
+					do {
+						descriptionOperation = "Préparation Tête A  "
+								+ cursorA
+										.getString(cursorA
+												.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT));
+
+						// Ajout des opérations à la table de séquencement
+						num1 = numeroOperation + indice++;
+						contact.put(Operation.GAMME, gamme);
+						contact.put(Operation.RANG_1, rang);
+						contact.put(Operation.RANG_1_1, rang_1);
+						contact.put(Operation.DESCRIPTION_OPERATION,
+								descriptionOperation);
+						contact.put(Operation.NUMERO_OPERATION, num1);
+
+						// Ajout de l'entité
+						getContentResolver().insert(urlSequencement, contact);
+						// Ecrasement de ses données pour passer à la suivante
+						contact.clear();
+
+						contact.put(Raccordement.NUMERO_OPERATION, num1);
+						cr.update(
+								urlRaccordement,
+								contact,
+								Raccordement._id
+										+ "='"
+										+ cursorA.getInt(cursorA
+												.getColumnIndex(Raccordement._id))
+										+ "'", null);
+
+						contact.clear();
+
+					} while (cursorA.moveToNext());
+				}
+
+				// Recherche des reprises blindages
+				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
+						+ numeroComposant + "' AND "
+						+ Raccordement.REPRISE_BLINDAGE + "!='" + "null" + "'";
+				cursorA = cr.query(urlRaccordement, colRac, clause, null,
+						Raccordement._id);
+				if (cursorA.moveToFirst()) {
+					do {
+						descriptionOperation = "Reprise Blindage Tête A  "
+								+ cursorA
+										.getString(cursorA
+												.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT));
+
+						// Ajout des opérations à la table de séquencement
+						num1 = numeroOperation + Integer.toString(indice++);
+						contact.put(Operation.GAMME, gamme);
+						contact.put(Operation.RANG_1, rang);
+						contact.put(Operation.RANG_1_1, rang_1);
+						contact.put(Operation.DESCRIPTION_OPERATION,
+								descriptionOperation);
+						contact.put(Operation.NUMERO_OPERATION, num1);
+
+						// Ajout de l'entité
+						getContentResolver().insert(urlSequencement, contact);
+						// Ecrasement de ses données pour passer à la suivante
+						contact.clear();
+
+						contact.put(Raccordement.NUMERO_OPERATION, num1);
+						cr.update(
+								urlRaccordement,
+								contact,
+								Raccordement._id
+										+ "='"
+										+ cursorA.getInt(cursorA
+												.getColumnIndex(Raccordement._id))
+										+ "'", null);
+
+						contact.clear();
+
+					} while (cursorA.moveToNext());
+				}
+
+				// Ajout des autres cables
+				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
+						+ numeroComposant + "' AND "
+						+ Raccordement.NUMERO_OPERATION + " IS NULL";
+				cursorA = cr.query(urlRaccordement, colRac, clause, null,
+						Raccordement.NUMERO_BORNE_TENANT);
+
+				if (cursorA.moveToFirst()) {
+					String refFabricant = cursorA.getString(cursorA
+							.getColumnIndex(Raccordement.REFERENCE_FABRICANT2));
+					// Verifications de la sensibilité des fils
+					if (cursorA.getInt(cursorA
+							.getColumnIndex(Raccordement.FIL_SENSIBLE)) == 1) {
+
+						do {
+							descriptionOperation = "Denudage Sertissage de contact "
+									+ refFabricant
+									+ " sur  Tête A  "
+									+ cursorA
+											.getString(cursorA
+													.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT));
+
+							// Ajout des opérations à la table de séquencement
+							num1 = numeroOperation + Integer.toString(indice++);
+							contact.put(Operation.GAMME, gamme);
+							contact.put(Operation.RANG_1, rang);
+							contact.put(Operation.RANG_1_1, rang_1);
+							contact.put(Operation.DESCRIPTION_OPERATION,
+									descriptionOperation);
+							contact.put(Operation.NUMERO_OPERATION, num1);
+
+							// Ajout de l'entité
+							getContentResolver().insert(urlSequencement,
+									contact);
+							// Ecrasement de ses données pour passer à la
+							// suivante
+							contact.clear();
+
+							contact.put(Raccordement.NUMERO_OPERATION, num1);
+							cr.update(
+									urlRaccordement,
+									contact,
+									Raccordement._id
+											+ "='"
+											+ cursorA.getInt(cursorA
+													.getColumnIndex(Raccordement._id))
+											+ "'", null);
+
+							contact.clear();
+						} while (cursorA.moveToNext());
+						cursorA.moveToFirst();
+						do {
+
+							descriptionOperation = "Enfichage Tête A  "
+									+ cursorA
+											.getString(cursorA
+													.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT));
+
+							// Ajout des opérations à la table de séquencement
+							num1 = numeroOperation + Integer.toString(indice++);
+							contact.put(Operation.GAMME, gamme);
+							contact.put(Operation.RANG_1, rang);
+							contact.put(Operation.RANG_1_1, rang_1);
+							contact.put(Operation.DESCRIPTION_OPERATION,
+									descriptionOperation);
+							contact.put(Operation.NUMERO_OPERATION, num1);
+
+							// Ajout de l'entité
+							getContentResolver().insert(urlSequencement,
+									contact);
+							// Ecrasement de ses données pour passer à la
+							// suivante
+							contact.clear();
+
+						} while (cursorA.moveToNext());
+
+					} else {
+
+						do {
+							descriptionOperation = "Denudage Sertissage Enfichage de contact "
+									+ refFabricant
+									+ " sur  Tête A  "
+									+ cursorA
+											.getString(cursorA
+													.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT));
+
+							// Ajout des opérations à la table de séquencement
+							num1 = numeroOperation + Integer.toString(indice++);
+							contact.put(Operation.GAMME, gamme);
+							contact.put(Operation.RANG_1, rang);
+							contact.put(Operation.RANG_1_1, rang_1);
+							contact.put(Operation.DESCRIPTION_OPERATION,
+									descriptionOperation);
+							contact.put(Operation.NUMERO_OPERATION, num1);
+
+							// Ajout de l'entité
+							getContentResolver().insert(urlSequencement,
+									contact);
+							// Ecrasement de ses données pour passer à la
+							// suivante
+							contact.clear();
+
+							contact.put(Raccordement.NUMERO_OPERATION, num1);
+							cr.update(
+									urlRaccordement,
+									contact,
+									Raccordement._id
+											+ "='"
+											+ cursorA.getInt(cursorA
+													.getColumnIndex(Raccordement._id))
+											+ "'", null);
+
+							contact.clear();
+
+						} while (cursorA.moveToNext());
+					}
+
+				}
+
+			} while (cursor.moveToNext());
+		}
+
+		// Tetes B
+		indice = 1;
+
+		gamme = "Raccordement Tête B";
+		numeroOperation = "7-000";
+		// Filtre par connecteur et N° cheminement
+		clause = Raccordement.ORDRE_REALISATION + "='" + "Tête B"
+				+ "' GROUP BY " + Raccordement.NUMERO_COMPOSANT_ABOUTISSANT;
+		cursor = cr.query(urlRaccordement, colRac, clause, null,
+				Raccordement.NUMERO_CHEMINEMENT);
+		if (cursor.moveToFirst()) {
+			do {
+				numeroComposant = cursor
+						.getString(cursor
+								.getColumnIndex(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT));
+
+				rang = cursor.getString(cursor
+						.getColumnIndex(Raccordement.ZONE_ACTIVITE));
+
+				rang_1 = "Connecteur " + numeroComposant;
+
+				// Recherche des obturateurs
+				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
+						+ numeroComposant + "' AND " + Raccordement.OBTURATEUR
+						+ "='" + 1 + "'";
+				cursorA = cr.query(urlRaccordement, colRac, clause, null,
+						Raccordement._id);
+				if (cursorA.moveToFirst()) {
+					do {
+						descriptionOperation = "Préparation Tête B  "
+								+ cursorA
+										.getString(cursorA
+												.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
+
+						// Ajout des opérations à la table de séquencement
+						num1 = numeroOperation + Integer.toString(indice++);
+						contact.put(Operation.GAMME, gamme);
+						contact.put(Operation.RANG_1, rang);
+						contact.put(Operation.RANG_1_1, rang_1);
+						contact.put(Operation.DESCRIPTION_OPERATION,
+								descriptionOperation);
+						contact.put(Operation.NUMERO_OPERATION, num1);
+
+						// Ajout de l'entité
+						getContentResolver().insert(urlSequencement, contact);
+						// Ecrasement de ses données pour passer à la suivante
+						contact.clear();
+
+						contact.put(Raccordement.NUMERO_OPERATION, num1);
+						cr.update(
+								urlRaccordement,
+								contact,
+								Raccordement._id
+										+ "='"
+										+ cursorA.getInt(cursorA
+												.getColumnIndex(Raccordement._id))
+										+ "'", null);
+
+						contact.clear();
+
+					} while (cursorA.moveToNext());
+				}
+
+				// Recherche des faux contacts
+				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
+						+ numeroComposant + "' AND "
+						+ Raccordement.FAUX_CONTACT + "='" + 1 + "'";
+				cursorA = cr.query(urlRaccordement, colRac, clause, null,
+						Raccordement._id);
+				if (cursorA.moveToFirst()) {
+					do {
+						descriptionOperation = "Préparation Tête B  "
+								+ cursorA
+										.getString(cursorA
+												.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
+
+						// Ajout des opérations à la table de séquencement
+						num1 = numeroOperation + indice++;
+						contact.put(Operation.GAMME, gamme);
+						contact.put(Operation.RANG_1, rang);
+						contact.put(Operation.RANG_1_1, rang_1);
+						contact.put(Operation.DESCRIPTION_OPERATION,
+								descriptionOperation);
+						contact.put(Operation.NUMERO_OPERATION, num1);
+
+						// Ajout de l'entité
+						getContentResolver().insert(urlSequencement, contact);
+						// Ecrasement de ses données pour passer à la suivante
+						contact.clear();
+
+						contact.put(Raccordement.NUMERO_OPERATION, num1);
+						cr.update(
+								urlRaccordement,
+								contact,
+								Raccordement._id
+										+ "='"
+										+ cursorA.getInt(cursorA
+												.getColumnIndex(Raccordement._id))
+										+ "'", null);
+
+						contact.clear();
+
+					} while (cursorA.moveToNext());
+				}
+
+				// Recherche des reprises blindages
+				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
+						+ numeroComposant + "' AND "
+						+ Raccordement.REPRISE_BLINDAGE + "!='" + "null" + "'";
+				cursorA = cr.query(urlRaccordement, colRac, clause, null,
+						Raccordement._id);
+				if (cursorA.moveToFirst()) {
+					do {
+						descriptionOperation = "Reprise Blindage Tête B  "
+								+ cursorA
+										.getString(cursorA
+												.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
+
+						// Ajout des opérations à la table de séquencement
+						num1 = numeroOperation + Integer.toString(indice++);
+						contact.put(Operation.GAMME, gamme);
+						contact.put(Operation.RANG_1, rang);
+						contact.put(Operation.RANG_1_1, rang_1);
+						contact.put(Operation.DESCRIPTION_OPERATION,
+								descriptionOperation);
+						contact.put(Operation.NUMERO_OPERATION, num1);
+
+						// Ajout de l'entité
+						getContentResolver().insert(urlSequencement, contact);
+						// Ecrasement de ses données pour passer à la suivante
+						contact.clear();
+
+						contact.put(Raccordement.NUMERO_OPERATION, num1);
+						cr.update(
+								urlRaccordement,
+								contact,
+								Raccordement._id
+										+ "='"
+										+ cursorA.getInt(cursorA
+												.getColumnIndex(Raccordement._id))
+										+ "'", null);
+
+						contact.clear();
+
+					} while (cursorA.moveToNext());
+				}
+
+				// Ajout des autres cables
+				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
+						+ numeroComposant + "' AND "
+						+ Raccordement.NUMERO_OPERATION + " IS NULL";
+				cursorA = cr.query(urlRaccordement, colRac, clause, null,
+						Raccordement.NUMERO_BORNE_ABOUTISSANT);
+
+				if (cursorA.moveToFirst()) {
+					String refFabricant = cursorA.getString(cursorA
+							.getColumnIndex(Raccordement.REFERENCE_FABRICANT2));
+					// Verifications de la sensibilité des fils
+					if (cursorA.getInt(cursorA
+							.getColumnIndex(Raccordement.FIL_SENSIBLE)) == 1) {
+
+						do {
+							descriptionOperation = "Denudage Sertissage de contact "
+									+ refFabricant
+									+ " sur  Tête B  "
+									+ cursorA
+											.getString(cursorA
+													.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
+
+							// Ajout des opérations à la table de séquencement
+							num1 = numeroOperation + Integer.toString(indice++);
+							contact.put(Operation.GAMME, gamme);
+							contact.put(Operation.RANG_1, rang);
+							contact.put(Operation.RANG_1_1, rang_1);
+							contact.put(Operation.DESCRIPTION_OPERATION,
+									descriptionOperation);
+							contact.put(Operation.NUMERO_OPERATION, num1);
+
+							// Ajout de l'entité
+							getContentResolver().insert(urlSequencement,
+									contact);
+							// Ecrasement de ses données pour passer à la
+							// suivante
+							contact.clear();
+
+							contact.put(Raccordement.NUMERO_OPERATION, num1);
+							cr.update(
+									urlRaccordement,
+									contact,
+									Raccordement._id
+											+ "='"
+											+ cursorA.getInt(cursorA
+													.getColumnIndex(Raccordement._id))
+											+ "'", null);
+
+							contact.clear();
+						} while (cursorA.moveToNext());
+						cursorA.moveToFirst();
+						do {
+
+							descriptionOperation = "Enfichage Tête B  "
+									+ cursorA
+											.getString(cursorA
+													.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
+
+							// Ajout des opérations à la table de séquencement
+							num1 = numeroOperation + Integer.toString(indice++);
+							contact.put(Operation.GAMME, gamme);
+							contact.put(Operation.RANG_1, rang);
+							contact.put(Operation.RANG_1_1, rang_1);
+							contact.put(Operation.DESCRIPTION_OPERATION,
+									descriptionOperation);
+							contact.put(Operation.NUMERO_OPERATION, num1);
+
+							// Ajout de l'entité
+							getContentResolver().insert(urlSequencement,
+									contact);
+							// Ecrasement de ses données pour passer à la
+							// suivante
+							contact.clear();
+
+						} while (cursorA.moveToNext());
+
+					} else {
+
+						do {
+							descriptionOperation = "Denudage Sertissage Enfichage de contact "
+									+ refFabricant
+									+ " sur  Tête B  "
+									+ cursorA
+											.getString(cursorA
+													.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
+
+							// Ajout des opérations à la table de séquencement
+							num1 = numeroOperation + Integer.toString(indice++);
+							contact.put(Operation.GAMME, gamme);
+							contact.put(Operation.RANG_1, rang);
+							contact.put(Operation.RANG_1_1, rang_1);
+							contact.put(Operation.DESCRIPTION_OPERATION,
+									descriptionOperation);
+							contact.put(Operation.NUMERO_OPERATION, num1);
+
+							// Ajout de l'entité
+							getContentResolver().insert(urlSequencement,
+									contact);
+							// Ecrasement de ses données pour passer à la
+							// suivante
+							contact.clear();
+
+							contact.put(Raccordement.NUMERO_OPERATION, num1);
+							cr.update(
+									urlRaccordement,
+									contact,
+									Raccordement._id
+											+ "='"
+											+ cursorA.getInt(cursorA
+													.getColumnIndex(Raccordement._id))
+											+ "'", null);
+
+							contact.clear();
+
+						} while (cursorA.moveToNext());
+					}
+
+				}
+
+			} while (cursor.moveToNext());
+		}
 
 	}
 

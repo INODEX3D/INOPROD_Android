@@ -4,24 +4,29 @@ import java.util.Date;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.R.layout;
+import com.inodex.inoprod.activities.MainActivity;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
 import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.SimpleCursorAdapter;
@@ -34,8 +39,8 @@ public class RepriseBlindageTa extends Activity {
 	private TextView titre, numeroConnecteur, repereElectrique,
 			positionChariot, numeroReprise, sensReprise;
 	private ImageButton boutonCheck, infoProduit, retour, boutonAide;
-	private GridView gridView;
-	private Button scan;
+	private GridView gridView1, gridView2;
+
 
 	/** Uri à manipuler */
 	private Uri urlSeq = SequencementProvider.CONTENT_URI;
@@ -46,6 +51,8 @@ public class RepriseBlindageTa extends Activity {
 
 	/** Indice de l'opération courante */
 	private int indiceCourant = 0;
+	private int indiceLimite = 0;
+	private int nbRows;
 
 	/** Tableau des infos produit */
 	private String labels[];
@@ -62,38 +69,64 @@ public class RepriseBlindageTa extends Activity {
 	private ContentResolver cr;
 	private ContentValues contact;
 
-	private String clause, numeroOperation;;
+	private String clause, numeroOperation, numeroCable, numeroCo, clauseTotal,clauseTotal1,
+			numeroRep, oldClauseTotal;
 	private boolean prodAchevee;
 
 	/** Colonnes utilisés pour les requêtes */
 	private String columnsSeq[] = new String[] { Operation._id,
 			Operation.GAMME, Operation.RANG_1_1, Operation.NUMERO_OPERATION,
 			Operation.NOM_OPERATEUR, Operation.DATE_REALISATION,
-			Operation.HEURE_REALISATION };
+			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION };
 
-	private int layouts[] = new int[] { R.id.statutLiaison,
-			R.id.numeroRevisionLiaison, R.id.numeroCable, R.id.typeCable,
-			R.id.numeroFilReprise, R.id.typeFilReprise,
-			R.id.referenceFabricantManchon, R.id.referenceInterneManchon,
-			R.id.referenceOutillage, R.id.numeroSerieOutillage,
-			R.id.reglageTemperature, };
+	private int layouts1[] = new int[] { R.id.statutLiaison,
+			R.id.numeroRevisionLiaison, R.id.numeroCable, R.id.typeCable, };
 
-	private String columnsRac[] = new String[] { /*A VOIR */};
+	private int layouts2[] = new int[] { R.id.numeroFilReprise,
+			R.id.typeFilReprise, R.id.referenceFabricantManchon,
+			R.id.referenceInterneManchon, R.id.referenceOutillage,
+			R.id.numeroSerieOutillage, R.id.reglageTemperature, };
+
+	private String colRac1[] = new String[] { Raccordement.ETAT_LIAISON_FIL,
+			Raccordement.NUMERO_REVISION_FIL, Raccordement.NUMERO_FIL_CABLE,
+			Raccordement.TYPE_FIL_CABLE, Raccordement._id,
+			Raccordement.NUMERO_COMPOSANT_TENANT,
+			Raccordement.NUMERO_COMPOSANT_ABOUTISSANT,
+			Raccordement.ORDRE_REALISATION, Raccordement.NUMERO_OPERATION,
+			Raccordement.REPRISE_BLINDAGE, Raccordement.SANS_REPRISE_BLINDAGE,
+			Raccordement.NUMERO_POSITION_CHARIOT,
+			Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT,
+			Raccordement.REPERE_ELECTRIQUE_TENANT };
+
+	private String colRac2[] = new String[] { Raccordement.NUMERO_FIL_CABLE,
+			Raccordement.TYPE_FIL_CABLE, Raccordement.REFERENCE_FABRICANT2,
+			Raccordement.REFERENCE_INTERNE,
+			Raccordement.REFERENCE_OUTIL_ABOUTISSANT,
+			Raccordement.REFERENCE_ACCESSOIRE_OUTIL_TENANT, Raccordement._id,
+			Raccordement.NUMERO_COMPOSANT_TENANT,
+			Raccordement.NUMERO_COMPOSANT_ABOUTISSANT,
+			Raccordement.ORDRE_REALISATION, Raccordement.NUMERO_OPERATION,
+			Raccordement.REPRISE_BLINDAGE,
+			Raccordement.NUMERO_POSITION_CHARIOT,
+			Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT,
+			Raccordement.REPERE_ELECTRIQUE_TENANT,
+			Raccordement.SANS_REPRISE_BLINDAGE };
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_reprise_blindage_ta);
-		setContentView(R.layout.activity_preparation_ta);
 		// Récupération des éléments
 		Intent intent = getIntent();
 		indiceCourant = intent.getIntExtra("Indice", 0);
 		nomPrenomOperateur = intent.getStringArrayExtra("Noms");
 		opId = intent.getIntArrayExtra("opId");
 		cr = getContentResolver();
+		contact = new ContentValues();
 
 		// Récuperation des éléments de la vue
-		gridView = (GridView) findViewById(R.id.gridview);
+		gridView1 = (GridView) findViewById(R.id.gridview);
+		gridView2 = (GridView) findViewById(R.id.gridView1);
 		titre = (TextView) findViewById(R.id.textView1);
 		numeroConnecteur = (TextView) findViewById(R.id.textView3);
 		boutonAide = (ImageButton) findViewById(R.id.imageButton4);
@@ -112,45 +145,234 @@ public class RepriseBlindageTa extends Activity {
 		if (cursor.moveToFirst()) {
 			numeroOperation = cursor.getString(cursor
 					.getColumnIndex(Operation.NUMERO_OPERATION));
+			numeroCo = (cursor.getString(cursor
+					.getColumnIndex(Operation.RANG_1_1))).substring(11, 14);
+			numeroConnecteur.append(" : " + numeroCo);
+			Log.e("Connnecteur", numeroCo);
 		}
-		// Affichage du contenu
-		displayContentProvider();
+
+		// Recuperation de la première opération
+		clause = new String(Raccordement.NUMERO_OPERATION + "='"
+				+ numeroOperation + "'");
+		cursorA = cr.query(urlRac, colRac1, clause, null, Raccordement._id
+				+ " ASC");
+		if (cursorA.moveToFirst()) {
+
+			positionChariot
+					.append(" : "
+							+ cursorA.getString(cursorA
+									.getColumnIndex(Raccordement.NUMERO_POSITION_CHARIOT)));
+
+			if (numeroOperation.startsWith("4")) {
+				titre.setText(R.string.repriseBlindageTa);
+				repereElectrique
+						.append(" : "
+								+ cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
+				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
+						+ numeroCo + "' AND " + Raccordement.REPRISE_BLINDAGE
+						+ "!='" + "null" + "' GROUP BY "
+						+ Raccordement.REPRISE_BLINDAGE;
+			} else {
+				titre.setText(R.string.repriseBlindageTb);
+				repereElectrique
+						.append(" : "
+								+ cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT)));
+				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
+						+ numeroCo + "' AND " + Raccordement.REPRISE_BLINDAGE
+						+ "!='" + "null" + "' GROUP BY "
+						+ Raccordement.REPRISE_BLINDAGE;
+			}
+
+		}
+
+		nbRows = cr.query(urlRac, colRac1, clause, null, Raccordement._id)
+				.getCount();
+		Log.e("NombreLignes", "" + nbRows);
 
 		// Etape suivante
 
 		// Info Produit
-		
-		
-		// Scan 
-		scan.setOnClickListener(new View.OnClickListener() {
+
+		// Scan
+		boutonCheck.setOnClickListener(new View.OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				try {
-					Intent intent = new Intent(
-							"com.google.zxing.client.android.SCAN");
-					intent.setPackage("com.google.zxing.client.android");
-					intent.putExtra(
-							"com.google.zxing.client.android.SCAN.SCAN_MODE",
-							"QR_CODE_MODE");
-					startActivityForResult(intent, 0);
-				} catch (ActivityNotFoundException e) {
-					Toast.makeText(
-							RepriseBlindageTa.this,
-							"Impossible de trouver une application pour gérer le scan",
-							Toast.LENGTH_SHORT).show();
-				}
 
+				if (prodAchevee) {
+					indiceCourant++;
+					String nextOperation = null;
+					try {
+						int test = opId[indiceCourant];
+						clause = Operation._id + "='" + test + "'";
+						cursor = cr.query(urlSeq, columnsSeq, clause, null,
+								Operation._id);
+						if (cursor.moveToFirst()) {
+							nextOperation = cursor.getString(cursor
+									.getColumnIndex(Operation.DESCRIPTION_OPERATION));
+							Intent toNext = null;
+							if (nextOperation.startsWith("Préparation")) {
+								toNext = new Intent(RepriseBlindageTa.this,
+										PreparationTa.class);
+							} else if (nextOperation.startsWith("Reprise")) {
+								toNext = new Intent(RepriseBlindageTa.this,
+										RepriseBlindageTa.class);
+							} else if (nextOperation
+									.startsWith("Denudage Sertissage Enfichage")) {
+								toNext = new Intent(RepriseBlindageTa.this,
+										DenudageSertissageEnfichageTa.class);
+							} else if (nextOperation
+									.startsWith("Denudage Sertissage de")) {
+								toNext = new Intent(RepriseBlindageTa.this,
+										DenudageSertissageContactTa.class);
+							}
+							if (toNext != null) {
+
+								toNext.putExtra("opId", opId);
+								toNext.putExtra("Noms", nomPrenomOperateur);
+								toNext.putExtra("Indice", indiceCourant);
+								startActivity(toNext);
+							}
+
+						}
+
+					} catch (ArrayIndexOutOfBoundsException e) {
+						Intent toNext = new Intent(RepriseBlindageTa.this,
+								MainMenuCableur.class);
+						toNext.putExtra("Noms", nomPrenomOperateur);
+						toNext.putExtra("opId", opId);
+						toNext.putExtra("Indice", indiceCourant);
+						startActivity(toNext);
+
+					}
+
+				} else {
+
+					try {
+						Intent intent = new Intent(
+								"com.google.zxing.client.android.SCAN");
+						intent.setPackage("com.google.zxing.client.android");
+						intent.putExtra(
+								"com.google.zxing.client.android.SCAN.SCAN_MODE",
+								"QR_CODE_MODE");
+						startActivityForResult(intent, 0);
+					} catch (ActivityNotFoundException e) {
+						AlertDialog.Builder builder = new AlertDialog.Builder(
+								RepriseBlindageTa.this);
+						builder.setMessage("Impossible de trouver une application pour le scan. Entrez le N° de cable.");
+						builder.setCancelable(false);
+						final EditText cable = new EditText(
+								RepriseBlindageTa.this);
+						builder.setView(cable);
+						builder.setPositiveButton("Valider",
+								new DialogInterface.OnClickListener() {
+
+									public void onClick(DialogInterface dialog,
+											int which) {
+										numeroCable = cable.getText()
+												.toString();
+										Log.e("N°Cable", numeroCable);
+
+										clause = Raccordement.NUMERO_FIL_CABLE
+												+ "='" + numeroCable + "' AND "
+												+ Raccordement.REPRISE_BLINDAGE
+												+ "!='" + "null" + "'";
+										cursorA = cr.query(urlRac, colRac1,
+												clause, null, Raccordement._id);
+										if (cursorA.moveToFirst()) {
+											if (clauseTotal == null) {
+												clauseTotal = Raccordement.NUMERO_FIL_CABLE
+														+ "='"
+														+ numeroCable
+														+ "'";
+											} else {
+												oldClauseTotal = clauseTotal;
+												clauseTotal += " OR "
+														+ Raccordement.NUMERO_FIL_CABLE
+														+ "='" + numeroCable
+														+ "'";
+											}
+											numeroRep = cursorA.getString(cursorA
+													.getColumnIndex(Raccordement.REPRISE_BLINDAGE));
+											numeroReprise
+													.setText("Numero Reprise: "
+															+ numeroRep);
+											sensReprise.setText("Sens reprise : " + cursorA.getString(cursorA
+													.getColumnIndex(Raccordement.SANS_REPRISE_BLINDAGE)));
+											indiceLimite++;
+											displayContentProvider();
+											indiceCourant++;
+										} else {
+											Toast.makeText(
+													RepriseBlindageTa.this,
+													"Ce cable ne correspond pas",
+													Toast.LENGTH_SHORT).show();
+
+										}
+									}
+
+								});
+
+						builder.setNegativeButton("Annuler",
+								new DialogInterface.OnClickListener() {
+									public void onClick(
+											final DialogInterface dialog,
+											final int id) {
+
+										dialog.cancel();
+
+									}
+								});
+
+						builder.show();
+					}
+
+				}
 			}
 		});
+		
+		
+		// Retour arrière
+		retour.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				if (indiceLimite > 0) {
+					indiceLimite--;
+					Log.e("Indice", "" + indiceLimite);
+				}
+				if (indiceCourant > 0) {
+					indiceCourant--;
+					Log.e("Indice", "" + indiceLimite);
+				}
+				
+				clauseTotal = oldClauseTotal;
+				// Vérification de l'état de la production
+				prodAchevee = (indiceLimite >= nbRows);
+				displayContentProvider();
+			}
+		});
+
 	}
 
 	private void displayContentProvider() {
 		// Création du SimpleCursorAdapter affilié au GridView
-		SimpleCursorAdapter sca = new SimpleCursorAdapter(this,
-				R.layout.grid_layout_reprise_blindage_ta, null, null, layouts);
+		cursor = cr.query(urlRac, colRac1, clauseTotal + " GROUP BY " + Raccordement.NUMERO_FIL_CABLE, null, Raccordement._id);
+		SimpleCursorAdapter sca1 = new SimpleCursorAdapter(this,
+				R.layout.grid_layout_reprise_blindage_ta1, cursor, colRac1,
+				layouts1);
 
-		gridView.setAdapter(sca);
+		gridView1.setAdapter(sca1);
+
+		
+		cursorA = cr.query(urlRac, colRac2, null, null, Raccordement._id);
+		SimpleCursorAdapter sca2 = new SimpleCursorAdapter(this,
+				R.layout.grid_layout_reprise_blindage_ta2, null, colRac2,
+				layouts2);
+
+		// gridView2.setAdapter(sca2);
 		// MAJ Table de sequencement
 		contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0] + " "
 				+ nomPrenomOperateur[1]);
@@ -161,26 +383,33 @@ public class RepriseBlindageTa extends Activity {
 				new String[] { Integer.toString(opId[indiceCourant]) });
 		contact.clear();
 
+		
+
+		// Vérification de l'état de la production
+		if (indiceLimite == nbRows) {
+			prodAchevee = true;
+			Toast.makeText(this, "Production achevée", Toast.LENGTH_LONG)
+					.show();
+		}
+
 	}
 
 	/** Bloquage du bouton retour */
 	public void onBackPressed() {
 
 	}
-	
-	
+
 	// Récupération du code barre scanné
-				public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-					if (requestCode == 0) {
-						if (resultCode == RESULT_OK) {
-							String contents = intent.getStringExtra("SCAN_RESULT");
-							/*ACTION A EFFECTUER */
-							String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
-						} else if (resultCode == RESULT_CANCELED) {
-							Toast.makeText(RepriseBlindageTa.this,
-									"Echec du scan de l'identifiant", Toast.LENGTH_SHORT)
-									.show();
-						}
-					}
-				} 
+	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		if (requestCode == 0) {
+			if (resultCode == RESULT_OK) {
+				String contents = intent.getStringExtra("SCAN_RESULT");
+				/* ACTION A EFFECTUER */
+				String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
+			} else if (resultCode == RESULT_CANCELED) {
+				Toast.makeText(RepriseBlindageTa.this, "Echec du scan",
+						Toast.LENGTH_SHORT).show();
+			}
+		}
+	}
 }

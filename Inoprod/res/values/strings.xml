@@ -183,5 +183,10 @@
     <string name="title_activity_controle_final_harnais">ControleFinalHarnais</string>
     <string name="controleFinalHarnais">Contrôle de final harnais</string>
     <string name="articleServi">Article servi</string>
+    <string name="preparationTb">Préparation Têtes B</string>
+    <string name="repriseBlindageTb">Reprise de blindage des têtes B</string>
+    <string name="denudageSertissageTb">Dénudage &amp; Sertissage des têtes B</string>
+    <string name="enfichageTb">Enfichage des têtes B</string>
+    <string name="denudageSertissageEnfichageTb">Denudage Sertissage &amp; Enfichage des têtes B</string>
 
 </resources>
