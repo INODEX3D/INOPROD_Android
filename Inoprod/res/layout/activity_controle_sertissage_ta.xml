@@ -118,7 +118,7 @@
         android:layout_alignBottom="@+id/exitButton1"
         android:layout_alignTop="@id/exitButton1"
         android:layout_toLeftOf="@+id/imageButton1"
-        android:src="@drawable/back" />
+        android:src="@drawable/annuler6" />
 
     <LinearLayout
         android:id="@+id/head"

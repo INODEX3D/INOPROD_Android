@@ -188,5 +188,12 @@
     <string name="denudageSertissageTb">Dénudage &amp; Sertissage des têtes B</string>
     <string name="enfichageTb">Enfichage des têtes B</string>
     <string name="denudageSertissageEnfichageTb">Denudage Sertissage &amp; Enfichage des têtes B</string>
+    <string name="finalisationTb">Finalisation têtes B</string>
+    <string name="triAboutissantsTb">Tri des aboutissants têtes B</string>
+    <string name="title_activity_mise_longueur_tb">MiseLongueurTb</string>
+    <string name="miseLongueur">Mise à longueur têtes B</string>
+    <string name="instructionMiseLongueur">Veuillez couper les câbles aux côtes définies sur le gabarit</string>
+    <string name="controleFinalisationTb">Contrôle finalisation têtes B</string>
+    <string name="controleSertissageTb">Contôle des sertissages têtes B</string>
 
 </resources>

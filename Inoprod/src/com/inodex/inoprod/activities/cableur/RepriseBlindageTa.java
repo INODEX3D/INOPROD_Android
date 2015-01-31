@@ -1,6 +1,9 @@
 package com.inodex.inoprod.activities.cableur;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.R.layout;
@@ -29,6 +32,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.SimpleAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,7 +44,6 @@ public class RepriseBlindageTa extends Activity {
 			positionChariot, numeroReprise, sensReprise;
 	private ImageButton boutonCheck, infoProduit, retour, boutonAide;
 	private GridView gridView1, gridView2;
-
 
 	/** Uri à manipuler */
 	private Uri urlSeq = SequencementProvider.CONTENT_URI;
@@ -61,16 +64,18 @@ public class RepriseBlindageTa extends Activity {
 	private Date dateRealisation = new Date();
 	private Time heureRealisation = new Time();
 
+	private List<HashMap<String, String>> liste = new ArrayList<HashMap<String, String>>();
+
 	/** Nom de l'opérateur */
 	private String nomPrenomOperateur[] = null;
 
 	/** Curseur et Content Resolver à utiliser lors des requêtes */
-	private Cursor cursor, cursorA;
+	private Cursor cursor, cursorA, cursorB;
 	private ContentResolver cr;
 	private ContentValues contact;
 
-	private String clause, numeroOperation, numeroCable, numeroCo, clauseTotal,clauseTotal1,
-			numeroRep, oldClauseTotal;
+	private String clause, numeroOperation, numeroCable, numeroCo, clauseTotal,
+			clauseTotal1, numeroRep, oldClauseTotal;
 	private boolean prodAchevee;
 
 	/** Colonnes utilisés pour les requêtes */
@@ -80,12 +85,11 @@ public class RepriseBlindageTa extends Activity {
 			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION };
 
 	private int layouts1[] = new int[] { R.id.statutLiaison,
-			R.id.numeroRevisionLiaison, R.id.numeroCable, R.id.typeCable, };
-
-	private int layouts2[] = new int[] { R.id.numeroFilReprise,
-			R.id.typeFilReprise, R.id.referenceFabricantManchon,
-			R.id.referenceInterneManchon, R.id.referenceOutillage,
-			R.id.numeroSerieOutillage, R.id.reglageTemperature, };
+			R.id.numeroRevisionLiaison, R.id.numeroCable, R.id.typeCable,
+			R.id.numeroFilReprise, R.id.typeFilReprise,
+			R.id.referenceFabricantManchon, R.id.referenceInterneManchon,
+			R.id.referenceOutillage, R.id.numeroSerieOutillage,
+			R.id.reglageTemperature };
 
 	private String colRac1[] = new String[] { Raccordement.ETAT_LIAISON_FIL,
 			Raccordement.NUMERO_REVISION_FIL, Raccordement.NUMERO_FIL_CABLE,
@@ -96,21 +100,10 @@ public class RepriseBlindageTa extends Activity {
 			Raccordement.REPRISE_BLINDAGE, Raccordement.SANS_REPRISE_BLINDAGE,
 			Raccordement.NUMERO_POSITION_CHARIOT,
 			Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT,
-			Raccordement.REPERE_ELECTRIQUE_TENANT };
-
-	private String colRac2[] = new String[] { Raccordement.NUMERO_FIL_CABLE,
-			Raccordement.TYPE_FIL_CABLE, Raccordement.REFERENCE_FABRICANT2,
+			Raccordement.REPERE_ELECTRIQUE_TENANT,
 			Raccordement.REFERENCE_INTERNE,
 			Raccordement.REFERENCE_OUTIL_ABOUTISSANT,
-			Raccordement.REFERENCE_ACCESSOIRE_OUTIL_TENANT, Raccordement._id,
-			Raccordement.NUMERO_COMPOSANT_TENANT,
-			Raccordement.NUMERO_COMPOSANT_ABOUTISSANT,
-			Raccordement.ORDRE_REALISATION, Raccordement.NUMERO_OPERATION,
-			Raccordement.REPRISE_BLINDAGE,
-			Raccordement.NUMERO_POSITION_CHARIOT,
-			Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT,
-			Raccordement.REPERE_ELECTRIQUE_TENANT,
-			Raccordement.SANS_REPRISE_BLINDAGE };
+			Raccordement.REFERENCE_ACCESSOIRE_OUTIL_TENANT, };
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -126,7 +119,6 @@ public class RepriseBlindageTa extends Activity {
 
 		// Récuperation des éléments de la vue
 		gridView1 = (GridView) findViewById(R.id.gridview);
-		gridView2 = (GridView) findViewById(R.id.gridView1);
 		titre = (TextView) findViewById(R.id.textView1);
 		numeroConnecteur = (TextView) findViewById(R.id.textView3);
 		boutonAide = (ImageButton) findViewById(R.id.imageButton4);
@@ -227,6 +219,9 @@ public class RepriseBlindageTa extends Activity {
 									.startsWith("Denudage Sertissage de")) {
 								toNext = new Intent(RepriseBlindageTa.this,
 										DenudageSertissageContactTa.class);
+							} else if (nextOperation.startsWith("Enfichage")) {
+								toNext = new Intent(RepriseBlindageTa.this,
+										EnfichagesTa.class);
 							}
 							if (toNext != null) {
 
@@ -282,25 +277,85 @@ public class RepriseBlindageTa extends Activity {
 										cursorA = cr.query(urlRac, colRac1,
 												clause, null, Raccordement._id);
 										if (cursorA.moveToFirst()) {
-											if (clauseTotal == null) {
-												clauseTotal = Raccordement.NUMERO_FIL_CABLE
-														+ "='"
-														+ numeroCable
-														+ "'";
-											} else {
-												oldClauseTotal = clauseTotal;
-												clauseTotal += " OR "
-														+ Raccordement.NUMERO_FIL_CABLE
-														+ "='" + numeroCable
-														+ "'";
-											}
+
 											numeroRep = cursorA.getString(cursorA
 													.getColumnIndex(Raccordement.REPRISE_BLINDAGE));
 											numeroReprise
 													.setText("Numero Reprise: "
 															+ numeroRep);
-											sensReprise.setText("Sens reprise : " + cursorA.getString(cursorA
-													.getColumnIndex(Raccordement.SANS_REPRISE_BLINDAGE)));
+											sensReprise.setText("Sens reprise : "
+													+ cursorA.getString(cursorA
+															.getColumnIndex(Raccordement.SANS_REPRISE_BLINDAGE)));
+
+											clause = Raccordement.NUMERO_FIL_CABLE
+													+ "!='"
+													+ numeroCable
+													+ "' AND "
+													+ Raccordement.REPRISE_BLINDAGE
+													+ "='"
+													+ numeroRep
+													+ "' GROUP BY "
+													+ Raccordement.NUMERO_FIL_CABLE;
+											cursorB = cr.query(urlRac, colRac1,
+													clause, null,
+													Raccordement._id);
+											if (cursorB.moveToFirst()) {
+												do {
+
+													HashMap<String, String> element;
+
+													element = new HashMap<String, String>();
+													element.put(
+															colRac1[0],
+															cursorA.getString(cursorA
+																	.getColumnIndex(colRac1[0])));
+													element.put(
+															colRac1[1],
+															cursorA.getString(cursorA
+																	.getColumnIndex(colRac1[1])));
+													element.put(
+															colRac1[2],
+															cursorA.getString(cursorA
+																	.getColumnIndex(colRac1[2])));
+													element.put(
+															colRac1[3],
+															cursorA.getString(cursorA
+																	.getColumnIndex(colRac1[3])));
+													element.put(
+															colRac1[4],
+															cursorB.getString(cursorB
+																	.getColumnIndex(colRac1[2])));
+													element.put(
+															colRac1[5],
+															cursorB.getString(cursorB
+																	.getColumnIndex(colRac1[3])));
+													element.put(
+															colRac1[6],
+															cursorA.getString(cursorA
+																	.getColumnIndex(colRac1[4])));
+													element.put(
+															colRac1[7],
+															cursorA.getString(cursorA
+																	.getColumnIndex(colRac1[5])));
+													element.put(
+															colRac1[8],
+															cursorA.getString(cursorA
+																	.getColumnIndex(colRac1[6])));
+													element.put(
+															colRac1[9],
+															cursorA.getString(cursorA
+																	.getColumnIndex(colRac1[7])));
+													element.put(
+															colRac1[10],
+															cursorA.getString(cursorA
+																	.getColumnIndex(colRac1[8])));
+
+													liste.add(element);
+
+												} while (cursorB.moveToNext());
+
+											}
+
 											indiceLimite++;
 											displayContentProvider();
 											indiceCourant++;
@@ -332,8 +387,7 @@ public class RepriseBlindageTa extends Activity {
 				}
 			}
 		});
-		
-		
+
 		// Retour arrière
 		retour.setOnClickListener(new View.OnClickListener() {
 
@@ -347,7 +401,7 @@ public class RepriseBlindageTa extends Activity {
 					indiceCourant--;
 					Log.e("Indice", "" + indiceLimite);
 				}
-				
+
 				clauseTotal = oldClauseTotal;
 				// Vérification de l'état de la production
 				prodAchevee = (indiceLimite >= nbRows);
@@ -359,18 +413,11 @@ public class RepriseBlindageTa extends Activity {
 
 	private void displayContentProvider() {
 		// Création du SimpleCursorAdapter affilié au GridView
-		cursor = cr.query(urlRac, colRac1, clauseTotal + " GROUP BY " + Raccordement.NUMERO_FIL_CABLE, null, Raccordement._id);
-		SimpleCursorAdapter sca1 = new SimpleCursorAdapter(this,
-				R.layout.grid_layout_reprise_blindage_ta1, cursor, colRac1,
-				layouts1);
+
+		SimpleAdapter sca1 = new SimpleAdapter(this, liste,
+				R.layout.grid_layout_reprise_blindage_ta1, colRac1, layouts1);
 
 		gridView1.setAdapter(sca1);
-
-		
-		cursorA = cr.query(urlRac, colRac2, null, null, Raccordement._id);
-		SimpleCursorAdapter sca2 = new SimpleCursorAdapter(this,
-				R.layout.grid_layout_reprise_blindage_ta2, null, colRac2,
-				layouts2);
 
 		// gridView2.setAdapter(sca2);
 		// MAJ Table de sequencement
@@ -382,8 +429,6 @@ public class RepriseBlindageTa extends Activity {
 		cr.update(urlSeq, contact, Operation._id + " = ?",
 				new String[] { Integer.toString(opId[indiceCourant]) });
 		contact.clear();
-
-		
 
 		// Vérification de l'état de la production
 		if (indiceLimite == nbRows) {

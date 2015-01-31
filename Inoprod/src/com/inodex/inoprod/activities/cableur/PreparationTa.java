@@ -1,6 +1,9 @@
 package com.inodex.inoprod.activities.cableur;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -14,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.SimpleAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,8 +57,12 @@ public class PreparationTa extends Activity {
 	/** Tableau des infos produit */
 	private String labels[];
 
-	private int nbRows, idFirst;
+	private int nbRows;
+	
 
+	private List<HashMap<String, String>> liste = new ArrayList<HashMap<String, String>>();
+
+	private List<HashMap<String, String>> oldListe = null;
 	/** Heure et dates à ajouter à la table de séquencment */
 	private Date dateRealisation = new Date();
 	private Time heureRealisation = new Time();
@@ -77,7 +85,7 @@ public class PreparationTa extends Activity {
 			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION };
 
 	private int layouts[] = new int[] { R.id.designation,
-			R.id.referenceFabricant, R.id.referenceInterne, R.id.numeroBorne, };
+			R.id.referenceFabricant, R.id.referenceInterne, R.id.numeroBorne, R.id.articleMonte};
 
 	private String colRac[] = new String[] { Raccordement.DESIGNATION,
 			Raccordement.REFERENCE_FABRICANT2, Raccordement.REFERENCE_INTERNE,
@@ -137,7 +145,7 @@ public class PreparationTa extends Activity {
 				+ " ASC");
 		if (cursorA.moveToFirst()) {
 
-			idFirst = cursorA.getInt(cursorA.getColumnIndex(Raccordement._id));
+			
 			positionChariot
 					.append(" : "
 							+ cursorA.getString(cursorA
@@ -171,7 +179,7 @@ public class PreparationTa extends Activity {
 				.getCount();
 		Log.e("NombreLignes", "" + nbRows);
 
-		contact = new ContentValues();
+
 
 		displayContentProvider();
 
@@ -230,8 +238,39 @@ public class PreparationTa extends Activity {
 
 					}
 				} else { // Production toujours en cours
-					// On affiche le cable suivant à débiter
-					displayContentProvider();
+					
+					cursorA = cr.query(urlRac, colRac, clause, null, Raccordement._id
+							+ " LIMIT " + indiceLimite);
+					oldListe = liste;
+					if (cursorA.moveToLast()) {
+						HashMap<String, String> element;
+
+						element = new HashMap<String, String>();
+						element.put(
+								colRac[0],
+								cursorA.getString(cursorA
+										.getColumnIndex(colRac[0])));
+						element.put(
+								colRac[1],
+								cursorA.getString(cursorA
+										.getColumnIndex(colRac[1])));
+						element.put(
+								colRac[2],
+								cursorA.getString(cursorA
+										.getColumnIndex(colRac[2])));
+						element.put(
+								colRac[3],
+								cursorA.getString(cursorA
+										.getColumnIndex(colRac[3])));
+						element.put(
+								colRac[4],"X");
+						
+						liste.add(element);
+
+					
+						displayContentProvider();
+
+					}
 				}
 			}
 		});
@@ -250,6 +289,7 @@ public class PreparationTa extends Activity {
 					Log.e("Indice", "" + indiceLimite);
 				}
 				
+				liste=oldListe;
 
 				// Vérification de l'état de la production
 				prodAchevee = (indiceLimite >= nbRows);
@@ -262,8 +302,8 @@ public class PreparationTa extends Activity {
 
 	private void displayContentProvider() {
 		// Création du SimpleCursorAdapter affilié au GridView
-		SimpleCursorAdapter sca = new SimpleCursorAdapter(this,
-				R.layout.grid_layout_preparation_ta, null, colRac, layouts);
+		SimpleAdapter sca = new SimpleAdapter(this, liste,
+				R.layout.grid_layout_preparation_ta,  colRac, layouts);
 
 		gridView.setAdapter(sca);
 		// MAJ Table de sequencement
@@ -280,9 +320,8 @@ public class PreparationTa extends Activity {
 		Log.e("Connnecteur", Integer.toString(opId[indiceCourant]));
 
 		
-		cursor = cr.query(urlRac, colRac, clause, null, Raccordement._id
-				+ " LIMIT " + indiceLimite);
-		sca.changeCursor(cursor);
+		
+
 
 		// Vérification de l'état de la production
 		if (indiceLimite == nbRows) {

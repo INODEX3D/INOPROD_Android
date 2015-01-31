@@ -22,6 +22,7 @@ public class TableSequencement {
 		public static final String DUREE_MESUREE = "DUREE_MESUREE";
 		public static final String DUREE_THEORIQUE = "DUREE_THEORIQUE";
 		public static final String DUREE_ECART = "DUREE_ECART";
+		public static final String REALISABLE = "REALISABLE";
 		
 		
 		

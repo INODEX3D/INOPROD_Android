@@ -71,10 +71,10 @@
         <provider
             android:name=".business.OutillageProvider"
             android:authorities="com.inodex.inoprod.business.outillage" />
-         <provider
+        <provider
             android:name=".business.SupportProvider"
             android:authorities="com.inodex.inoprod.business.support" />
-         <provider
+        <provider
             android:name=".business.ChariotProvider"
             android:authorities="com.inodex.inoprod.business.chariots" />
         <provider
@@ -202,8 +202,12 @@
             android:label="@string/title_activity_controle_retention_ta" >
         </activity>
         <activity
-            android:name="com.inodex.inoprod.activities.controleur.ControleFinalHarnais"
+            android:name=".activities.controleur.ControleFinalHarnais"
             android:label="@string/title_activity_controle_final_harnais" >
+        </activity>
+        <activity
+            android:name="com.inodex.inoprod.activities.cableur.MiseLongueurTb"
+            android:label="@string/title_activity_mise_longueur_tb" >
         </activity>
     </application>
 

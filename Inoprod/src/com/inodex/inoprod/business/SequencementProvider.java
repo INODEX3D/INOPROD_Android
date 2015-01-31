@@ -68,7 +68,8 @@ public class SequencementProvider extends ContentProvider {
 				+ Operation.NOM_OPERATEUR + " STRING," 
 				+ Operation.NUMERO_OPERATION + " STRING," 
 				+ Operation.RANG_1 + " STRING," 
-				+ Operation.RANG_1_1 + " STRING" 
+				+ Operation.RANG_1_1 + " STRING," 
+				+ Operation.REALISABLE + " INTEGER"
 				+ ");");
 			}
 

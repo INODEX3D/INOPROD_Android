@@ -63,7 +63,7 @@ public class DenudageSertissageManchonsCossesTb extends Activity {
 	private ContentResolver cr;
 	private ContentValues contact;
 
-	private String clause, numeroOperation;;
+	private String clause, numeroOperation;
 	private boolean prodAchevee;
 
 	/** Colonnes utilisés pour les requêtes */

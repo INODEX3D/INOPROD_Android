@@ -1,6 +1,9 @@
 package com.inodex.inoprod.activities.magasiniers;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -11,10 +14,12 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.SimpleAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,8 +56,11 @@ public class ServitudeComposants extends Activity {
 
 	/** Indice de l'opération courante */
 	private int indiceCourant = 0;
+	private int indiceLimite = 0;
 
 	private SimpleCursorAdapter sca;
+	
+	private List<HashMap<String, String>> liste = new ArrayList<HashMap<String, String>>();
 
 	private int numeroDebit, nbItem, nbRows, idFirst;
 	/** Heure et dates à ajouter à la table de séquencment */
@@ -84,7 +92,7 @@ public class ServitudeComposants extends Activity {
 			BOM.REFERENCE_INTERNE, BOM.REFERENCE_FABRICANT2, BOM._id };
 	private int[] layouts = new int[] { R.id.repereElectrique,
 			R.id.numeroConnecteur, R.id.positionChariot, R.id.ordreRealisation,
-			R.id.quantite, R.id.uniteMesure, R.id.numeroLot };
+			R.id.quantite, R.id.uniteMesure, R.id.numeroLot, R.id.articleServi };
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -216,7 +224,51 @@ public class ServitudeComposants extends Activity {
 					}
 				} else {// Production toujours en cours
 					// On affiche le cable suivant à débiter
+				
+					HashMap<String, String> element;
+					idFirst++;
+					clause = new String(BOM.NUMERO_DEBIT + "='" + numeroDebit + "' AND "
+							+ BOM._id + "='" + (idFirst) +"'");
+					cursor = cr.query(urlBOM, columnsBOM, clause, null, null);
+				
+					if (cursor.moveToFirst()) {
+						Log.e("Curseur", "Trouvé");
+
+					element = new HashMap<String, String>();
+					element.put(
+							columnsBOM[0],
+							cursor.getString(cursor
+									.getColumnIndex(columnsBOM[0])));
+					element.put(
+							columnsBOM[1],
+							cursor.getString(cursor
+									.getColumnIndex(columnsBOM[1])));
+					element.put(
+							columnsBOM[2],
+							cursor.getString(cursor
+									.getColumnIndex(columnsBOM[2])));
+					element.put(
+							columnsBOM[3],
+							cursor.getString(cursor
+									.getColumnIndex(columnsBOM[3])));
+					element.put(
+							columnsBOM[4],
+							cursor.getString(cursor
+									.getColumnIndex(columnsBOM[4])));
+					element.put(
+							columnsBOM[5],
+							cursor.getString(cursor
+									.getColumnIndex(columnsBOM[5])));
+					element.put(
+							columnsBOM[6],
+							cursor.getString(cursor
+									.getColumnIndex(columnsBOM[6])));
+					element.put(columnsBOM[7], "X");
+					liste.add(element);
+					indiceLimite++;
 					displayContentProvider();
+					}
+
 				}
 			}
 		});
@@ -230,27 +282,18 @@ public class ServitudeComposants extends Activity {
 	 */
 	private void displayContentProvider() {
 		// Création du SimpleCursorAdapter affilié au GridView
-		sca = new SimpleCursorAdapter(this,
-				R.layout.grid_layout_servitude_composants, null, columnsBOM,
+		SimpleAdapter sa = new SimpleAdapter(this, liste,
+				R.layout.grid_layout_servitude_composants,  columnsBOM,
 				layouts);
 
-		gridView.setAdapter(sca);
+		gridView.setAdapter(sa);
 
-		servi = new TextView(ServitudeComposants.this);
-		servi.setWidth(44);
-		servi.setHeight(30);
-		servi.setTextColor(Color.RED);
-		servi.setTextScaleX(9);
-		layoutServi.addView(servi);
+
 
 		// Affichage des cables à débiter ou dèja débité
-		clause = new String(BOM.NUMERO_DEBIT + "='" + numeroDebit + "' AND "
-				+ BOM._id + "<='" + (idFirst) +"'");
-		cursor = cr.query(urlBOM, columnsBOM, clause, null, null);
-		sca.changeCursor(cursor);
-
+	
 		// Vérification de l'état de la production
-		if (cursor.getCount() == nbRows) {
+		if (indiceLimite == nbRows) {
 			prodAchevee = true;
 			Toast.makeText(this, "Production achevée", Toast.LENGTH_LONG)
 					.show();
@@ -263,7 +306,7 @@ public class ServitudeComposants extends Activity {
 				heureRealisation.setToNow();
 				contact.put(Operation.HEURE_REALISATION, heureRealisation.toString());
 				cr.update(urlSeq, contact, Operation._id + " = ?",
-						new String[] { Integer.toString(idFirst++) });
+						new String[] { Integer.toString(idFirst) });
 				contact.clear();
 
 	}

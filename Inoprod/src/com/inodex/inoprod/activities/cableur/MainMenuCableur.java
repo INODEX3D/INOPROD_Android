@@ -1,5 +1,6 @@
 package com.inodex.inoprod.activities.cableur;
 
+import android.R.color;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
@@ -11,7 +12,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.activities.MainActivity;
@@ -28,7 +31,7 @@ import com.inodex.inoprod.business.TableSequencement.Operation;
  * 
  */
 public class MainMenuCableur extends Activity {
-	
+
 	/** Bouton qui permet de revenir au menu principal */
 	private ImageButton boutonExit = null;
 
@@ -54,126 +57,150 @@ public class MainMenuCableur extends Activity {
 	private String clause, firstOperation;
 
 	/** Colonnes utilisés pour les requêtes */
-	private String columns[] = { Operation._id, Operation.DESCRIPTION_OPERATION, Operation.RANG_1_1,
-			Operation.GAMME, Operation.NOM_OPERATEUR, Operation.NUMERO_OPERATION };
-	private int layouts[] = { R.id.ordreOperations, R.id.operationsRealiser };
+	private String columns[] = { Operation.DESCRIPTION_OPERATION,
+			Operation.RANG_1_1, Operation.GAMME, Operation.NOM_OPERATEUR,
+			Operation.NUMERO_OPERATION, Operation._id, Operation.REALISABLE };
+	private int layouts[] = { R.id.operationsRealiser };
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main_menu_cableur);
 		// Récupération du nom de l'opérateur
-				Intent i = getIntent();
-				nomPrenomOperateur = i.getStringArrayExtra("Noms");
+		Intent i = getIntent();
+		nomPrenomOperateur = i.getStringArrayExtra("Noms");
 
-				cr = getContentResolver();
+		cr = getContentResolver();
 
-				// Affichage de lordre du jour
-				displayContentProvider();
+		// Affichage de lordre du jour
+		displayContentProvider();
 
-				// Retour menu principal
-				boutonExit = (ImageButton) findViewById(R.id.exitButton1);
-				boutonExit.setOnClickListener(new View.OnClickListener() {
+		// Retour menu principal
+		boutonExit = (ImageButton) findViewById(R.id.exitButton1);
+		boutonExit.setOnClickListener(new View.OnClickListener() {
 
-					@Override
-					public void onClick(View v) {
-						AlertDialog.Builder builder = new AlertDialog.Builder(MainMenuCableur.this);
-						builder.setMessage("Êtes-vous sur de vouloir quitter le profil ?");
-						builder.setCancelable(false);
-						builder.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						MainMenuCableur.this);
+				builder.setMessage("Êtes-vous sur de vouloir quitter le profil ?");
+				builder.setCancelable(false);
+				builder.setPositiveButton("Oui",
+						new DialogInterface.OnClickListener() {
 
-							public void onClick(DialogInterface dialog, int which) {
-								Intent toMain = new Intent(MainMenuCableur.this,
+							public void onClick(DialogInterface dialog,
+									int which) {
+								Intent toMain = new Intent(
+										MainMenuCableur.this,
 										MainActivity.class);
 								startActivity(toMain);
-									finish();
+								finish();
 
-								}
-
+							}
 
 						});
 
-						builder.setNegativeButton("Non", new DialogInterface.OnClickListener() {
-							public void onClick(final DialogInterface dialog, final int id) {
+				builder.setNegativeButton("Non",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
 
 								dialog.cancel();
 
 							}
 						});
-						builder.show();
-						
-					}
-				});
+				builder.show();
 
-				// Etape suivante
-				boutonCheck = (ImageButton) findViewById(R.id.imageButton1);
-				boutonCheck.setOnClickListener(new View.OnClickListener() {
-
-					@Override
-					public void onClick(View v) {
-						if (cursor.moveToFirst()) {
-							firstOperation = cursor.getString(cursor.getColumnIndex(Operation.DESCRIPTION_OPERATION));
-							Intent toNext = null;
-							if (firstOperation.startsWith("Préparation")) {
-								toNext = new Intent(MainMenuCableur.this,
-										PreparationTa.class);
-							} else if (firstOperation.startsWith("Reprise")) {
-								toNext = new Intent(MainMenuCableur.this,
-										RepriseBlindageTa.class);
-							} else if (firstOperation.startsWith("Denudage Sertissage Enfichage")) {
-								toNext = new Intent(MainMenuCableur.this,
-										DenudageSertissageEnfichageTa.class);
-							} else if (firstOperation.startsWith("Denudage Sertissage de")) {
-								toNext = new Intent(MainMenuCableur.this,
-										DenudageSertissageContactTa.class);
-							}
-							if (toNext != null) {
-
-							toNext.putExtra("opId", opId);
-							toNext.putExtra("Noms", nomPrenomOperateur);
-							toNext.putExtra("Indice", indiceCourant);
-							startActivity(toNext);
-							} 
-						}
-					}
-				});
 			}
+		});
 
-			/**
-			 * Genère l'affichage de l'ordre du jour en utilisant un SimpleCursorAdapter
-			 * Le layout GridView est récupéré puis utiliser pour afficher chacun des
-			 * éléments
-			 */
-			private void displayContentProvider() {
-				// Création du SimpleCursorAdapter affilié au GridView
-				SimpleCursorAdapter sca = new SimpleCursorAdapter(this,
-						R.layout.grid_layout_menu_cableur, null, columns, layouts);
-				GridView gridView = (GridView) findViewById(R.id.gridview);
-				gridView.setAdapter(sca);
-				// Requête dans la table sequencement
-				clause = new String(Operation.GAMME + " LIKE '" + "%tête A" + "'"
-						+ " GROUP BY " + Operation.DESCRIPTION_OPERATION );
-				cursor = cr.query(url, columns, clause, null, Operation._id + " ASC" + " LIMIT 30");
+		// Etape suivante
+		boutonCheck = (ImageButton) findViewById(R.id.imageButton1);
+		boutonCheck.setOnClickListener(new View.OnClickListener() {
 
-				sca.changeCursor(cursor);
-				
-				
-				clause = new String(Operation.GAMME + " LIKE '" + "%tête A" + "'"
-						);
-				cursor = cr.query(url, columns, clause, null, Operation._id + " ASC" );
-
-				// Rempliassage du tableau pour chaque numero de cable
+			@Override
+			public void onClick(View v) {
 				if (cursor.moveToFirst()) {
-					opId = new int[cursor.getCount()];
-					do {
-						opId[cursor.getPosition()] = cursor.getInt(cursor
-								.getColumnIndex(Operation._id));
+					firstOperation = cursor.getString(cursor
+							.getColumnIndex(Operation.DESCRIPTION_OPERATION));
+					Intent toNext = null;
+					if (firstOperation.startsWith("Préparation")) {
+						toNext = new Intent(MainMenuCableur.this,
+								PreparationTa.class);
+					} else if (firstOperation.startsWith("Reprise")) {
+						toNext = new Intent(MainMenuCableur.this,
+								RepriseBlindageTa.class);
+					} else if (firstOperation
+							.startsWith("Denudage Sertissage Enfichage")) {
+						toNext = new Intent(MainMenuCableur.this,
+								DenudageSertissageEnfichageTa.class);
+					} else if (firstOperation
+							.startsWith("Denudage Sertissage de")) {
+						toNext = new Intent(MainMenuCableur.this,
+								DenudageSertissageContactTa.class);
+					} else if (firstOperation.startsWith("Enfichage")) {
+						toNext = new Intent(MainMenuCableur.this,
+								EnfichagesTa.class);
+					} else if (firstOperation.startsWith("Finalisation")) {
+						toNext = new Intent(MainMenuCableur.this,
+								FinalisationTa.class);
+					} else if (firstOperation.startsWith("Tri")) {
+						toNext = new Intent(MainMenuCableur.this,
+								TriAboutissantsTa.class);
+					} else if (firstOperation.startsWith("Positionnement")) {
+						toNext = new Intent(MainMenuCableur.this,
+								PositionnementTaTab.class);
+					} else if (firstOperation.startsWith("Cheminement")) {
+						toNext = new Intent(MainMenuCableur.this,
+								CheminementTa.class);
+					}
+					if (toNext != null) {
 
-					} while (cursor.moveToNext());
-					
-					
+						toNext.putExtra("opId", opId);
+						toNext.putExtra("Noms", nomPrenomOperateur);
+						toNext.putExtra("Indice", indiceCourant);
+						startActivity(toNext);
+					}
 				}
-
 			}
+		});
+	}
+
+	/**
+	 * Genère l'affichage de l'ordre du jour en utilisant un SimpleCursorAdapter
+	 * Le layout GridView est récupéré puis utiliser pour afficher chacun des
+	 * éléments
+	 */
+	private void displayContentProvider() {
+		// Création du SimpleCursorAdapter affilié au GridView
+		SimpleCursorAdapter sca = new SimpleCursorAdapter(this,
+				R.layout.grid_layout_menu_cableur, null, columns, layouts);
+		GridView gridView = (GridView) findViewById(R.id.gridview);
+		gridView.setAdapter(sca);
+		// Requête dans la table sequencement
+		clause = new String(Operation.REALISABLE + "='" + 1 + "' AND "
+				+ Operation.NOM_OPERATEUR + " IS NULL AND(" + Operation.GAMME
+				+ "!='Contrôle jalons' OR " + Operation.GAMME
+				+ "!='Contrôle final')");
+		cursor = cr.query(url, columns, clause + " GROUP BY "
+				+ Operation.DESCRIPTION_OPERATION, null, Operation._id + " ASC"
+				+ " LIMIT 30");
+
+		sca.changeCursor(cursor);
+
+		cursor = cr.query(url, columns, clause, null, Operation._id + " ASC");
+
+		// Rempliassage du tableau pour chaque numero de cable
+		if (cursor.moveToFirst()) {
+			opId = new int[cursor.getCount()];
+			do {
+				opId[cursor.getPosition()] = cursor.getInt(cursor
+						.getColumnIndex(Operation._id));
+
+			} while (cursor.moveToNext());
 
 		}
+
+	}
+
+}

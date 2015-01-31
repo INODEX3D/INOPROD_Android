@@ -36,7 +36,7 @@
         android:textColor="#000000"
         android:textSize="@dimen/b1" />
           
-                <TextView
+                <EditText
         android:id="@+id/commentaires"
         android:layout_width="100dp"
         android:layout_height="wrap_content"

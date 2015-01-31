@@ -35,5 +35,62 @@
         android:layout_margin="5dp"
         android:textColor="#000000"
         android:textSize="@dimen/b5" />
+    
+    <TextView
+        android:id="@+id/numeroFilReprise"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:textColor="#000000"
+        android:textSize="@dimen/b5" />
+
+    <TextView
+        android:id="@+id/typeFilReprise"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:textColor="#000000"
+        android:textSize="@dimen/b5" />
+
+    <TextView
+        android:id="@+id/referenceFabricantManchon"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:textColor="#000000"
+        android:textSize="@dimen/b5" />
+
+    <TextView
+        android:id="@+id/referenceInterneManchon"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:textColor="#000000"
+        android:textSize="@dimen/b5" />
+
+    <TextView
+        android:id="@+id/referenceOutillage"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:textColor="#000000"
+        android:textSize="@dimen/b5" />
+
+    <TextView
+        android:id="@+id/numeroSerieOutillage"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:textColor="#000000"
+        android:textSize="@dimen/b5" />
+
+    <TextView
+        android:id="@+id/reglageTemperature"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:textColor="#000000"
+        android:textSize="@dimen/b5" />
+    
 
 </LinearLayout>

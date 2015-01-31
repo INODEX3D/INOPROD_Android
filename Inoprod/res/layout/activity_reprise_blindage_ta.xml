@@ -265,6 +265,7 @@
         android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_above="@id/imageButton1"
+        android:layout_alignRight="@+id/imageView1"
         android:layout_below="@+id/head"
         android:layout_margin="5dp"
         android:layout_toRightOf="@id/infoButton1"
@@ -296,18 +297,5 @@
         android:layout_alignParentBottom="true"
         android:layout_toRightOf="@+id/imageButton3"
         android:text="@string/scan" />
-
-    <GridView
-        android:id="@+id/gridView1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/gridview"
-        android:layout_alignTop="@+id/gridview"
-        android:layout_below="@id/head"
-        android:layout_toLeftOf="@id/exitButton1"
-        android:layout_toRightOf="@+id/gridview"
-        android:numColumns="3" >
-
-    </GridView>
 
 </RelativeLayout>

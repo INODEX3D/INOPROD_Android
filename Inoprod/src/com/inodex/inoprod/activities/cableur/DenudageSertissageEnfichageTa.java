@@ -15,7 +15,6 @@ import android.os.Bundle;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageButton;
@@ -44,7 +43,6 @@ public class DenudageSertissageEnfichageTa extends Activity {
 			referenceFabricant, instruction;
 	private ImageButton boutonCheck, infoProduit, retour, boutonAide;
 	private GridView gridView;
-	private Button scan;
 
 	/** Uri à manipuler */
 	private Uri urlSeq = SequencementProvider.CONTENT_URI;
@@ -73,7 +71,8 @@ public class DenudageSertissageEnfichageTa extends Activity {
 	private ContentResolver cr;
 	private ContentValues contact;
 
-	private String clause, numeroOperation, numeroCo, clauseTotal, oldClauseTotal, numeroCable;
+	private String clause, numeroOperation, numeroCo, clauseTotal,
+			oldClauseTotal, numeroCable;
 	private boolean prodAchevee;
 
 	/** Colonnes utilisés pour les requêtes */
@@ -138,7 +137,6 @@ public class DenudageSertissageEnfichageTa extends Activity {
 		boutonCheck = (ImageButton) findViewById(R.id.imageButton3);
 		infoProduit = (ImageButton) findViewById(R.id.infoButton1);
 
-
 		// Récuperation du numéro d'opération courant
 		clause = new String(Operation._id + "='" + opId[indiceCourant] + "'");
 		cursor = cr.query(urlSeq, columnsSeq, clause, null, Operation._id
@@ -175,7 +173,7 @@ public class DenudageSertissageEnfichageTa extends Activity {
 									.getColumnIndex(Raccordement.REFERENCE_FABRICANT2)));
 
 			if (numeroOperation.startsWith("4")) {
-				titre.setText(R.string.denudageSertissageTa);
+				titre.setText(R.string.denudageSertissageEnfichageTa);
 				repereElectrique
 						.append(" : "
 								+ cursorA.getString(cursorA
@@ -186,7 +184,7 @@ public class DenudageSertissageEnfichageTa extends Activity {
 						+ 0 + "' OR " + Raccordement.REPRISE_BLINDAGE
 						+ " IS NULL )";
 			} else {
-				titre.setText(R.string.denudageSertissageTa);
+				titre.setText(R.string.denudageSertissageEnfichageTb);
 				repereElectrique
 						.append(" : "
 								+ cursorA.getString(cursorA
@@ -200,24 +198,22 @@ public class DenudageSertissageEnfichageTa extends Activity {
 
 		}
 
+		// Initialisation du nombre de ligne à atteindre
 		nbRows = cr.query(urlRac, colRac,
 				clause + " GROUP BY " + Raccordement.NUMERO_FIL_CABLE, null,
 				Raccordement._id).getCount();
-		Log.e("NombreLignes", "" + nbRows);
 
-		// Etape suivante
-
-		// Info Produit
-
-		// Scan
+		// Bouton de validation
 		boutonCheck.setOnClickListener(new View.OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 
+				// Vérification de l'état de la production
 				if (prodAchevee) {
 					indiceCourant++;
 					String nextOperation = null;
+					// Passage à l'étape suivante en fonction de sa description
 					try {
 						int test = opId[indiceCourant];
 						clause = Operation._id + "='" + test + "'";
@@ -245,6 +241,23 @@ public class DenudageSertissageEnfichageTa extends Activity {
 								toNext = new Intent(
 										DenudageSertissageEnfichageTa.this,
 										DenudageSertissageContactTa.class);
+							} else if (nextOperation.startsWith("Finalisation")) {
+								toNext = new Intent(
+										DenudageSertissageEnfichageTa.this,
+										FinalisationTa.class);
+							} else if (nextOperation.startsWith("Tri")) {
+								toNext = new Intent(
+										DenudageSertissageEnfichageTa.this,
+										TriAboutissantsTa.class);
+							} else if (nextOperation
+									.startsWith("Positionnement")) {
+								toNext = new Intent(
+										DenudageSertissageEnfichageTa.this,
+										PositionnementTaTab.class);
+							} else if (nextOperation.startsWith("Cheminement")) {
+								toNext = new Intent(
+										DenudageSertissageEnfichageTa.this,
+										CheminementTa.class);
 							}
 							if (toNext != null) {
 
@@ -255,7 +268,7 @@ public class DenudageSertissageEnfichageTa extends Activity {
 							}
 
 						}
-
+						// Aucune opération suivante: retour au menu principal
 					} catch (ArrayIndexOutOfBoundsException e) {
 						Intent toNext = new Intent(
 								DenudageSertissageEnfichageTa.this,
@@ -266,9 +279,9 @@ public class DenudageSertissageEnfichageTa extends Activity {
 						startActivity(toNext);
 
 					}
-
+					// Si production non achevée
 				} else {
-
+					// SCAN du numéro de cabl
 					try {
 						Intent intent = new Intent(
 								"com.google.zxing.client.android.SCAN");
@@ -277,6 +290,7 @@ public class DenudageSertissageEnfichageTa extends Activity {
 								"com.google.zxing.client.android.SCAN.SCAN_MODE",
 								"QR_CODE_MODE");
 						startActivityForResult(intent, 0);
+						// Si aucun scan détécté, ajout du cable au clavier
 					} catch (ActivityNotFoundException e) {
 						AlertDialog.Builder builder = new AlertDialog.Builder(
 								DenudageSertissageEnfichageTa.this);
@@ -290,6 +304,7 @@ public class DenudageSertissageEnfichageTa extends Activity {
 
 									public void onClick(DialogInterface dialog,
 											int which) {
+										// Recherche du cable entré
 										numeroCable = cable.getText()
 												.toString();
 										Log.e("N°Cable", numeroCable);
@@ -319,7 +334,10 @@ public class DenudageSertissageEnfichageTa extends Activity {
 														+ "='" + numeroCable
 														+ "'";
 											}
-											Log.e("clause", clauseTotal);
+
+											// Ajout du cable à la liste des
+											// éléments à afficher
+
 											indiceLimite++;
 											displayContentProvider();
 											indiceCourant++;
@@ -350,28 +368,29 @@ public class DenudageSertissageEnfichageTa extends Activity {
 				}
 			}
 		});
-		
-		
-		// Retour arrière
-				retour.setOnClickListener(new View.OnClickListener() {
 
-					@Override
-					public void onClick(View v) {
-						if (indiceLimite > 0) {
-							indiceLimite--;
-							Log.e("Indice", "" + indiceLimite);
-						}
-						if (indiceCourant > 0) {
-							indiceCourant--;
-							Log.e("Indice", "" + indiceLimite);
-						}
-						
-						clauseTotal = oldClauseTotal;
-						// Vérification de l'état de la production
-						prodAchevee = (indiceLimite >= nbRows);
-						displayContentProvider();
-					}
-				});
+		// Retour arrière
+		retour.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			// MAJ des indices
+			public void onClick(View v) {
+				if (indiceLimite > 0) {
+					indiceLimite--;
+					Log.e("Indice", "" + indiceLimite);
+				}
+				if (indiceCourant > 0) {
+					indiceCourant--;
+					Log.e("Indice", "" + indiceLimite);
+				}
+
+				// MAJ de la clause
+				clauseTotal = oldClauseTotal;
+				// Vérification de l'état de la production
+				prodAchevee = (indiceLimite >= nbRows);
+				displayContentProvider();
+			}
+		});
 	}
 
 	private void displayContentProvider() {
@@ -393,8 +412,6 @@ public class DenudageSertissageEnfichageTa extends Activity {
 		cr.update(urlSeq, contact, Operation._id + " = ?",
 				new String[] { Integer.toString(opId[indiceCourant]) });
 		contact.clear();
-
-		
 
 		// Vérification de l'état de la production
 		if (indiceLimite == nbRows) {
