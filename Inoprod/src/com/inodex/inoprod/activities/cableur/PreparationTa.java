@@ -6,8 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -18,19 +20,13 @@ import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.SimpleAdapter;
-import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.inodex.inoprod.R;
-import com.inodex.inoprod.activities.magasiniers.DebitCables;
-import com.inodex.inoprod.activities.magasiniers.ImportCoupeCables;
-import com.inodex.inoprod.activities.magasiniers.RegroupementCables;
 import com.inodex.inoprod.business.NomenclatureProvider;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
-import com.inodex.inoprod.business.Production.Fil;
-import com.inodex.inoprod.business.TableKittingCable.Kitting;
 import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
 
@@ -40,6 +36,7 @@ public class PreparationTa extends Activity {
 	private TextView titre, numeroConnecteur, repereElectrique,
 			positionChariot;
 	private ImageButton boutonCheck, infoProduit, retour, boutonAide;
+	private ImageButton petitePause, grandePause;
 	private GridView gridView;
 
 	/** Uri à manipuler */
@@ -64,8 +61,11 @@ public class PreparationTa extends Activity {
 
 	private List<HashMap<String, String>> oldListe = null;
 	/** Heure et dates à ajouter à la table de séquencment */
-	private Date dateRealisation = new Date();
 	private Time heureRealisation = new Time();
+	private Date dateDebut, dateRealisation;
+	private long dureeMesuree =0;
+	
+	
 
 	/** Nom de l'opérateur */
 	private String nomPrenomOperateur[] = null;
@@ -82,10 +82,12 @@ public class PreparationTa extends Activity {
 	private String columnsSeq[] = new String[] { Operation._id,
 			Operation.GAMME, Operation.RANG_1_1, Operation.NUMERO_OPERATION,
 			Operation.NOM_OPERATEUR, Operation.DATE_REALISATION,
-			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION };
+			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION,
+			Operation.DUREE_MESUREE };
 
 	private int layouts[] = new int[] { R.id.designation,
-			R.id.referenceFabricant, R.id.referenceInterne, R.id.numeroBorne, R.id.articleMonte};
+			R.id.referenceFabricant, R.id.referenceInterne, R.id.numeroBorne,
+			R.id.articleMonte };
 
 	private String colRac[] = new String[] { Raccordement.DESIGNATION,
 			Raccordement.REFERENCE_FABRICANT2, Raccordement.REFERENCE_INTERNE,
@@ -103,6 +105,9 @@ public class PreparationTa extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_preparation_ta);
+		//Initialisation du temps
+		dateDebut = new Date();
+	
 		// Récupération des éléments
 		Intent intent = getIntent();
 		indiceCourant = intent.getIntExtra("Indice", 0);
@@ -122,6 +127,8 @@ public class PreparationTa extends Activity {
 		infoProduit = (ImageButton) findViewById(R.id.infoButton1);
 		positionChariot = (TextView) findViewById(R.id.textView7);
 		repereElectrique = (TextView) findViewById(R.id.textView5);
+		petitePause = (ImageButton) findViewById(R.id.imageButton1);
+		grandePause = (ImageButton) findViewById(R.id.exitButton1);
 
 		// Récuperation du numéro d'opération courant
 		clause = new String(Operation._id + "='" + opId[indiceCourant] + "'");
@@ -145,7 +152,6 @@ public class PreparationTa extends Activity {
 				+ " ASC");
 		if (cursorA.moveToFirst()) {
 
-			
 			positionChariot
 					.append(" : "
 							+ cursorA.getString(cursorA
@@ -179,9 +185,7 @@ public class PreparationTa extends Activity {
 				.getCount();
 		Log.e("NombreLignes", "" + nbRows);
 
-
-
-		displayContentProvider();
+	
 
 		// Etape suivante
 
@@ -238,36 +242,26 @@ public class PreparationTa extends Activity {
 
 					}
 				} else { // Production toujours en cours
-					
-					cursorA = cr.query(urlRac, colRac, clause, null, Raccordement._id
-							+ " LIMIT " + indiceLimite);
+
+					cursorA = cr.query(urlRac, colRac, clause, null,
+							Raccordement._id + " LIMIT " + indiceLimite);
 					oldListe = liste;
 					if (cursorA.moveToLast()) {
 						HashMap<String, String> element;
 
 						element = new HashMap<String, String>();
-						element.put(
-								colRac[0],
-								cursorA.getString(cursorA
-										.getColumnIndex(colRac[0])));
-						element.put(
-								colRac[1],
-								cursorA.getString(cursorA
-										.getColumnIndex(colRac[1])));
-						element.put(
-								colRac[2],
-								cursorA.getString(cursorA
-										.getColumnIndex(colRac[2])));
-						element.put(
-								colRac[3],
-								cursorA.getString(cursorA
-										.getColumnIndex(colRac[3])));
-						element.put(
-								colRac[4],"X");
-						
+						element.put(colRac[0], cursorA.getString(cursorA
+								.getColumnIndex(colRac[0])));
+						element.put(colRac[1], cursorA.getString(cursorA
+								.getColumnIndex(colRac[1])));
+						element.put(colRac[2], cursorA.getString(cursorA
+								.getColumnIndex(colRac[2])));
+						element.put(colRac[3], cursorA.getString(cursorA
+								.getColumnIndex(colRac[3])));
+						element.put(colRac[4], "X");
+
 						liste.add(element);
 
-					
 						displayContentProvider();
 
 					}
@@ -288,14 +282,46 @@ public class PreparationTa extends Activity {
 					indiceCourant--;
 					Log.e("Indice", "" + indiceLimite);
 				}
+
+				liste = oldListe;
 				
-				liste=oldListe;
+				//MAJ de la durée
+				dureeMesuree = 0;
+				dateDebut= new Date();
 
 				// Vérification de l'état de la production
 				prodAchevee = (indiceLimite >= nbRows);
 				displayContentProvider();
 			}
 		});
+		
+		
+		//Petite Pause
+		petitePause.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				dureeMesuree += new Date().getTime() - dateDebut.getTime();
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						PreparationTa.this);
+				builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
+				builder.setCancelable(false);
+
+				builder.setNegativeButton("Retour",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+
+								dateDebut= new Date();
+								dialog.cancel();
+
+							}
+						});
+				builder.show();
+
+			}
+		});
+		
 
 		// Info Produit
 	}
@@ -303,25 +329,29 @@ public class PreparationTa extends Activity {
 	private void displayContentProvider() {
 		// Création du SimpleCursorAdapter affilié au GridView
 		SimpleAdapter sca = new SimpleAdapter(this, liste,
-				R.layout.grid_layout_preparation_ta,  colRac, layouts);
+				R.layout.grid_layout_preparation_ta, colRac, layouts);
 
 		gridView.setAdapter(sca);
 		// MAJ Table de sequencement
 
 		contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0] + " "
 				+ nomPrenomOperateur[1]);
+		dateRealisation = new Date();
+
+		
 		contact.put(Operation.DATE_REALISATION, dateRealisation.toGMTString());
 		heureRealisation.setToNow();
 		contact.put(Operation.HEURE_REALISATION, heureRealisation.toString());
+		
+		dureeMesuree += dateRealisation.getTime() - dateDebut.getTime();
+		contact.put(Operation.DUREE_MESUREE, dureeMesuree / 1000);
 		cr.update(urlSeq, contact, Operation._id + " = ?",
 				new String[] { Integer.toString(opId[indiceCourant]) });
 		contact.clear();
-
-		Log.e("Connnecteur", Integer.toString(opId[indiceCourant]));
-
 		
-		
-
+		//MAJ de la durée
+		dureeMesuree = 0;
+		dateDebut= new Date();
 
 		// Vérification de l'état de la production
 		if (indiceLimite == nbRows) {

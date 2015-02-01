@@ -159,8 +159,8 @@ public class MainMenuControleur extends Activity {
 		GridView gridView = (GridView) findViewById(R.id.gridview);
 		gridView.setAdapter(sca);
 		// Requête dans la table sequencement
-		clause = new String(Operation.DESCRIPTION_OPERATION
-				+ " LIKE '%issage%' AND " + Operation.NOM_OPERATEUR
+		clause = new String(Operation.REALISABLE
+				+ "='"+1+ "' AND " + Operation.NOM_OPERATEUR
 				+ " IS NULL AND " + Operation.GAMME + " LIKE 'Cont%'");
 		cursor = cr.query(url, columns, clause + " GROUP BY "
 				+ Operation.DESCRIPTION_OPERATION, null, Operation._id + " ASC"

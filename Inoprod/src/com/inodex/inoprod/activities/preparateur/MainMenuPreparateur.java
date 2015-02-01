@@ -70,14 +70,15 @@ import com.inodex.inoprod.business.TableSupport.Support;
 
 public class MainMenuPreparateur extends Activity {
 
-	private final static int PROGRESS_DIALOG_ID = 0;
-	private final static int MAX_SIZE = 100;
-	private final static int PROGRESSION = 0;
-
-	private Thread mProgress = null;
-
-	private int mProgression = 0;
-	private ProgressDialog mProgressBar = null;
+	/** Durées théoriques en seconde à affecter aux opérations */
+	private int FRETTAGE = 30;
+	private int DEBIT_CABLES = 30;
+	private int ENFICHAGE_FC_OBTURATEURS = 30;
+	private int SERTISSAGE_CONTACTS = 150;
+	private int REPRISE_BLINDAGE = 300;
+	private int RETENTION_CONTACT = 10;
+	private int POSITIONNEMENT_SUPPORT = 20;
+	private int KIT_TETE = 180;
 
 	/** Nom de l'opérateur */
 	private String nomPrenomOperateur[] = null;
@@ -538,6 +539,7 @@ public class MainMenuPreparateur extends Activity {
 						contact.put(Operation.DESCRIPTION_OPERATION,
 								descriptionOperation);
 						contact.put(Operation.NUMERO_OPERATION, num);
+						contact.put(Operation.DUREE_THEORIQUE, DEBIT_CABLES);
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -577,6 +579,7 @@ public class MainMenuPreparateur extends Activity {
 					contact.put(Operation.DESCRIPTION_OPERATION,
 							descriptionOperation);
 					contact.put(Operation.NUMERO_OPERATION, num1);
+					contact.put(Operation.DUREE_THEORIQUE, DEBIT_CABLES);
 
 					// Ajout de l'entité
 					getContentResolver().insert(urlSequencement, contact);
@@ -882,6 +885,7 @@ public class MainMenuPreparateur extends Activity {
 				contact.put(Operation.DESCRIPTION_OPERATION,
 						descriptionOperation);
 				contact.put(Operation.NUMERO_OPERATION, num);
+				contact.put(Operation.DUREE_THEORIQUE, KIT_TETE);
 
 				// Ajout de l'entité
 				getContentResolver().insert(urlSequencement, contact);
@@ -922,6 +926,7 @@ public class MainMenuPreparateur extends Activity {
 					contact.put(Operation.DESCRIPTION_OPERATION,
 							descriptionOperation);
 					contact.put(Operation.NUMERO_OPERATION, num1);
+					contact.put(Operation.DUREE_THEORIQUE, KIT_TETE);
 
 					// Ajout de l'entité
 					getContentResolver().insert(urlSequencement, contact);
@@ -944,6 +949,7 @@ public class MainMenuPreparateur extends Activity {
 					contact.put(Operation.DESCRIPTION_OPERATION,
 							descriptionOperation);
 					contact.put(Operation.NUMERO_OPERATION, num1);
+					contact.put(Operation.DUREE_THEORIQUE, KIT_TETE);
 
 					// Ajout de l'entité
 					getContentResolver().insert(urlSequencement, contact);
@@ -971,11 +977,16 @@ public class MainMenuPreparateur extends Activity {
 	 * @return Réussite de l'import
 	 */
 	private boolean importSources() {
-		/*
-		 * // Import des durées try { insertRecordsDurees(); } catch
-		 * (IOException e) { Toast.makeText(this, "Fichier Durees non lu",
-		 * Toast.LENGTH_SHORT) .show(); return false; }
-		 */
+
+		// Import des durées
+		try {
+			insertRecordsDurees();
+		} catch (IOException e) {
+			Toast.makeText(this, "Fichier Durees non lu", Toast.LENGTH_SHORT)
+					.show();
+			return false;
+		}
+
 		// Import de la base Production
 		try {
 			insertRecordsProduction();
@@ -1228,7 +1239,6 @@ public class MainMenuPreparateur extends Activity {
 		Iterator rows = sheet.rowIterator();
 		// On ne rentre pas les trois premières lignes qui ne comportent que les
 		// entêtes des colonnes
-		rows.next();
 		rows.next();
 		rows.next();
 
@@ -1722,8 +1732,9 @@ public class MainMenuPreparateur extends Activity {
 		}
 
 	}
-	
-	/** Genération du fichier débit cables 
+
+	/**
+	 * Genération du fichier débit cables
 	 * 
 	 * @return réussite de l'opération
 	 * @throws IOException
@@ -1747,7 +1758,7 @@ public class MainMenuPreparateur extends Activity {
 				Kitting.NUMERO_FIL_CABLE, Kitting.TYPE_FIL_CABLE,
 				Kitting.REFERENCE_FABRICANT2, Kitting.REFERENCE_INTERNE };
 
-		//Création de la feuille et du Workbook
+		// Création de la feuille et du Workbook
 		HSSFWorkbook wb = new HSSFWorkbook();
 		HSSFSheet sheet = wb.createSheet("Débit");
 
@@ -1759,7 +1770,7 @@ public class MainMenuPreparateur extends Activity {
 			row.createCell((short) columnIndex++).setCellValue(colKitGen1[i]);
 		}
 
-		//Lecture et écriture de la première feuille
+		// Lecture et écriture de la première feuille
 		cursor = cr.query(urlKitting, colKitGen1, null, null, Kitting._id);
 		if (cursor.moveToFirst()) {
 			do {
@@ -1778,7 +1789,7 @@ public class MainMenuPreparateur extends Activity {
 			return false;
 		}
 
-		//Création de la deuxième feuille
+		// Création de la deuxième feuille
 		sheet = wb.createSheet("Regroupement");
 		wb.getSheetAt(1);
 
@@ -1790,8 +1801,7 @@ public class MainMenuPreparateur extends Activity {
 			row.createCell((short) columnIndex++).setCellValue(colKitGen2[i]);
 		}
 
-		
-		//Lecture et écriture de la deuxième feuille
+		// Lecture et écriture de la deuxième feuille
 		cursor = cr.query(urlKitting, colKitGen2, null, null, Kitting._id);
 		if (cursor.moveToFirst()) {
 			do {
@@ -1826,8 +1836,9 @@ public class MainMenuPreparateur extends Activity {
 
 		return true;
 	}
-	
-	/** Génération du fichier kitting têtes
+
+	/**
+	 * Génération du fichier kitting têtes
 	 * 
 	 * @return réussite de l'opération
 	 * @throws IOException
@@ -1921,12 +1932,14 @@ public class MainMenuPreparateur extends Activity {
 
 	}
 
-	/** Génération des opérations de la table de séquencement pour la productione et le controle
+	/**
+	 * Génération des opérations de la table de séquencement pour la productione
+	 * et le controle
 	 * 
 	 */
 	private void generationTableSequencement() {
-		
-		//Initialisation des indices des numéros d'opérations
+
+		// Initialisation des indices des numéros d'opérations
 		ContentValues contact = new ContentValues();
 		indice = 1;
 		indiceFrettage = 1;
@@ -1936,8 +1949,8 @@ public class MainMenuPreparateur extends Activity {
 		indiceControleCheminement = 1;
 
 		String numeroComposant;
-		
-		/*TETES A */
+
+		/* TETES A */
 
 		// Filtre par connecteur et N° cheminement
 		clause = Raccordement.ORDRE_REALISATION + "='" + "Tête A"
@@ -1978,6 +1991,8 @@ public class MainMenuPreparateur extends Activity {
 								descriptionOperation);
 						contact.put(Operation.NUMERO_OPERATION, num1);
 						contact.put(Operation.REALISABLE, 1);
+						contact.put(Operation.DUREE_THEORIQUE,
+								ENFICHAGE_FC_OBTURATEURS);
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2021,6 +2036,8 @@ public class MainMenuPreparateur extends Activity {
 								descriptionOperation);
 						contact.put(Operation.NUMERO_OPERATION, num1);
 						contact.put(Operation.REALISABLE, 1);
+						contact.put(Operation.DUREE_THEORIQUE,
+								ENFICHAGE_FC_OBTURATEURS);
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2064,7 +2081,7 @@ public class MainMenuPreparateur extends Activity {
 								descriptionOperation);
 						contact.put(Operation.NUMERO_OPERATION, num1);
 						contact.put(Operation.REALISABLE, 1);
-						
+						contact.put(Operation.DUREE_THEORIQUE, REPRISE_BLINDAGE);
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2120,6 +2137,8 @@ public class MainMenuPreparateur extends Activity {
 								descriptionOperation);
 						contact.put(Operation.NUMERO_OPERATION, num1);
 						contact.put(Operation.REALISABLE, 0);
+						contact.put(Operation.DUREE_THEORIQUE,
+								SERTISSAGE_CONTACTS);
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2143,6 +2162,8 @@ public class MainMenuPreparateur extends Activity {
 								descriptionOperation);
 						contact.put(Operation.NUMERO_OPERATION, num1);
 						contact.put(Operation.REALISABLE, 0);
+						contact.put(Operation.DUREE_THEORIQUE,
+								SERTISSAGE_CONTACTS);
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2154,7 +2175,7 @@ public class MainMenuPreparateur extends Activity {
 						numeroOperation = "4-000";
 
 						do {
-							//Dénudage Sertissage
+							// Dénudage Sertissage
 							descriptionOperation = "Denudage Sertissage de contact "
 									+ refFabricant
 									+ " sur  Tête A  "
@@ -2171,6 +2192,8 @@ public class MainMenuPreparateur extends Activity {
 									descriptionOperation);
 							contact.put(Operation.NUMERO_OPERATION, num1);
 							contact.put(Operation.REALISABLE, 1);
+							contact.put(Operation.DUREE_THEORIQUE,
+									SERTISSAGE_CONTACTS);
 
 							// Ajout de l'entité
 							getContentResolver().insert(urlSequencement,
@@ -2195,7 +2218,7 @@ public class MainMenuPreparateur extends Activity {
 						cursorA.moveToFirst();
 						do {
 
-							//Enfichage
+							// Enfichage
 							descriptionOperation = "Enfichage Tête A  "
 									+ cursorA
 											.getString(cursorA
@@ -2210,6 +2233,8 @@ public class MainMenuPreparateur extends Activity {
 									descriptionOperation);
 							contact.put(Operation.NUMERO_OPERATION, num1);
 							contact.put(Operation.REALISABLE, 0);
+							contact.put(Operation.DUREE_THEORIQUE,
+									ENFICHAGE_FC_OBTURATEURS);
 
 							// Ajout de l'entité
 							getContentResolver().insert(urlSequencement,
@@ -2223,7 +2248,7 @@ public class MainMenuPreparateur extends Activity {
 					} else {
 
 						do {
-							//Dénudage sertissage enfichage
+							// Dénudage sertissage enfichage
 							descriptionOperation = "Denudage Sertissage Enfichage de contact "
 									+ refFabricant
 									+ " sur  Tête A  "
@@ -2240,6 +2265,8 @@ public class MainMenuPreparateur extends Activity {
 									descriptionOperation);
 							contact.put(Operation.NUMERO_OPERATION, num1);
 							contact.put(Operation.REALISABLE, 1);
+							contact.put(Operation.DUREE_THEORIQUE,
+									SERTISSAGE_CONTACTS);
 
 							// Ajout de l'entité
 							getContentResolver().insert(urlSequencement,
@@ -2279,6 +2306,7 @@ public class MainMenuPreparateur extends Activity {
 						descriptionOperation);
 				contact.put(Operation.NUMERO_OPERATION, num1);
 				contact.put(Operation.REALISABLE, 1);
+				contact.put(Operation.DUREE_THEORIQUE, SERTISSAGE_CONTACTS);
 
 				// Ajout de l'entité
 				getContentResolver().insert(urlSequencement, contact);
@@ -2300,6 +2328,7 @@ public class MainMenuPreparateur extends Activity {
 						descriptionOperation);
 				contact.put(Operation.NUMERO_OPERATION, num1);
 				contact.put(Operation.REALISABLE, 1);
+				contact.put(Operation.DUREE_THEORIQUE, SERTISSAGE_CONTACTS);
 
 				// Ajout de l'entité
 				getContentResolver().insert(urlSequencement, contact);
@@ -2324,6 +2353,7 @@ public class MainMenuPreparateur extends Activity {
 						descriptionOperation);
 				contact.put(Operation.NUMERO_OPERATION, num1);
 				contact.put(Operation.REALISABLE, 0);
+				contact.put(Operation.DUREE_THEORIQUE, SERTISSAGE_CONTACTS);
 
 				// Ajout de l'entité
 				getContentResolver().insert(urlSequencement, contact);
@@ -2353,6 +2383,8 @@ public class MainMenuPreparateur extends Activity {
 								descriptionOperation);
 						contact.put(Operation.NUMERO_OPERATION, num1);
 						contact.put(Operation.REALISABLE, 0);
+						contact.put(Operation.DUREE_THEORIQUE,
+								SERTISSAGE_CONTACTS);
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2379,6 +2411,7 @@ public class MainMenuPreparateur extends Activity {
 						descriptionOperation);
 				contact.put(Operation.NUMERO_OPERATION, num1);
 				contact.put(Operation.REALISABLE, 0);
+				contact.put(Operation.DUREE_THEORIQUE, FRETTAGE);
 
 				// Ajout de l'entité
 				getContentResolver().insert(urlSequencement, contact);
@@ -2404,6 +2437,7 @@ public class MainMenuPreparateur extends Activity {
 						descriptionOperation);
 				contact.put(Operation.NUMERO_OPERATION, num1);
 				contact.put(Operation.REALISABLE, 0);
+				contact.put(Operation.DUREE_THEORIQUE, SERTISSAGE_CONTACTS);
 
 				// Ajout de l'entité
 				getContentResolver().insert(urlSequencement, contact);
@@ -2414,9 +2448,8 @@ public class MainMenuPreparateur extends Activity {
 			} while (cursor.moveToNext());
 		}
 
-		/*TETES B */
-		
-		
+		/* TETES B */
+
 		indice = 1;
 
 		// Filtre par connecteur et N° cheminement
@@ -2459,6 +2492,8 @@ public class MainMenuPreparateur extends Activity {
 								descriptionOperation);
 						contact.put(Operation.NUMERO_OPERATION, num1);
 						contact.put(Operation.REALISABLE, 0);
+						contact.put(Operation.DUREE_THEORIQUE,
+								ENFICHAGE_FC_OBTURATEURS);
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2502,6 +2537,8 @@ public class MainMenuPreparateur extends Activity {
 								descriptionOperation);
 						contact.put(Operation.NUMERO_OPERATION, num1);
 						contact.put(Operation.REALISABLE, 0);
+						contact.put(Operation.DUREE_THEORIQUE,
+								ENFICHAGE_FC_OBTURATEURS);
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2545,6 +2582,8 @@ public class MainMenuPreparateur extends Activity {
 								descriptionOperation);
 						contact.put(Operation.NUMERO_OPERATION, num1);
 						contact.put(Operation.REALISABLE, 0);
+						contact.put(Operation.DUREE_THEORIQUE,
+								ENFICHAGE_FC_OBTURATEURS);
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2600,6 +2639,8 @@ public class MainMenuPreparateur extends Activity {
 								descriptionOperation);
 						contact.put(Operation.NUMERO_OPERATION, num1);
 						contact.put(Operation.REALISABLE, 0);
+						contact.put(Operation.DUREE_THEORIQUE,
+								SERTISSAGE_CONTACTS);
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2623,6 +2664,8 @@ public class MainMenuPreparateur extends Activity {
 								descriptionOperation);
 						contact.put(Operation.NUMERO_OPERATION, num1);
 						contact.put(Operation.REALISABLE, 0);
+						contact.put(Operation.DUREE_THEORIQUE,
+								SERTISSAGE_CONTACTS);
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2647,6 +2690,8 @@ public class MainMenuPreparateur extends Activity {
 									descriptionOperation);
 							contact.put(Operation.NUMERO_OPERATION, num1);
 							contact.put(Operation.REALISABLE, 0);
+							contact.put(Operation.DUREE_THEORIQUE,
+									SERTISSAGE_CONTACTS);
 
 							// Ajout de l'entité
 							getContentResolver().insert(urlSequencement,
@@ -2687,6 +2732,8 @@ public class MainMenuPreparateur extends Activity {
 									descriptionOperation);
 							contact.put(Operation.NUMERO_OPERATION, num1);
 							contact.put(Operation.REALISABLE, 0);
+							contact.put(Operation.DUREE_THEORIQUE,
+									ENFICHAGE_FC_OBTURATEURS);
 
 							// Ajout de l'entité
 							getContentResolver().insert(urlSequencement,
@@ -2716,6 +2763,8 @@ public class MainMenuPreparateur extends Activity {
 									descriptionOperation);
 							contact.put(Operation.NUMERO_OPERATION, num1);
 							contact.put(Operation.REALISABLE, 0);
+							contact.put(Operation.DUREE_THEORIQUE,
+									SERTISSAGE_CONTACTS);
 
 							// Ajout de l'entité
 							getContentResolver().insert(urlSequencement,
@@ -2755,6 +2804,7 @@ public class MainMenuPreparateur extends Activity {
 						descriptionOperation);
 				contact.put(Operation.NUMERO_OPERATION, num1);
 				contact.put(Operation.REALISABLE, 0);
+				contact.put(Operation.DUREE_THEORIQUE, SERTISSAGE_CONTACTS);
 
 				// Ajout de l'entité
 				getContentResolver().insert(urlSequencement, contact);
@@ -2787,6 +2837,8 @@ public class MainMenuPreparateur extends Activity {
 								descriptionOperation);
 						contact.put(Operation.NUMERO_OPERATION, num1);
 						contact.put(Operation.REALISABLE, 0);
+						contact.put(Operation.DUREE_THEORIQUE,
+								SERTISSAGE_CONTACTS);
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2814,6 +2866,7 @@ public class MainMenuPreparateur extends Activity {
 						descriptionOperation);
 				contact.put(Operation.NUMERO_OPERATION, num1);
 				contact.put(Operation.REALISABLE, 0);
+				contact.put(Operation.DUREE_THEORIQUE, SERTISSAGE_CONTACTS);
 
 				// Ajout de l'entité
 				getContentResolver().insert(urlSequencement, contact);

@@ -3,8 +3,10 @@ package com.inodex.inoprod.activities.magasiniers;
 import java.util.Date;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -18,6 +20,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import com.inodex.inoprod.R;
+import com.inodex.inoprod.activities.cableur.PreparationTa;
 import com.inodex.inoprod.business.BOMProvider;
 import com.inodex.inoprod.business.CheminementProvider;
 import com.inodex.inoprod.business.KittingProvider;
@@ -61,6 +64,8 @@ public class KittingCablesComposants extends Activity {
 	/** Heure et dates à ajouter à la table de séquencment */
 	private Date dateRealisation = new Date();
 	private Time heureRealisation = new Time();
+	private Date dateDebut;
+	private long dureeMesuree =0;
 
 	/** Nom de l'opérateur */
 	private String nomPrenomOperateur[] = null;
@@ -69,12 +74,13 @@ public class KittingCablesComposants extends Activity {
 	private TextView numeroComposant, numeroChariot, repereElectrique,
 			numeroCheminement, ordreRealisation;
 	private ImageButton boutonCheck;
+	private ImageButton petitePause, grandePause;
 
 	/** Colonnes utilisés pour les requêtes */
 	private String columnsSeq[] = new String[] { Operation._id,
 			Operation.GAMME, Operation.RANG_1_1, Operation.NUMERO_OPERATION,
 			Operation.NOM_OPERATEUR, Operation.DATE_REALISATION,
-			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION };
+			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION, Operation.DUREE_MESUREE };
 
 	private String columnsBOM[] = new String[] { BOM.REPERE_ELECTRIQUE_TENANT,
 			BOM.NUMERO_COMPOSANT, BOM.NUMERO_POSITION_CHARIOT,
@@ -103,6 +109,8 @@ public class KittingCablesComposants extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_kitting_cables_composants);
+		//Initialisation du temps
+		dateDebut = new Date();
 
 		// Récupération des éléments
 		Intent intent = getIntent();
@@ -119,6 +127,8 @@ public class KittingCablesComposants extends Activity {
 		repereElectrique = (TextView) findViewById(R.id.textView5);
 		numeroCheminement = (TextView) findViewById(R.id.textView6);
 		ordreRealisation = (TextView) findViewById(R.id.textView7);
+		petitePause = (ImageButton) findViewById(R.id.imageButton2);
+		grandePause = (ImageButton) findViewById(R.id.imageButton1);
 
 		// Récuperation du numéro d'opération courant
 		clause = new String(Operation._id + "='" + opId[indiceCourant] + "'");
@@ -189,9 +199,15 @@ public class KittingCablesComposants extends Activity {
 				heureRealisation.setToNow();
 				contact.put(Operation.HEURE_REALISATION,
 						heureRealisation.toString());
+				dureeMesuree += dateRealisation.getTime() - dateDebut.getTime();
+				contact.put(Operation.DUREE_MESUREE, dureeMesuree / 1000);
 				cr.update(urlSeq, contact, Operation._id + " = ?",
 						new String[] { Integer.toString(opId[indiceCourant]) });
 				contact.clear();
+				
+				//MAJ de la durée
+				dureeMesuree = 0;
+				dateDebut= new Date();
 
 				indiceCourant += 2;
 				try {
@@ -218,6 +234,33 @@ public class KittingCablesComposants extends Activity {
 			}
 
 		});
+		
+		
+		//Petite Pause
+				petitePause.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						dureeMesuree += new Date().getTime() - dateDebut.getTime();
+						AlertDialog.Builder builder = new AlertDialog.Builder(
+								KittingCablesComposants.this);
+						builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
+						builder.setCancelable(false);
+
+						builder.setNegativeButton("Retour",
+								new DialogInterface.OnClickListener() {
+									public void onClick(final DialogInterface dialog,
+											final int id) {
+
+										dateDebut= new Date();
+										dialog.cancel();
+
+									}
+								});
+						builder.show();
+
+					}
+				});
 
 	}
 

@@ -59,7 +59,8 @@ public class MainMenuCableur extends Activity {
 	/** Colonnes utilisés pour les requêtes */
 	private String columns[] = { Operation.DESCRIPTION_OPERATION,
 			Operation.RANG_1_1, Operation.GAMME, Operation.NOM_OPERATEUR,
-			Operation.NUMERO_OPERATION, Operation._id, Operation.REALISABLE };
+			Operation.NUMERO_OPERATION, Operation._id, Operation.REALISABLE,
+			Operation.DUREE_THEORIQUE };
 	private int layouts[] = { R.id.operationsRealiser };
 
 	@Override
@@ -153,6 +154,9 @@ public class MainMenuCableur extends Activity {
 					} else if (firstOperation.startsWith("Cheminement")) {
 						toNext = new Intent(MainMenuCableur.this,
 								CheminementTa.class);
+					} else if (firstOperation.startsWith("Frettage")) {
+						toNext = new Intent(MainMenuCableur.this,
+								Frettage.class);
 					}
 					if (toNext != null) {
 
@@ -177,18 +181,20 @@ public class MainMenuCableur extends Activity {
 				R.layout.grid_layout_menu_cableur, null, columns, layouts);
 		GridView gridView = (GridView) findViewById(R.id.gridview);
 		gridView.setAdapter(sca);
-		// Requête dans la table sequencement
-		clause = new String(Operation.REALISABLE + "='" + 1 + "' AND "
-				+ Operation.NOM_OPERATEUR + " IS NULL AND(" + Operation.GAMME
-				+ "!='Contrôle jalons' OR " + Operation.GAMME
-				+ "!='Contrôle final')");
+		// Génération de l'ordre du jour
+
+		clause = new String(Operation.REALISABLE
+				+ "='"+1+"' AND " + Operation.NOM_OPERATEUR
+				+ " IS NULL AND " + Operation.GAMME
+				+ "!='Contrôle jalons' AND " + Operation.GAMME
+				+ "!='Contrôle final'");
 		cursor = cr.query(url, columns, clause + " GROUP BY "
 				+ Operation.DESCRIPTION_OPERATION, null, Operation._id + " ASC"
 				+ " LIMIT 30");
 
 		sca.changeCursor(cursor);
 
-		cursor = cr.query(url, columns, clause, null, Operation._id + " ASC");
+		cursor = cr.query(url, columns, clause, null, Operation._id + " ASC"+ " LIMIT 30");
 
 		// Rempliassage du tableau pour chaque numero de cable
 		if (cursor.moveToFirst()) {

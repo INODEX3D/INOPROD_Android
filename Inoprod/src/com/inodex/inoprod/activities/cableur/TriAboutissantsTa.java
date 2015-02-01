@@ -36,6 +36,7 @@ public class TriAboutissantsTa extends Activity {
 	private TextView titre, numeroConnecteur, repereElectrique, nombreGroupe,
 			positionChariot;
 	private ImageButton boutonCheck, infoProduit, retour;
+	private ImageButton petitePause, grandePause;
 	private GridView gridView;
 
 	/** Uri à manipuler */
@@ -55,7 +56,8 @@ public class TriAboutissantsTa extends Activity {
 	private List<HashMap<String, String>> liste = new ArrayList<HashMap<String, String>>();
 
 	/** Heure et dates à ajouter à la table de séquencment */
-	private Date dateRealisation = new Date();
+	private Date dateDebut, dateRealisation;
+	private long dureeMesuree =0;
 	private Time heureRealisation = new Time();
 
 	/** Nom de l'opérateur */
@@ -73,7 +75,8 @@ public class TriAboutissantsTa extends Activity {
 			Operation.GAMME, Operation.RANG_1_1, Operation.NUMERO_OPERATION,
 			Operation.NOM_OPERATEUR, Operation.DATE_REALISATION,
 			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION,
-			Operation.REALISABLE };
+			Operation.REALISABLE,
+			Operation.DUREE_MESUREE };
 
 	private int layouts[] = new int[] { R.id.groupe, R.id.numeroFilCable,
 			R.id.typeCable, R.id.numeroSegregation, R.id.connecteurAboutissant,
@@ -92,6 +95,8 @@ public class TriAboutissantsTa extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_tri_aboutissants_ta);
+		//Initialisation du temps
+		dateDebut = new Date();
 
 		// Récupération des éléments
 		Intent intent = getIntent();
@@ -111,6 +116,8 @@ public class TriAboutissantsTa extends Activity {
 		retour = (ImageButton) findViewById(R.id.imageButton2);
 		boutonCheck = (ImageButton) findViewById(R.id.imageButton3);
 		infoProduit = (ImageButton) findViewById(R.id.infoButton1);
+		petitePause = (ImageButton) findViewById(R.id.imageButton1);
+		grandePause = (ImageButton) findViewById(R.id.exitButton1);
 
 		// Récuperation du numéro d'opération courant
 		clause = new String(Operation._id + "='" + opId[indiceCourant] + "'");
@@ -196,6 +203,19 @@ public class TriAboutissantsTa extends Activity {
 
 			@Override
 			public void onClick(View v) {
+				
+				// MAJ Table de sequencement
+				dateRealisation = new Date();
+				contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0] + " "
+						+ nomPrenomOperateur[1]);
+				contact.put(Operation.DATE_REALISATION, dateRealisation.toGMTString());
+				heureRealisation.setToNow();
+				contact.put(Operation.HEURE_REALISATION, heureRealisation.toString());
+				dureeMesuree += dateRealisation.getTime() - dateDebut.getTime();
+				contact.put(Operation.DUREE_MESUREE, dureeMesuree / 1000);
+				cr.update(urlSeq, contact, Operation._id + " = ?",
+						new String[] { Integer.toString(opId[indiceCourant]) });
+				contact.clear();
 
 				// Signalement du point de controle
 				clause = Operation.RANG_1_1
@@ -203,7 +223,7 @@ public class TriAboutissantsTa extends Activity {
 						+ numeroCo
 						+ "' AND ( "
 						+ Operation.DESCRIPTION_OPERATION
-						+ " LIKE 'Contrôle rétention%' OR LIKE 'Contrôle final%')";
+						+ " LIKE 'Contrôle rétention%' OR "+ Operation.DESCRIPTION_OPERATION+" LIKE 'Contrôle final%')";
 				cursor = cr.query(urlSeq, columnsSeq, clause, null,
 						Operation._id);
 				if (cursor.moveToFirst()) {
@@ -295,15 +315,7 @@ public class TriAboutissantsTa extends Activity {
 				R.layout.grid_layout_tri_aboutissants_ta, colRac, layouts);
 
 		gridView.setAdapter(sca);
-		// MAJ Table de sequencement
-		contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0] + " "
-				+ nomPrenomOperateur[1]);
-		contact.put(Operation.DATE_REALISATION, dateRealisation.toGMTString());
-		heureRealisation.setToNow();
-		contact.put(Operation.HEURE_REALISATION, heureRealisation.toString());
-		cr.update(urlSeq, contact, Operation._id + " = ?",
-				new String[] { Integer.toString(opId[indiceCourant]) });
-		contact.clear();
+		
 
 	}
 

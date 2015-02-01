@@ -11,8 +11,10 @@ import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -33,6 +35,7 @@ public class PositionnementTaTab extends Activity {
 	private TextView titre, numeroConnecteur, numeroCheminement,
 			repereElectrique, zone, positionChariot;
 	private ImageButton boutonCheck, infoProduit, retour;
+	private ImageButton petitePause, grandePause;
 	private GridView gridView, gridView1;
 
 	/** Uri à manipuler */
@@ -50,7 +53,8 @@ public class PositionnementTaTab extends Activity {
 	private String labels[];
 
 	/** Heure et dates à ajouter à la table de séquencment */
-	private Date dateRealisation = new Date();
+	private Date dateDebut, dateRealisation;
+	private long dureeMesuree =0;
 	private Time heureRealisation = new Time();
 
 	/** Nom de l'opérateur */
@@ -67,7 +71,8 @@ public class PositionnementTaTab extends Activity {
 	private String columnsSeq[] = new String[] { Operation._id,
 			Operation.GAMME, Operation.RANG_1_1, Operation.NUMERO_OPERATION,
 			Operation.NOM_OPERATEUR, Operation.DATE_REALISATION,
-			Operation.HEURE_REALISATION };
+			Operation.HEURE_REALISATION,
+			Operation.DUREE_MESUREE };
 
 	private int layouts1[] = new int[] { R.id.numeroSection,
 			R.id.typeSupportAboutissant, R.id.numeroSegregation,
@@ -102,6 +107,9 @@ public class PositionnementTaTab extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_positionnement_ta_tab);
+		//Initialisation du temps
+				dateDebut = new Date();
+		
 		// Récupération des éléments
 		Intent intent = getIntent();
 		indiceCourant = intent.getIntExtra("Indice", 0);
@@ -123,6 +131,8 @@ public class PositionnementTaTab extends Activity {
 		retour = (ImageButton) findViewById(R.id.imageButton2);
 		boutonCheck = (ImageButton) findViewById(R.id.imageButton3);
 		infoProduit = (ImageButton) findViewById(R.id.infoButton1);
+		petitePause = (ImageButton) findViewById(R.id.imageButton1);
+		grandePause = (ImageButton) findViewById(R.id.exitButton1);
 
 		// Récuperation du numéro d'opération courant
 		clause = new String(Operation._id + "='" + opId[indiceCourant] + "'");
@@ -192,6 +202,32 @@ public class PositionnementTaTab extends Activity {
 			}
 
 		});
+		
+		//Petite Pause
+				petitePause.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						dureeMesuree += new Date().getTime() - dateDebut.getTime();
+						AlertDialog.Builder builder = new AlertDialog.Builder(
+								PositionnementTaTab.this);
+						builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
+						builder.setCancelable(false);
+
+						builder.setNegativeButton("Retour",
+								new DialogInterface.OnClickListener() {
+									public void onClick(final DialogInterface dialog,
+											final int id) {
+
+										dateDebut= new Date();
+										dialog.cancel();
+
+									}
+								});
+						builder.show();
+
+					}
+				});
 
 
 		// Info Produit
@@ -212,14 +248,21 @@ public class PositionnementTaTab extends Activity {
 				layouts2);
 
 		// MAJ Table de sequencement
+		dateRealisation = new Date();
 		contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0] + " "
 				+ nomPrenomOperateur[1]);
 		contact.put(Operation.DATE_REALISATION, dateRealisation.toGMTString());
 		heureRealisation.setToNow();
 		contact.put(Operation.HEURE_REALISATION, heureRealisation.toString());
+		dureeMesuree += dateRealisation.getTime() - dateDebut.getTime();
+		contact.put(Operation.DUREE_MESUREE, dureeMesuree / 1000);
 		cr.update(urlSeq, contact, Operation._id + " = ?",
 				new String[] { Integer.toString(opId[indiceCourant]) });
 		contact.clear();
+		
+		//MAJ de la durée
+		dureeMesuree = 0;
+		dateDebut= new Date();
 
 	}
 

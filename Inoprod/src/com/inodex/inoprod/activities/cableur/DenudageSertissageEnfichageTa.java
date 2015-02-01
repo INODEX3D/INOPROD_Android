@@ -42,6 +42,7 @@ public class DenudageSertissageEnfichageTa extends Activity {
 			referenceInterne, longueur, gainage, positionChariot,
 			referenceFabricant, instruction;
 	private ImageButton boutonCheck, infoProduit, retour, boutonAide;
+	private ImageButton petitePause, grandePause;
 	private GridView gridView;
 
 	/** Uri à manipuler */
@@ -60,8 +61,10 @@ public class DenudageSertissageEnfichageTa extends Activity {
 	private String labels[];
 
 	/** Heure et dates à ajouter à la table de séquencment */
-	private Date dateRealisation = new Date();
+	private Date dateDebut, dateRealisation;
+	private long dureeMesuree =0;
 	private Time heureRealisation = new Time();
+	
 
 	/** Nom de l'opérateur */
 	private String nomPrenomOperateur[] = null;
@@ -79,7 +82,7 @@ public class DenudageSertissageEnfichageTa extends Activity {
 	private String columnsSeq[] = new String[] { Operation._id,
 			Operation.GAMME, Operation.RANG_1_1, Operation.NUMERO_OPERATION,
 			Operation.NOM_OPERATEUR, Operation.DATE_REALISATION,
-			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION };
+			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION, Operation.DUREE_MESUREE };
 
 	private int layouts[] = new int[] { R.id.statutLiaison,
 			R.id.numeroRevisionLiaison, R.id.typeCable, R.id.numeroFil,
@@ -108,6 +111,9 @@ public class DenudageSertissageEnfichageTa extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_denudage_sertissage_enfichage_ta);
+		
+		//Initialisation du temps
+		dateDebut = new Date();
 
 		// Récupération des éléments
 		Intent intent = getIntent();
@@ -136,6 +142,8 @@ public class DenudageSertissageEnfichageTa extends Activity {
 		retour = (ImageButton) findViewById(R.id.imageButton2);
 		boutonCheck = (ImageButton) findViewById(R.id.imageButton3);
 		infoProduit = (ImageButton) findViewById(R.id.infoButton1);
+		petitePause = (ImageButton) findViewById(R.id.imageButton1);
+		grandePause = (ImageButton) findViewById(R.id.exitButton1);
 
 		// Récuperation du numéro d'opération courant
 		clause = new String(Operation._id + "='" + opId[indiceCourant] + "'");
@@ -383,6 +391,10 @@ public class DenudageSertissageEnfichageTa extends Activity {
 					indiceCourant--;
 					Log.e("Indice", "" + indiceLimite);
 				}
+				
+				//MAJ de la durée
+				dureeMesuree = 0;
+				dateDebut= new Date();
 
 				// MAJ de la clause
 				clauseTotal = oldClauseTotal;
@@ -391,6 +403,32 @@ public class DenudageSertissageEnfichageTa extends Activity {
 				displayContentProvider();
 			}
 		});
+		
+		//Petite Pause
+				petitePause.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						dureeMesuree += new Date().getTime() - dateDebut.getTime();
+						AlertDialog.Builder builder = new AlertDialog.Builder(
+								DenudageSertissageEnfichageTa.this);
+						builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
+						builder.setCancelable(false);
+
+						builder.setNegativeButton("Retour",
+								new DialogInterface.OnClickListener() {
+									public void onClick(final DialogInterface dialog,
+											final int id) {
+
+										dateDebut= new Date();
+										dialog.cancel();
+
+									}
+								});
+						builder.show();
+
+					}
+				});
 	}
 
 	private void displayContentProvider() {
@@ -404,14 +442,21 @@ public class DenudageSertissageEnfichageTa extends Activity {
 
 		gridView.setAdapter(sca);
 		// MAJ Table de sequencement
+		dateRealisation = new Date();
 		contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0] + " "
 				+ nomPrenomOperateur[1]);
 		contact.put(Operation.DATE_REALISATION, dateRealisation.toGMTString());
 		heureRealisation.setToNow();
 		contact.put(Operation.HEURE_REALISATION, heureRealisation.toString());
+		dureeMesuree += dateRealisation.getTime() - dateDebut.getTime();
+		contact.put(Operation.DUREE_MESUREE, dureeMesuree / 1000);
 		cr.update(urlSeq, contact, Operation._id + " = ?",
 				new String[] { Integer.toString(opId[indiceCourant]) });
 		contact.clear();
+		
+		//MAJ de la durée
+		dureeMesuree = 0;
+		dateDebut= new Date();
 
 		// Vérification de l'état de la production
 		if (indiceLimite == nbRows) {
