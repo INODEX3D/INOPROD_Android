@@ -144,6 +144,7 @@ public class SaisieTracabiliteComposant extends Activity {
 					toNext.putExtra("opId", opId);
 					toNext.putExtra("Indice", indiceCourant);
 					startActivity(toNext);
+					finish();
 				}
 
 			}

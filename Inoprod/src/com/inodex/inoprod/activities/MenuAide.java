@@ -31,8 +31,9 @@ public class MenuAide extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				Intent toMain = new Intent(MenuAide.this, MainActivity.class);
+				Intent toMain = new Intent(MenuAide.this, Inoprod.class);
 				startActivity(toMain);
+				finish();
 
 			}
 		});

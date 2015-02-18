@@ -101,6 +101,7 @@ public class PreparationTa extends Activity {
 			Raccordement.NUMERO_COMPOSANT_TENANT,
 			Raccordement.NUMERO_BORNE_ABOUTISSANT };
 
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -177,6 +178,7 @@ public class PreparationTa extends Activity {
 						+ numeroCo + "' AND (" + Raccordement.FAUX_CONTACT
 						+ "='" + 1 + "' OR " + Raccordement.OBTURATEUR + "='"
 						+ 1 + "' )";
+				colRac[3] = Raccordement.NUMERO_BORNE_ABOUTISSANT;
 			}
 
 		}
@@ -193,10 +195,11 @@ public class PreparationTa extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				indiceCourant++;
+				
 				indiceLimite++;
 				// Controle de l'état de la production
 				if (prodAchevee) { // Fin de la prodction
+					
 					String nextOperation = null;
 					try {
 						int test = opId[indiceCourant];
@@ -228,6 +231,7 @@ public class PreparationTa extends Activity {
 								toNext.putExtra("Noms", nomPrenomOperateur);
 								toNext.putExtra("Indice", indiceCourant);
 								startActivity(toNext);
+								finish();
 							}
 
 						}
@@ -239,6 +243,7 @@ public class PreparationTa extends Activity {
 						toNext.putExtra("opId", opId);
 						toNext.putExtra("Indice", indiceCourant);
 						startActivity(toNext);
+						finish();
 
 					}
 				} else { // Production toujours en cours
@@ -263,6 +268,7 @@ public class PreparationTa extends Activity {
 						liste.add(element);
 
 						displayContentProvider();
+						indiceCourant++;
 
 					}
 				}
@@ -283,7 +289,10 @@ public class PreparationTa extends Activity {
 					Log.e("Indice", "" + indiceLimite);
 				}
 
-				liste = oldListe;
+				//liste = oldListe;
+				if (!(liste.isEmpty())) { 
+				liste.remove(liste.size() -1);
+				}
 				
 				//MAJ de la durée
 				dureeMesuree = 0;
@@ -294,6 +303,45 @@ public class PreparationTa extends Activity {
 				displayContentProvider();
 			}
 		});
+		
+		//Grande pause
+				grandePause.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						AlertDialog.Builder builder = new AlertDialog.Builder(
+								PreparationTa.this);
+						builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
+						builder.setCancelable(false);
+						builder.setPositiveButton("Oui",
+								new DialogInterface.OnClickListener() {
+
+									public void onClick(DialogInterface dialog,
+											int which) {
+									/*	Intent toMain = new Intent(
+												CheminementTa.this,
+												MainActivity.class);
+										startActivity(toMain); */
+										finish();
+
+									}
+
+								});
+
+						builder.setNegativeButton("Non",
+								new DialogInterface.OnClickListener() {
+									public void onClick(final DialogInterface dialog,
+											final int id) {
+
+										dialog.cancel();
+
+									}
+								});
+						builder.show();
+
+					}
+				});
+
 		
 		
 		//Petite Pause

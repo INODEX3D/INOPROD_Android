@@ -33,7 +33,7 @@ import com.inodex.inoprod.business.AnnuaireProvider;
  * @version 1.1
  * 
  */
-public class MainActivity extends Activity {
+public class Inoprod extends Activity {
 
 	/** ImageButtons à récuperer depuis la vue */
 	private ImageButton boutonAnnuaire = null;
@@ -62,9 +62,10 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				Intent toAnnuaire = new Intent(MainActivity.this,
+				Intent toAnnuaire = new Intent(Inoprod.this,
 						Annuaire.class);
 				startActivity(toAnnuaire);
+				finish();
 
 			}
 		});
@@ -75,9 +76,10 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				Intent toAide = new Intent(MainActivity.this, MenuAide.class);
+				Intent toAide = new Intent(Inoprod.this, MenuAide.class);
 
 				startActivity(toAide);
+				finish();
 
 			}
 		});
@@ -88,10 +90,11 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				Intent toLogin = new Intent(MainActivity.this,
+				Intent toLogin = new Intent(Inoprod.this,
 						LoginProfil.class);
 
 				startActivity(toLogin);
+				finish();
 
 			}
 		});

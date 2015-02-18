@@ -1,12 +1,16 @@
 package com.inodex.inoprod.activities.cableur;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.R.layout;
 import com.inodex.inoprod.business.CheminementProvider;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
+import com.inodex.inoprod.business.TableCheminement.Cheminement;
 import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
 
@@ -20,12 +24,14 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.SimpleAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
@@ -43,6 +49,9 @@ public class PositionnementTaTab extends Activity {
 	private Uri urlRac = RaccordementProvider.CONTENT_URI;
 	private Uri urlChe = CheminementProvider.CONTENT_URI;
 
+	private List<HashMap<String, String>> liste1 = new ArrayList<HashMap<String, String>>();
+	private List<HashMap<String, String>> liste2 = new ArrayList<HashMap<String, String>>();
+
 	/** Tableau des opérations à réaliser */
 	private int opId[] = null;
 
@@ -54,7 +63,7 @@ public class PositionnementTaTab extends Activity {
 
 	/** Heure et dates à ajouter à la table de séquencment */
 	private Date dateDebut, dateRealisation;
-	private long dureeMesuree =0;
+	private long dureeMesuree = 0;
 	private Time heureRealisation = new Time();
 
 	/** Nom de l'opérateur */
@@ -71,16 +80,14 @@ public class PositionnementTaTab extends Activity {
 	private String columnsSeq[] = new String[] { Operation._id,
 			Operation.GAMME, Operation.RANG_1_1, Operation.NUMERO_OPERATION,
 			Operation.NOM_OPERATEUR, Operation.DATE_REALISATION,
-			Operation.HEURE_REALISATION,
-			Operation.DUREE_MESUREE };
+			Operation.HEURE_REALISATION, Operation.DUREE_MESUREE };
 
 	private int layouts1[] = new int[] { R.id.numeroSection,
-			R.id.typeSupportAboutissant, R.id.numeroSegregation,
-			R.id.zoneLocalisation };
+			R.id.typeSupportAboutissant, R.id.zoneLocalisation };
 
 	private int layouts2[] = new int[] { R.id.numeroSection,
 			R.id.localisationZone, R.id.typeSupportAboutissant,
-			R.id.numeroSegregation, R.id.zoneLocalisation };
+			R.id.zoneLocalisation };
 
 	private String colRac1[] = new String[] {
 			Raccordement.NUMERO_SECTION_CHEMINEMENT,
@@ -95,21 +102,34 @@ public class PositionnementTaTab extends Activity {
 	private String colRac2[] = new String[] {
 			Raccordement.NUMERO_SECTION_CHEMINEMENT,
 			Raccordement.TYPE_RACCORDEMENT_ABOUTISSANT,
-			 Raccordement.NUMERO_COMPOSANT_TENANT,
-			Raccordement.ZONE_ACTIVITE, Raccordement._id,
-			Raccordement.NUMERO_COMPOSANT_ABOUTISSANT,
+			Raccordement.NUMERO_COMPOSANT_TENANT, Raccordement.ZONE_ACTIVITE,
+			Raccordement._id, Raccordement.NUMERO_COMPOSANT_ABOUTISSANT,
 			Raccordement.REPERE_ELECTRIQUE_TENANT,
 			Raccordement.NUMERO_OPERATION,
 			Raccordement.NUMERO_POSITION_CHARIOT,
 			Raccordement.NUMERO_CHEMINEMENT };
 
+	private String colChe1[] = new String[] {
+			Cheminement.NUMERO_SECTION_CHEMINEMENT, Cheminement.LOCALISATION1,
+			Cheminement.NUMERO_COMPOSANT,
+			Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT,
+			Cheminement.TYPE_SUPPORT,
+
+			Cheminement.ORDRE_REALISATION, Cheminement.REPERE_ELECTRIQUE,
+			Cheminement.ZONE_ACTIVITE, Cheminement._id
+
+	};
+
+
+
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_positionnement_ta_tab);
-		//Initialisation du temps
-				dateDebut = new Date();
-		
+		// Initialisation du temps
+		dateDebut = new Date();
+
 		// Récupération des éléments
 		Intent intent = getIntent();
 		indiceCourant = intent.getIntExtra("Indice", 0);
@@ -147,7 +167,7 @@ public class PositionnementTaTab extends Activity {
 					.getColumnIndex(Operation.RANG_1_1))).substring(11, 14);
 			numeroConnecteur.append(" : " + numeroCo);
 		}
-		
+
 		clause = new String(Raccordement.NUMERO_COMPOSANT_TENANT + "='"
 				+ numeroCo + "' GROUP BY "
 				+ Raccordement.NUMERO_COMPOSANT_TENANT);
@@ -189,6 +209,7 @@ public class PositionnementTaTab extends Activity {
 					toNext.putExtra("Noms", nomPrenomOperateur);
 					toNext.putExtra("Indice", indiceCourant);
 					startActivity(toNext);
+					finish();
 
 				} catch (ArrayIndexOutOfBoundsException e) {
 					Intent toNext = new Intent(PositionnementTaTab.this,
@@ -197,55 +218,162 @@ public class PositionnementTaTab extends Activity {
 					toNext.putExtra("opId", opId);
 					toNext.putExtra("Indice", indiceCourant);
 					startActivity(toNext);
+					finish();
 
 				}
 			}
 
 		});
-		
-		//Petite Pause
-				petitePause.setOnClickListener(new View.OnClickListener() {
 
-					@Override
-					public void onClick(View v) {
-						dureeMesuree += new Date().getTime() - dateDebut.getTime();
-						AlertDialog.Builder builder = new AlertDialog.Builder(
-								PositionnementTaTab.this);
-						builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
-						builder.setCancelable(false);
+		// Grande pause
+		grandePause.setOnClickListener(new View.OnClickListener() {
 
-						builder.setNegativeButton("Retour",
-								new DialogInterface.OnClickListener() {
-									public void onClick(final DialogInterface dialog,
-											final int id) {
+			@Override
+			public void onClick(View v) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						PositionnementTaTab.this);
+				builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
+				builder.setCancelable(false);
+				builder.setPositiveButton("Oui",
+						new DialogInterface.OnClickListener() {
 
-										dateDebut= new Date();
-										dialog.cancel();
+							public void onClick(DialogInterface dialog,
+									int which) {
+								/*
+								 * Intent toMain = new Intent(
+								 * CheminementTa.this, MainActivity.class);
+								 * startActivity(toMain);
+								 */
+								finish();
 
-									}
-								});
-						builder.show();
+							}
 
-					}
-				});
+						});
 
+				builder.setNegativeButton("Non",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+
+								dialog.cancel();
+
+							}
+						});
+				builder.show();
+
+			}
+		});
+
+		// Petite Pause
+		petitePause.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				dureeMesuree += new Date().getTime() - dateDebut.getTime();
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						PositionnementTaTab.this);
+				builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
+				builder.setCancelable(false);
+
+				builder.setNegativeButton("Retour",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+
+								dateDebut = new Date();
+								dialog.cancel();
+
+							}
+						});
+				builder.show();
+
+			}
+		});
 
 		// Info Produit
 	}
 
 	private void displayContentProvider() {
-		// Création du SimpleCursorAdapter affilié au GridView
-		cursor = cr.query(urlRac, colRac1, clause , null, Raccordement._id + " LIMIT 1");
-		SimpleCursorAdapter sca1 = new SimpleCursorAdapter(this,
-				R.layout.grid_layout_reprise_blindage_ta1, cursor, colRac1,
-				layouts1);
 
-		gridView1.setAdapter(sca1);
+		clause = new String(Cheminement.NUMERO_COMPOSANT + " LIKE '%" + numeroCo
+				+ "%' ");
+		cursor = cr.query(urlChe, colChe1, clause, null, Cheminement._id
+				);
+		int numeroSection;
 
-		cursorA = cr.query(urlRac, colRac2, clause, null, Raccordement._id + " LIMIT 1");
-		SimpleCursorAdapter sca2 = new SimpleCursorAdapter(this,
-				R.layout.grid_layout_reprise_blindage_ta2, cursor, colRac2,
-				layouts2);
+		String zonePose = "";
+		if (cursor.moveToFirst()) {
+			numeroSection = cursor.getInt(cursor
+					.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
+			cursorA = cr.query(urlChe, colChe1,
+					Cheminement.NUMERO_SECTION_CHEMINEMENT + "='"
+							+ numeroSection + "'", null, Cheminement._id);
+			Log.e("Chem", ""+cursorA.getCount());
+
+			if (cursorA.moveToFirst()) {
+
+				HashMap<String, String> element1;
+				HashMap<String, String> element2;
+
+				element1 = new HashMap<String, String>();
+				element2 = new HashMap<String, String>();
+				element1.put(colChe1[0], "" + numeroSection);
+				element2.put(colChe1[0], "" + numeroSection);
+
+				do {
+					zonePose += cursorA.getString(cursorA
+							.getColumnIndex(Cheminement.ZONE_ACTIVITE))
+							+ "-"
+							+ cursorA.getString(cursorA
+									.getColumnIndex(Cheminement.LOCALISATION1)) +"-"
+									+ cursorA.getString(cursorA
+											.getColumnIndex(Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT)) +", " ;
+					
+					if (cursorA.getString(
+							cursorA.getColumnIndex(Cheminement.TYPE_SUPPORT))
+							.startsWith("Dérivation")) {
+				
+						element1.put(colChe1[2], cursorA.getString(cursorA
+								.getColumnIndex(Cheminement.TYPE_SUPPORT)));
+						element2.put(colChe1[3], cursorA.getString(cursorA
+								.getColumnIndex(Cheminement.TYPE_SUPPORT)));
+						element1.put(
+								colChe1[3],
+								cursorA.getString(cursorA
+										.getColumnIndex(Cheminement.ZONE_ACTIVITE))
+										+ "-"
+										+ cursorA.getString(cursorA
+												.getColumnIndex(Cheminement.LOCALISATION1)));
+						
+						element2.put(
+								colChe1[4],
+								cursorA.getString(cursorA
+										.getColumnIndex(Cheminement.ZONE_ACTIVITE))
+										+ "-"
+										+ cursorA.getString(cursorA
+												.getColumnIndex(Cheminement.LOCALISATION1)));
+					}
+
+				} while (cursorA.moveToNext());
+				liste1.add(element1);
+				
+				
+				element2.put(colChe1[1], zonePose);
+				liste2.add(element2);
+				
+			}
+
+		}
+
+		SimpleAdapter sca1 = new SimpleAdapter(this, liste1,
+				R.layout.grid_layout_positionnement1, colChe1, layouts1);
+
+		gridView.setAdapter(sca1);
+
+	
+		SimpleAdapter sca2 = new SimpleAdapter(this, liste2,
+				R.layout.grid_layout_positionnement2, colChe1, layouts2);
+		gridView1.setAdapter(sca2);
 
 		// MAJ Table de sequencement
 		dateRealisation = new Date();
@@ -259,10 +387,10 @@ public class PositionnementTaTab extends Activity {
 		cr.update(urlSeq, contact, Operation._id + " = ?",
 				new String[] { Integer.toString(opId[indiceCourant]) });
 		contact.clear();
-		
-		//MAJ de la durée
+
+		// MAJ de la durée
 		dureeMesuree = 0;
-		dateDebut= new Date();
+		dateDebut = new Date();
 
 	}
 

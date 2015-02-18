@@ -59,8 +59,8 @@ public class DenudageSertissageContactTa extends Activity {
 
 	/** Heure et dates à ajouter à la table de séquencment */
 	private Date dateDebut, dateRealisation;
-	private long dureeMesuree =0;
-	
+	private long dureeMesuree = 0;
+
 	private Time heureRealisation = new Time();
 
 	/** Nom de l'opérateur */
@@ -80,8 +80,7 @@ public class DenudageSertissageContactTa extends Activity {
 			Operation.GAMME, Operation.RANG_1_1, Operation.NUMERO_OPERATION,
 			Operation.NOM_OPERATEUR, Operation.DATE_REALISATION,
 			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION,
-			Operation.REALISABLE ,
-			Operation.DUREE_MESUREE};
+			Operation.REALISABLE, Operation.DUREE_MESUREE };
 
 	private int layouts[] = new int[] { R.id.statutLiaison,
 			R.id.numeroRevisionLiaison, R.id.typeCable, R.id.numeroFil,
@@ -110,10 +109,9 @@ public class DenudageSertissageContactTa extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_denudage_sertissage_contact_ta);
-		//Initialisation du temps
+		// Initialisation du temps
 		dateDebut = new Date();
-			
-		
+
 		// Récupération des éléments
 		Intent intent = getIntent();
 		indiceCourant = intent.getIntExtra("Indice", 0);
@@ -164,9 +162,10 @@ public class DenudageSertissageContactTa extends Activity {
 					.append(" : "
 							+ cursorA.getString(cursorA
 									.getColumnIndex(Raccordement.NUMERO_POSITION_CHARIOT)));
-			longueur.append(" : "
-					+ cursorA.getString(cursorA
-							.getColumnIndex(Raccordement.LONGUEUR_FIL_CABLE)));
+			/*
+			 * longueur.append(" : " + cursorA.getString(cursorA
+			 * .getColumnIndex(Raccordement.LONGUEUR_FIL_CABLE)));
+			 */
 
 			if (numeroOperation.startsWith("4")) {
 				titre.setText(R.string.denudageSertissageTa);
@@ -175,21 +174,25 @@ public class DenudageSertissageContactTa extends Activity {
 								+ cursorA.getString(cursorA
 										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
 				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
-						+ numeroCo + "' AND ( " + Raccordement.FAUX_CONTACT
-						+ "='" + 0 + "' OR " + Raccordement.OBTURATEUR + "='"
-						+ 0 + "' OR " + Raccordement.REPRISE_BLINDAGE
-						+ " IS NULL )";
+						+ numeroCo + "' AND " + Raccordement.FAUX_CONTACT
+						+ "='" + 0 + "' AND " + Raccordement.OBTURATEUR + "='"
+						+ 0 + "' AND " + Raccordement.REPRISE_BLINDAGE
+						+ " IS NULL ";
 			} else {
-				titre.setText(R.string.denudageSertissageTa);
+				titre.setText(R.string.denudageSertissageTb);
 				repereElectrique
 						.append(" : "
 								+ cursorA.getString(cursorA
 										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT)));
 				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
-						+ numeroCo + "' AND ( " + Raccordement.FAUX_CONTACT
-						+ "='" + 0 + "' OR " + Raccordement.OBTURATEUR + "='"
-						+ 0 + "' OR " + Raccordement.REPRISE_BLINDAGE
-						+ " IS NULL )";
+						+ numeroCo + "' AND  " + Raccordement.FAUX_CONTACT
+						+ "='" + 0 + "' AND " + Raccordement.OBTURATEUR + "='"
+						+ 0 + "' AND " + Raccordement.REPRISE_BLINDAGE
+						+ " IS NULL ";
+				colRac[8] = Raccordement.REFERENCE_OUTIL_ABOUTISSANT;
+				colRac[10] = Raccordement.REGLAGE_OUTIL_ABOUTISSANT;
+				colRac[11] = Raccordement.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT;
+
 			}
 
 		}
@@ -209,19 +212,22 @@ public class DenudageSertissageContactTa extends Activity {
 				if (prodAchevee) {
 
 					// Signalement du point de controle
-					clause = Operation.RANG_1_1 + "='" + numeroCo + "' AND "
-							+ Operation.DESCRIPTION_OPERATION
-							+ " LIKE 'Contrôle sertissage%'";
+					clause = Operation.RANG_1_1 + " LIKE '%" + numeroCo
+							+ "%' AND " + Operation.DESCRIPTION_OPERATION
+							+ " LIKE 'Contrôle sertissage tête A%'";
 					cursor = cr.query(urlSeq, columnsSeq, clause, null,
 							Operation._id);
 					if (cursor.moveToFirst()) {
 						contact.put(Operation.REALISABLE, 1);
-						int id = cursor.getInt(cursor.getColumnIndex(Operation._id));
-						cr.update(urlSeq, contact,Operation._id + "='" + id +"'" , null);
+						int id = cursor.getInt(cursor
+								.getColumnIndex(Operation._id));
+						Log.e("Controle ID", "" + id);
+						cr.update(urlSeq, contact, Operation._id + "='" + id
+								+ "'", null);
 						contact.clear();
 					}
 
-					indiceCourant++;
+				
 					String nextOperation = null;
 					// Passage à l'étape suivante en fonction de sa description
 					try {
@@ -273,13 +279,14 @@ public class DenudageSertissageContactTa extends Activity {
 										DenudageSertissageContactTa.this,
 										CheminementTa.class);
 							}
-							
+
 							if (toNext != null) {
 
 								toNext.putExtra("opId", opId);
 								toNext.putExtra("Noms", nomPrenomOperateur);
 								toNext.putExtra("Indice", indiceCourant);
 								startActivity(toNext);
+								finish();
 							}
 
 						}
@@ -292,6 +299,7 @@ public class DenudageSertissageContactTa extends Activity {
 						toNext.putExtra("opId", opId);
 						toNext.putExtra("Indice", indiceCourant);
 						startActivity(toNext);
+						finish();
 
 					}
 					// Si production non achevée
@@ -307,82 +315,9 @@ public class DenudageSertissageContactTa extends Activity {
 						startActivityForResult(intent, 0);
 						// Si aucun scan détécté, ajout du cable au clavier
 					} catch (ActivityNotFoundException e) {
-						AlertDialog.Builder builder = new AlertDialog.Builder(
-								DenudageSertissageContactTa.this);
-						builder.setMessage("Impossible de trouver une application pour le scan. Entrez le N° de cable.");
-						builder.setCancelable(false);
-						final EditText cable = new EditText(
-								DenudageSertissageContactTa.this);
-						builder.setView(cable);
-						builder.setPositiveButton("Valider",
-								new DialogInterface.OnClickListener() {
 
-									public void onClick(DialogInterface dialog,
-											int which) {
-										// Recherche du cable entré
-										numeroCable = cable.getText()
-												.toString();
-										Log.e("N°Cable", numeroCable);
-
-										clause = Raccordement.NUMERO_FIL_CABLE
-												+ "='"
-												+ numeroCable
-												+ "' AND ("
-												+ Raccordement.NUMERO_COMPOSANT_TENANT
-												+ "='"
-												+ numeroCo
-												+ "' OR "
-												+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-												+ "='" + numeroCo + "' )";
-										cursorA = cr.query(urlRac, colRac,
-												clause, null, Raccordement._id);
-										if (cursorA.moveToFirst()) {
-											if (clauseTotal == null) {
-												clauseTotal = Raccordement.NUMERO_FIL_CABLE
-														+ "='"
-														+ numeroCable
-														+ "'";
-											} else {
-												oldClauseTotal = clauseTotal;
-												clauseTotal += " OR "
-														+ Raccordement.NUMERO_FIL_CABLE
-														+ "='" + numeroCable
-														+ "'";
-											}
-											// Ajout du cable à la liste des
-											// éléments à afficher
-
-											Log.e("clause", clauseTotal);
-											indiceLimite++;
-											displayContentProvider();
-											indiceCourant++;
-										} else {
-											// Le cable n'est pas utilisé pour
-											// ce connecteur
-											Toast.makeText(
-													DenudageSertissageContactTa.this,
-													"Ce cable ne correspond pas",
-													Toast.LENGTH_SHORT).show();
-
-										}
-									}
-
-								});
-
-						builder.setNegativeButton("Annuler",
-								new DialogInterface.OnClickListener() {
-									public void onClick(
-											final DialogInterface dialog,
-											final int id) {
-
-										dialog.cancel();
-
-									}
-								});
-
-						builder.show();
+						entreCable("Impossible de trouver une application pour le scan. Entrez le N° de cable.");
 					}
-
 				}
 			}
 		});
@@ -401,10 +336,10 @@ public class DenudageSertissageContactTa extends Activity {
 					indiceCourant--;
 					Log.e("Indice", "" + indiceLimite);
 				}
-				
-				//MAJ de la durée
+
+				// MAJ de la durée
 				dureeMesuree = 0;
-				dateDebut= new Date();
+				dateDebut = new Date();
 
 				// MAJ de la clause
 				clauseTotal = oldClauseTotal;
@@ -413,39 +348,77 @@ public class DenudageSertissageContactTa extends Activity {
 				displayContentProvider();
 			}
 		});
-		
-		
-		//Petite Pause
-				petitePause.setOnClickListener(new View.OnClickListener() {
 
-					@Override
-					public void onClick(View v) {
-						dureeMesuree += new Date().getTime() - dateDebut.getTime();
-						AlertDialog.Builder builder = new AlertDialog.Builder(
-								DenudageSertissageContactTa.this);
-						builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
-						builder.setCancelable(false);
+		// Grande pause
+		grandePause.setOnClickListener(new View.OnClickListener() {
 
-						builder.setNegativeButton("Retour",
-								new DialogInterface.OnClickListener() {
-									public void onClick(final DialogInterface dialog,
-											final int id) {
+			@Override
+			public void onClick(View v) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						DenudageSertissageContactTa.this);
+				builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
+				builder.setCancelable(false);
+				builder.setPositiveButton("Oui",
+						new DialogInterface.OnClickListener() {
 
-										dateDebut= new Date();
-										dialog.cancel();
+							public void onClick(DialogInterface dialog,
+									int which) {
+								/*
+								 * Intent toMain = new Intent(
+								 * CheminementTa.this, MainActivity.class);
+								 * startActivity(toMain);
+								 */
+								finish();
 
-									}
-								});
-						builder.show();
+							}
 
-					}
-				});
+						});
+
+				builder.setNegativeButton("Non",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+
+								dialog.cancel();
+
+							}
+						});
+				builder.show();
+
+			}
+		});
+
+		// Petite Pause
+		petitePause.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				dureeMesuree += new Date().getTime() - dateDebut.getTime();
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						DenudageSertissageContactTa.this);
+				builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
+				builder.setCancelable(false);
+
+				builder.setNegativeButton("Retour",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+
+								dateDebut = new Date();
+								dialog.cancel();
+
+							}
+						});
+				builder.show();
+
+			}
+		});
 	}
 
 	private void displayContentProvider() {
 		// Création du SimpleCursorAdapter affilié au GridView
 		cursor = cr.query(urlRac, colRac, Raccordement.NUMERO_COMPOSANT_TENANT
-				+ "='" + numeroCo + "' AND (" + clauseTotal + ")", null,
+				+ "='" + numeroCo + "' AND (" + clauseTotal + ") AND " + Raccordement.REPRISE_BLINDAGE +" IS NULL ", null,
 				Raccordement._id);
 		SimpleCursorAdapter sca = new SimpleCursorAdapter(this,
 				R.layout.grid_layout_denudage_sertissage_contact_ta, cursor,
@@ -461,13 +434,18 @@ public class DenudageSertissageContactTa extends Activity {
 		contact.put(Operation.HEURE_REALISATION, heureRealisation.toString());
 		dureeMesuree += dateRealisation.getTime() - dateDebut.getTime();
 		contact.put(Operation.DUREE_MESUREE, dureeMesuree / 1000);
-		cr.update(urlSeq, contact, Operation._id + " = ?",
-				new String[] { Integer.toString(opId[indiceCourant]) });
+		try {
+			cr.update(urlSeq, contact, Operation._id + " = ?",
+					new String[] { Integer.toString(opId[indiceCourant]) });
+		} catch (ArrayIndexOutOfBoundsException e) {
+			indiceLimite = nbRows;
+
+		}
 		contact.clear();
-		
-		//MAJ de la durée
+
+		// MAJ de la durée
 		dureeMesuree = 0;
-		dateDebut= new Date();
+		dateDebut = new Date();
 		// Vérification de l'état de la production
 		if (indiceLimite == nbRows) {
 			prodAchevee = true;
@@ -486,15 +464,114 @@ public class DenudageSertissageContactTa extends Activity {
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		if (requestCode == 0) {
 			if (resultCode == RESULT_OK) {
+				Log.e("SCAN", "OK");
 				String contents = intent.getStringExtra("SCAN_RESULT");
-				/* ACTION A EFFECTUER */
+				numeroCable = contents;
 				String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
-			} else if (resultCode == RESULT_CANCELED) {
-				Toast.makeText(DenudageSertissageContactTa.this,
-						"Echec du scan de l'identifiant", Toast.LENGTH_SHORT)
-						.show();
+				clause = Raccordement.NUMERO_FIL_CABLE + "='"
+						+ numeroCable + "' AND ("
+						+ Raccordement.NUMERO_COMPOSANT_TENANT + "='"
+						+ numeroCo + "' OR "
+						+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+						+ "='" + numeroCo + "' )"
+						;
+				cursorA = cr.query(urlRac, colRac, clause, null,
+						Raccordement._id);
+				if (cursorA.moveToFirst()) {
+					if (clauseTotal == null) {
+						clauseTotal = Raccordement.NUMERO_FIL_CABLE + "='"
+								+ numeroCable + "'";
+					} else {
+						oldClauseTotal = clauseTotal;
+						clauseTotal += " OR " + Raccordement.NUMERO_FIL_CABLE
+								+ "='" + numeroCable + "'";
+					}
+					// Ajout du cable à la liste des
+					// éléments à afficher
+
+					Log.e("clause", clauseTotal);
+					indiceLimite++;
+					displayContentProvider();
+					indiceCourant++;
+				} else {
+					// Le cable n'est pas utilisé pour
+					// ce connecteur
+					Toast.makeText(DenudageSertissageContactTa.this,
+							"Ce cable ne correspond pas", Toast.LENGTH_SHORT)
+							.show();
+
+				}
 			}
+
+		} else if (resultCode == RESULT_CANCELED) {
+			entreCable("Echec du scan. Entrez le n° de cable :");
 		}
+	}
+
+	public void entreCable(String message) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(
+				DenudageSertissageContactTa.this);
+		builder.setMessage(message);
+		builder.setCancelable(false);
+		final EditText cable = new EditText(DenudageSertissageContactTa.this);
+		builder.setView(cable);
+		builder.setPositiveButton("Valider",
+				new DialogInterface.OnClickListener() {
+
+					public void onClick(DialogInterface dialog, int which) {
+						// Recherche du cable entré
+						numeroCable = cable.getText().toString();
+						Log.e("N°Cable", numeroCable);
+
+						clause = Raccordement.NUMERO_FIL_CABLE + "='"
+								+ numeroCable + "' AND ("
+								+ Raccordement.NUMERO_COMPOSANT_TENANT + "='"
+								+ numeroCo + "' OR "
+								+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+								+ "='" + numeroCo + "' )"
+								;
+						cursorA = cr.query(urlRac, colRac, clause, null,
+								Raccordement._id);
+						if (cursorA.moveToFirst()) {
+							if (clauseTotal == null) {
+								clauseTotal = Raccordement.NUMERO_FIL_CABLE
+										+ "='" + numeroCable + "'";
+							} else {
+								oldClauseTotal = clauseTotal;
+								clauseTotal += " OR "
+										+ Raccordement.NUMERO_FIL_CABLE + "='"
+										+ numeroCable + "'";
+							}
+							// Ajout du cable à la liste des
+							// éléments à afficher
+
+							Log.e("clause", clauseTotal);
+							indiceLimite++;
+							displayContentProvider();
+							indiceCourant++;
+						} else {
+							// Le cable n'est pas utilisé pour
+							// ce connecteur
+							Toast.makeText(DenudageSertissageContactTa.this,
+									"Ce cable ne correspond pas",
+									Toast.LENGTH_SHORT).show();
+
+						}
+					}
+
+				});
+
+		builder.setNegativeButton("Annuler",
+				new DialogInterface.OnClickListener() {
+					public void onClick(final DialogInterface dialog,
+							final int id) {
+
+						dialog.cancel();
+
+					}
+				});
+
+		builder.show();
 	}
 
 }

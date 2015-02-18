@@ -137,7 +137,7 @@ public class ControleRetentionTa extends Activity {
 			numeroOperation = cursor.getString(cursor
 					.getColumnIndex(Operation.NUMERO_OPERATION));
 			description = cursor.getString(cursor
-					.getColumnIndex(Operation.NUMERO_OPERATION));
+					.getColumnIndex(Operation.DESCRIPTION_OPERATION));
 			numeroCo = (cursor.getString(cursor
 					.getColumnIndex(Operation.RANG_1_1))).substring(11, 14);
 			numeroConnecteur.append(" : " + numeroCo);
@@ -145,15 +145,15 @@ public class ControleRetentionTa extends Activity {
 
 		if (description.contains("tête A")) {
 			clause = new String(Raccordement.NUMERO_COMPOSANT_TENANT + "='"
-					+ numeroCo + "' GROUP BY "
-					+ Raccordement.NUMERO_COMPOSANT_TENANT);
-			titre.setText(R.string.controleFinalisationTa);
+					+ numeroCo + "' GROUP BY " + Raccordement.NUMERO_BORNE_TENANT
+					);
+			titre.setText(R.string.controleRetentionTa);
 
 		} else {
 			clause = new String(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-					+ "='" + numeroCo + "' GROUP BY "
-					+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT);
-			titre.setText(R.string.controleFinalisationTb);
+					+ "='" + numeroCo + "' GROUP BY " + Raccordement.NUMERO_BORNE_ABOUTISSANT
+					);
+			titre.setText(R.string.controleRetentionTb);
 
 		}
 		cursorA = cr.query(urlRac, colRac, clause, null, Raccordement._id
@@ -164,6 +164,9 @@ public class ControleRetentionTa extends Activity {
 					.append(" : "
 							+ cursorA.getString(cursorA
 									.getColumnIndex(Raccordement.NUMERO_POSITION_CHARIOT)));
+			repereElectrique.append(" : "
+					+ cursorA.getString(cursorA
+							.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
 
 			HashMap<String, String> element;
 
@@ -238,6 +241,7 @@ public class ControleRetentionTa extends Activity {
 							toNext.putExtra("Noms", nomPrenomOperateur);
 							toNext.putExtra("Indice", indiceCourant);
 							startActivity(toNext);
+							finish();
 						}
 					}
 
@@ -248,8 +252,48 @@ public class ControleRetentionTa extends Activity {
 					toNext.putExtra("opId", opId);
 					toNext.putExtra("Indice", indiceCourant);
 					startActivity(toNext);
+					finish();
 
 				}
+			}
+		});
+		
+		// Grande pause
+		grandePause.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						ControleRetentionTa.this);
+				builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
+				builder.setCancelable(false);
+				builder.setPositiveButton("Oui",
+						new DialogInterface.OnClickListener() {
+
+							public void onClick(DialogInterface dialog,
+									int which) {
+								/*
+								 * Intent toMain = new Intent(
+								 * CheminementTa.this, MainActivity.class);
+								 * startActivity(toMain);
+								 */
+								finish();
+
+							}
+
+						});
+
+				builder.setNegativeButton("Non",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+
+								dialog.cancel();
+
+							}
+						});
+				builder.show();
+
 			}
 		});
 		
@@ -285,7 +329,7 @@ public class ControleRetentionTa extends Activity {
 	private void displayContentProvider() {
 
 		SimpleAdapter sa = new SimpleAdapter(this, liste,
-				R.layout.grid_layout_controle_finalisation_ta, controle,
+				R.layout.grid_layout_controle_retention_ta, controle,
 				layouts);
 
 		gridView.setAdapter(sa);

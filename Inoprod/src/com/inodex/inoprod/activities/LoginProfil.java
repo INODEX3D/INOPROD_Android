@@ -90,9 +90,10 @@ public class LoginProfil extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				Intent toMain = new Intent(LoginProfil.this, MainActivity.class);
+				Intent toMain = new Intent(LoginProfil.this, Inoprod.class);
 
 				startActivity(toMain);
+				finish();
 
 			}
 		});
@@ -140,21 +141,25 @@ public class LoginProfil extends Activity {
 									MainMenuCableur.class);
 							toCab.putExtra("Noms", noms);
 							startActivity(toCab);
+							finish();
 						} else if (profil.equals("Contrôleur")) {
 							Intent toCon = new Intent(LoginProfil.this,
 									MainMenuControleur.class);
 							toCon.putExtra("Noms", noms);
 							startActivity(toCon);
+							finish();
 						} else if (profil.equals("Préparateur")) {
 							Intent toPre = new Intent(LoginProfil.this,
 									MainMenuPreparateur.class);
 							toPre.putExtra("Noms", noms);
 							startActivity(toPre);
+							finish();
 						} else if (profil.equals("Magasinier")) {
 							Intent toMag = new Intent(LoginProfil.this,
 									MainMenuMagasinier.class);
 							toMag.putExtra("Noms", noms);
 							startActivity(toMag);
+							finish();
 						} else {
 							Toast.makeText(LoginProfil.this,
 									"Métier non renseigné", Toast.LENGTH_SHORT)

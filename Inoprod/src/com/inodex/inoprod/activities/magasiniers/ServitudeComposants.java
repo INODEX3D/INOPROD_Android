@@ -187,6 +187,7 @@ public class ServitudeComposants extends Activity {
 						toNext.putExtra("opId", opId);
 						toNext.putExtra("Indice", indiceCourant);
 						startActivity(toNext);
+						finish();
 
 					} catch (ArrayIndexOutOfBoundsException e) {
 						// Il ne reste plus de cables à débiter
@@ -212,6 +213,7 @@ public class ServitudeComposants extends Activity {
 						toNext.putExtra("opId", opId);
 						toNext.putExtra("Indice", 0);
 						startActivity(toNext);
+						finish();
 
 					}
 				} else {// Production toujours en cours

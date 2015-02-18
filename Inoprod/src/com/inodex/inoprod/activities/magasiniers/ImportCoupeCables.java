@@ -80,7 +80,8 @@ public class ImportCoupeCables extends Activity {
 				toNext.putExtra("Noms", nomPrenomOperateur);
 				toNext.putExtra("opId", opId);
 				toNext.putExtra("Indice", indiceCourant);
-				startActivity(toNext);					
+				startActivity(toNext);	
+				finish();
 			}
 		});
 	}

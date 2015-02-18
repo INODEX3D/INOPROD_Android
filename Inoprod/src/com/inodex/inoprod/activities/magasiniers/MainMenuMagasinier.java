@@ -14,7 +14,7 @@ import android.widget.ImageButton;
 import android.widget.SimpleCursorAdapter;
 
 import com.inodex.inoprod.R;
-import com.inodex.inoprod.activities.MainActivity;
+import com.inodex.inoprod.activities.Inoprod;
 import com.inodex.inoprod.business.SequencementProvider;
 import com.inodex.inoprod.business.TableSequencement.Operation;
 
@@ -83,7 +83,7 @@ public class MainMenuMagasinier extends Activity {
 
 					public void onClick(DialogInterface dialog, int which) {
 						Intent toMain = new Intent(MainMenuMagasinier.this,
-								MainActivity.class);
+								Inoprod.class);
 						startActivity(toMain);
 							finish();
 
@@ -117,6 +117,7 @@ public class MainMenuMagasinier extends Activity {
 					toNext.putExtra("Noms", nomPrenomOperateur);
 					toNext.putExtra("Indice", indiceCourant);
 					startActivity(toNext);
+					finish();
 				}
 			}
 		});

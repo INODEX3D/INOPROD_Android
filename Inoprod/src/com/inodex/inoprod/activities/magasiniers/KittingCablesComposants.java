@@ -20,14 +20,18 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import com.inodex.inoprod.R;
+import com.inodex.inoprod.activities.InfoProduit;
 import com.inodex.inoprod.activities.cableur.PreparationTa;
 import com.inodex.inoprod.business.BOMProvider;
 import com.inodex.inoprod.business.CheminementProvider;
 import com.inodex.inoprod.business.KittingProvider;
+import com.inodex.inoprod.business.ProductionProvider;
 import com.inodex.inoprod.business.SequencementProvider;
+import com.inodex.inoprod.business.Production.Fil;
 import com.inodex.inoprod.business.TableBOM.BOM;
 import com.inodex.inoprod.business.TableCheminement.Cheminement;
 import com.inodex.inoprod.business.TableKittingCable.Kitting;
+import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
 
 /**
@@ -56,6 +60,9 @@ public class KittingCablesComposants extends Activity {
 
 	/** Tableau des opérations à réaliser */
 	private int opId[] = null;
+	
+	/** Tableau des infos produit */
+	private String labels[];
 
 	/** Indice de l'opération courante */
 	private int indiceCourant = 0;
@@ -73,7 +80,7 @@ public class KittingCablesComposants extends Activity {
 	/** Elements à récuperer de la vue */
 	private TextView numeroComposant, numeroChariot, repereElectrique,
 			numeroCheminement, ordreRealisation;
-	private ImageButton boutonCheck;
+	private ImageButton boutonCheck, infoProduit;
 	private ImageButton petitePause, grandePause;
 
 	/** Colonnes utilisés pour les requêtes */
@@ -104,6 +111,13 @@ public class KittingCablesComposants extends Activity {
 			Cheminement.NUMERO_SECTION_CHEMINEMENT,
 			Cheminement.NUMERO_COMPOSANT, Cheminement.REPERE_ELECTRIQUE,
 			Cheminement.ORDRE_REALISATION };
+	
+
+	private String columnsProd[] = new String[] { Fil._id,
+			Fil.DESIGNATION_PRODUIT, Fil.NUMERO_REVISION_HARNAIS, Fil.STANDARD,
+			Fil.NUMERO_HARNAIS_FAISCEAUX, Fil.REFERENCE_FICHIER_SOURCE};
+	private Cursor cursorInfo;
+	private Uri urlProd = ProductionProvider.CONTENT_URI;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -219,6 +233,7 @@ public class KittingCablesComposants extends Activity {
 					toNext.putExtra("opId", opId);
 					toNext.putExtra("Indice", indiceCourant);
 					startActivity(toNext);
+					finish();
 
 				} catch (ArrayIndexOutOfBoundsException e) {
 
@@ -229,6 +244,7 @@ public class KittingCablesComposants extends Activity {
 							MainMenuMagasinier.class);
 					toMain.putExtra("Noms", nomPrenomOperateur);
 					startActivity(toMain);
+					finish();
 
 				}
 			}
@@ -258,6 +274,38 @@ public class KittingCablesComposants extends Activity {
 									}
 								});
 						builder.show();
+
+					}
+				});
+				
+				// Info Produit
+				infoProduit = (ImageButton) findViewById(R.id.infoButton1);
+				infoProduit.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						cursorInfo = cr.query(urlProd, columnsProd, Fil.NUMERO_FIL_CABLE
+								+ " = " + Kitting.NUMERO_FIL_CABLE, null, null);
+						Intent toInfo = new Intent(KittingCablesComposants.this, InfoProduit.class);
+						labels = new String[7];
+
+						if (cursorInfo.moveToFirst()) {
+							labels[0] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Fil.DESIGNATION_PRODUIT));
+							labels[1] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Fil.NUMERO_HARNAIS_FAISCEAUX));
+							labels[2] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Fil.STANDARD));
+							labels[3] = "";
+							labels[4] = "";
+							labels[5] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Fil.NUMERO_REVISION_HARNAIS));
+							labels[6] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Fil.REFERENCE_FICHIER_SOURCE));
+							toInfo.putExtra("Labels", labels);
+						}
+
+						startActivity(toInfo);
 
 					}
 				});

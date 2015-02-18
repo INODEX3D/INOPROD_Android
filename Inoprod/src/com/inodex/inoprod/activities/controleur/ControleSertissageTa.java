@@ -55,16 +55,18 @@ public class ControleSertissageTa extends Activity {
 	/** Indice de l'opération courante */
 	private int indiceCourant = 0;
 	private int indiceLimite = 0;
-	private int nbRows;
+	private int nbRows, nbValide;
+	private HashMap<String, String> element;
 
 	/** Tableau des infos produit */
 	private String labels[];
+	private String ordre = null;
 
 	private List<HashMap<String, String>> liste = new ArrayList<HashMap<String, String>>();
 
 	/** Heure et dates à ajouter à la table de séquencment */
 	private Date dateDebut, dateRealisation;
-	private long dureeMesuree =0;
+	private long dureeMesuree = 0;
 	private Time heureRealisation = new Time();
 
 	/** Nom de l'opérateur */
@@ -76,6 +78,7 @@ public class ControleSertissageTa extends Activity {
 	private ContentValues contact;
 
 	private boolean prodAchevee;
+	private boolean scanEnCours = true;
 
 	private String clause, numeroOperation, numeroCo, clauseTotal,
 			oldClauseTotal, numeroCable, description;
@@ -118,8 +121,8 @@ public class ControleSertissageTa extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_controle_sertissage_ta);
-		//Initialisation du temps
-				dateDebut = new Date();
+		// Initialisation du temps
+		dateDebut = new Date();
 
 		// Récupération des éléments
 		Intent intent = getIntent();
@@ -128,6 +131,7 @@ public class ControleSertissageTa extends Activity {
 		opId = intent.getIntArrayExtra("opId");
 		cr = getContentResolver();
 		contact = new ContentValues();
+		nbValide=0;
 
 		// Récuperation des éléments de la vue
 		gridView = (GridView) findViewById(R.id.gridview);
@@ -150,21 +154,30 @@ public class ControleSertissageTa extends Activity {
 			numeroOperation = cursor.getString(cursor
 					.getColumnIndex(Operation.NUMERO_OPERATION));
 			description = cursor.getString(cursor
-					.getColumnIndex(Operation.NUMERO_OPERATION));
+					.getColumnIndex(Operation.DESCRIPTION_OPERATION));
 			numeroCo = (cursor.getString(cursor
 					.getColumnIndex(Operation.RANG_1_1))).substring(11, 14);
 			numeroConnecteur.append(" : " + numeroCo);
 		}
 
-		if (description.contains("Tête A")) {
-			clause = new String(Raccordement.NUMERO_COMPOSANT_TENANT + "='"
-					+ numeroCo + "'");
+		
+		if (description.contains("tête A")) {
+			clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
+					+ numeroCo + "' AND " + Raccordement.FAUX_CONTACT
+					+ "='" + 0 + "' AND " + Raccordement.OBTURATEUR + "='"
+					+ 0 + "' AND " + Raccordement.REPRISE_BLINDAGE
+					+ " IS NULL ";
 			titre.setText(R.string.controleSertissageTa);
+			ordre = "A";
 
 		} else {
-			clause = new String(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-					+ "='" + numeroCo + "'");
+			clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
+					+ numeroCo + "' AND " + Raccordement.FAUX_CONTACT
+					+ "='" + 0 + "' AND " + Raccordement.OBTURATEUR + "='"
+					+ 0 + "' AND " + Raccordement.REPRISE_BLINDAGE
+					+ " IS NULL ";
 			titre.setText(R.string.controleSertissageTb);
+			ordre = "B";
 
 		}
 		cursorA = cr.query(urlRac, colRac, clause, null, Raccordement._id
@@ -175,6 +188,7 @@ public class ControleSertissageTa extends Activity {
 					.append(" : "
 							+ cursorA.getString(cursorA
 									.getColumnIndex(Raccordement.NUMERO_POSITION_CHARIOT)));
+			
 
 		}
 		nbRows = cr.query(urlRac, colRac,
@@ -191,20 +205,56 @@ public class ControleSertissageTa extends Activity {
 				if (prodAchevee) {
 					
 					// Signalement du point de controle
-					clause = Operation.RANG_1_1 + "='" + numeroCo + "' AND "
+					// Cables validés
+					clause = Operation.RANG_1_1
+							+ " LIKE '%"
+							+ numeroCo
+							+ "%' AND ("
 							+ Operation.DESCRIPTION_OPERATION
-							+ " LIKE 'Enfichage%'";
+							+ " LIKE 'Enfichage Tête "+ordre+"%' OR "
+							+ Operation.DESCRIPTION_OPERATION
+							+ " LIKE 'Finalisation Tête "+ordre+"%' OR "
+							+ Operation.DESCRIPTION_OPERATION
+							+ " LIKE 'Tri des aboutissants Tête "+ordre+"%')";
 					cursor = cr.query(urlSeq, columnsSeq, clause, null,
 							Operation._id);
 					if (cursor.moveToFirst()) {
-						
-						contact.put(Operation.REALISABLE, 1);
-						int id = cursor.getInt(cursor.getColumnIndex(Operation._id));
-						cr.update(urlSeq, contact,clause , null);
-						contact.clear();
+						do{
+
+							contact.put(Operation.REALISABLE, 1);
+							int id = cursor.getInt(cursor
+									.getColumnIndex(Operation._id));
+							cr.update(urlSeq, contact, Operation._id + "='"
+									+ id + "'", null);
+							contact.clear();
+							
+						} while (cursor.moveToNext());
 					}
 					
+					//Cables refusées
+					clause = Operation.RANG_1_1
+							+ " LIKE '%"
+							+ numeroCo
+							+ "%' AND "
+							+ Operation.DESCRIPTION_OPERATION
+							+ " LIKE 'Denudage%' ";
+					cursor = cr.query(urlSeq, columnsSeq, clause, null,
+							Operation._id);
+					if (cursor.moveToFirst()) {
+						for (int i =0; i<(nbRows-nbValide); i++){
+
+							contact.put(Operation.NOM_OPERATEUR, "");
+							int id = cursor.getInt(cursor
+									.getColumnIndex(Operation._id));
+							cr.update(urlSeq, contact, Operation._id + "='"
+									+ id + "'", null);
+							contact.clear();
+							cursor.moveToNext();
+						} 
+					}
+
 					
+
 					indiceCourant++;
 					String nextOperation = null;
 					try {
@@ -235,6 +285,7 @@ public class ControleSertissageTa extends Activity {
 								toNext.putExtra("Noms", nomPrenomOperateur);
 								toNext.putExtra("Indice", indiceCourant);
 								startActivity(toNext);
+								finish();
 							}
 						}
 
@@ -245,10 +296,12 @@ public class ControleSertissageTa extends Activity {
 						toNext.putExtra("opId", opId);
 						toNext.putExtra("Indice", indiceCourant);
 						startActivity(toNext);
+						finish();
 
 					}
 
 				} else {
+					if (scanEnCours) {
 
 					try {
 						Intent intent = new Intent(
@@ -266,7 +319,7 @@ public class ControleSertissageTa extends Activity {
 						final EditText cable = new EditText(
 								ControleSertissageTa.this);
 						builder.setView(cable);
-						builder.setPositiveButton("Contrôle validé",
+						builder.setPositiveButton("Valider",
 								new DialogInterface.OnClickListener() {
 
 									public void onClick(DialogInterface dialog,
@@ -287,7 +340,7 @@ public class ControleSertissageTa extends Activity {
 										cursorA = cr.query(urlRac, colRac,
 												clause, null, Raccordement._id);
 										if (cursorA.moveToFirst()) {
-											HashMap<String, String> element;
+											
 
 											element = new HashMap<String, String>();
 											element.put(
@@ -318,12 +371,12 @@ public class ControleSertissageTa extends Activity {
 													controle[6],
 													cursorA.getString(cursorA
 															.getColumnIndex(colRac[6])));
-											element.put(controle[7], "X");
+											
 											liste.add(element);
 
-										
-											indiceLimite++;
+											
 											displayContentProvider();
+											scanEnCours = false;
 
 										} else {
 											Toast.makeText(
@@ -335,184 +388,175 @@ public class ControleSertissageTa extends Activity {
 
 								});
 
-						builder.setNegativeButton("Contrôle refusé",
+						builder.setNegativeButton("Annuler",
 								new DialogInterface.OnClickListener() {
 									public void onClick(
 											final DialogInterface dialog,
 											final int id) {
 
-										numeroCable = cable.getText()
-												.toString();
-
-										clause = Raccordement.NUMERO_FIL_CABLE
-												+ "='"
-												+ numeroCable
-												+ "' AND ("
-												+ Raccordement.NUMERO_COMPOSANT_TENANT
-												+ "='"
-												+ numeroCo
-												+ "' OR "
-												+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-												+ "='" + numeroCo + "' )";
-										cursorA = cr.query(urlRac, colRac,
-												clause, null, Raccordement._id);
-										if (cursorA.moveToFirst()) {
-											HashMap<String, String> element;
-
-											element = new HashMap<String, String>();
-											element.put(
-													controle[0],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[0])));
-											element.put(
-													controle[1],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[1])));
-											element.put(
-													controle[2],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[2])));
-											element.put(
-													controle[3],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[3])));
-											element.put(
-													controle[4],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[4])));
-											element.put(
-													controle[5],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[5])));
-											element.put(
-													controle[6],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[6])));
-											element.put(controle[9], "X");
-											liste.add(element);
-
-									
-											indiceLimite++;
-											displayContentProvider();
-
-										} else {
-											Toast.makeText(
-													ControleSertissageTa.this,
-													"Ce cable ne correspond pas",
-													Toast.LENGTH_SHORT).show();
-										}
-
+										dialog.cancel();
 									}
 								});
-						builder.setNeutralButton("Contrôle acceptable",
-								new DialogInterface.OnClickListener() {
-									public void onClick(
-											final DialogInterface dialog,
-											final int id) {
-
-										numeroCable = cable.getText()
-												.toString();
-
-										clause = Raccordement.NUMERO_FIL_CABLE
-												+ "='"
-												+ numeroCable
-												+ "' AND ("
-												+ Raccordement.NUMERO_COMPOSANT_TENANT
-												+ "='"
-												+ numeroCo
-												+ "' OR "
-												+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-												+ "='" + numeroCo + "' )";
-										cursorA = cr.query(urlRac, colRac,
-												clause, null, Raccordement._id);
-										if (cursorA.moveToFirst()) {
-											HashMap<String, String> element;
-
-											element = new HashMap<String, String>();
-											element.put(
-													controle[0],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[0])));
-											element.put(
-													controle[1],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[1])));
-											element.put(
-													controle[2],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[2])));
-											element.put(
-													controle[3],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[3])));
-											element.put(
-													controle[4],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[4])));
-											element.put(
-													controle[5],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[5])));
-											element.put(
-													controle[6],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[6])));
-											element.put(controle[8], "X");
-											liste.add(element);
-
-											indiceLimite++;
-											displayContentProvider();
-
-										} else {
-											Toast.makeText(
-													ControleSertissageTa.this,
-													"Ce cable ne correspond pas",
-													Toast.LENGTH_SHORT).show();
-										}
-
-									}
-								});
+						
 
 						builder.show();
+					}
+					} else {
+						AlertDialog.Builder builder = new AlertDialog.Builder(
+								ControleSertissageTa.this);
+						builder.setMessage("Quel est le résultat du controle du cable?");
+						builder.setCancelable(false);
+
+
+						builder.setPositiveButton("Valider",
+								new DialogInterface.OnClickListener() {
+
+									public void onClick(DialogInterface dialog,
+											int which) {
+										
+
+										liste.remove(liste.size()-1);
+
+
+											element.put(
+													controle[7],
+													"X");
+											
+											liste.add(element);
+
+											indiceLimite++;
+											displayContentProvider();
+											scanEnCours = true;
+											nbValide++;
+											
+											
+
+										
+									}
+
+								});
+
+						builder.setNegativeButton("Refuser",
+								new DialogInterface.OnClickListener() {
+									public void onClick(
+											final DialogInterface dialog,
+											final int id) {
+
+										liste.remove(liste.size()-1);
+
+
+										element.put(
+												controle[9],
+												"X");
+										
+										liste.add(element);
+
+										indiceLimite++;
+										displayContentProvider();
+										scanEnCours = true;
+									}
+								});
+						builder.setNeutralButton("Acceptable",
+								new DialogInterface.OnClickListener() {
+									public void onClick(
+											final DialogInterface dialog,
+											final int id) {
+
+										liste.remove(liste.size()-1);
+
+
+										element.put(
+												controle[8],
+												"X");
+										
+										liste.add(element);
+
+										indiceLimite++;
+										displayContentProvider();
+										scanEnCours = true;
+										nbValide++;
+									}
+								});
+						
+
+						builder.show();
+						
 					}
 
 				}
 			}
 		});
 		
-		//Petite Pause
-				petitePause.setOnClickListener(new View.OnClickListener() {
+		//Grande pause
+		grandePause.setOnClickListener(new View.OnClickListener() {
 
-					@Override
-					public void onClick(View v) {
-						dureeMesuree += new Date().getTime() - dateDebut.getTime();
-						AlertDialog.Builder builder = new AlertDialog.Builder(
-								ControleSertissageTa.this);
-						builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
-						builder.setCancelable(false);
+			@Override
+			public void onClick(View v) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						ControleSertissageTa.this);
+				builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
+				builder.setCancelable(false);
+				builder.setPositiveButton("Oui",
+						new DialogInterface.OnClickListener() {
 
-						builder.setNegativeButton("Retour",
-								new DialogInterface.OnClickListener() {
-									public void onClick(final DialogInterface dialog,
-											final int id) {
+							public void onClick(DialogInterface dialog,
+									int which) {
+							/*	Intent toMain = new Intent(
+										CheminementTa.this,
+										MainActivity.class);
+								startActivity(toMain); */
+								finish();
 
-										dateDebut= new Date();
-										dialog.cancel();
+							}
 
-									}
-								});
-						builder.show();
+						});
 
-					}
-				});
+				builder.setNegativeButton("Non",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+
+								dialog.cancel();
+
+							}
+						});
+				builder.show();
+
+			}
+		});
+
+		// Petite Pause
+		petitePause.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				dureeMesuree += new Date().getTime() - dateDebut.getTime();
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						ControleSertissageTa.this);
+				builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
+				builder.setCancelable(false);
+
+				builder.setNegativeButton("Retour",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+
+								dateDebut = new Date();
+								dialog.cancel();
+
+							}
+						});
+				builder.show();
+
+			}
+		});
 
 	}
 
 	private void displayContentProvider() {
 
 		SimpleAdapter sa = new SimpleAdapter(this, liste,
-				R.layout.grid_layout_controle_sertissage_ta, controle,
-				layouts);
+				R.layout.grid_layout_controle_sertissage_ta, controle, layouts);
 
 		gridView.setAdapter(sa);
 
@@ -527,11 +571,10 @@ public class ControleSertissageTa extends Activity {
 		cr.update(urlSeq, contact, Operation._id + " = ?",
 				new String[] { Integer.toString(opId[indiceCourant]) });
 		contact.clear();
-		
-		//MAJ de la durée
-		dureeMesuree = 0;
-		dateDebut= new Date();
 
+		// MAJ de la durée
+		dureeMesuree = 0;
+		dateDebut = new Date();
 
 		// Vérification de l'état de la production
 		if (indiceLimite == nbRows) {
@@ -552,14 +595,156 @@ public class ControleSertissageTa extends Activity {
 		if (requestCode == 0) {
 			if (resultCode == RESULT_OK) {
 				String contents = intent.getStringExtra("SCAN_RESULT");
-				/* ACTION A EFFECTUER */
+				
 				String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
+				numeroCable = contents;
+				clause = Raccordement.NUMERO_FIL_CABLE
+						+ "='"
+						+ numeroCable
+						+ "' AND ("
+						+ Raccordement.NUMERO_COMPOSANT_TENANT
+						+ "='"
+						+ numeroCo
+						+ "' OR "
+						+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+						+ "='" + numeroCo + "' )";
+				cursorA = cr.query(urlRac, colRac,
+						clause, null, Raccordement._id);
+				if (cursorA.moveToFirst()) {
+					HashMap<String, String> element;
+
+					element = new HashMap<String, String>();
+					element.put(
+							controle[0],
+							cursorA.getString(cursorA
+									.getColumnIndex(colRac[0])));
+					element.put(
+							controle[1],
+							cursorA.getString(cursorA
+									.getColumnIndex(colRac[1])));
+					element.put(
+							controle[2],
+							cursorA.getString(cursorA
+									.getColumnIndex(colRac[2])));
+					element.put(
+							controle[3],
+							cursorA.getString(cursorA
+									.getColumnIndex(colRac[3])));
+					element.put(
+							controle[4],
+							cursorA.getString(cursorA
+									.getColumnIndex(colRac[4])));
+					element.put(
+							controle[5],
+							cursorA.getString(cursorA
+									.getColumnIndex(colRac[5])));
+					element.put(
+							controle[6],
+							cursorA.getString(cursorA
+									.getColumnIndex(colRac[6])));
+					
+					liste.add(element);
+
+				
+					displayContentProvider();
+					scanEnCours = false;
 			} else if (resultCode == RESULT_CANCELED) {
-				Toast.makeText(ControleSertissageTa.this,
-						"Echec du scan de l'identifiant", Toast.LENGTH_SHORT)
-						.show();
+				
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						ControleSertissageTa.this);
+				builder.setMessage("Impossible de trouver une application pour le scan. Entrez le N° de cable.");
+				builder.setCancelable(false);
+				final EditText cable = new EditText(
+						ControleSertissageTa.this);
+				builder.setView(cable);
+				builder.setPositiveButton("Valider",
+						new DialogInterface.OnClickListener() {
+
+							public void onClick(DialogInterface dialog,
+									int which) {
+								numeroCable = cable.getText()
+										.toString();
+
+								clause = Raccordement.NUMERO_FIL_CABLE
+										+ "='"
+										+ numeroCable
+										+ "' AND ("
+										+ Raccordement.NUMERO_COMPOSANT_TENANT
+										+ "='"
+										+ numeroCo
+										+ "' OR "
+										+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+										+ "='" + numeroCo + "' )";
+								cursorA = cr.query(urlRac, colRac,
+										clause, null, Raccordement._id);
+								if (cursorA.moveToFirst()) {
+									HashMap<String, String> element;
+
+									element = new HashMap<String, String>();
+									element.put(
+											controle[0],
+											cursorA.getString(cursorA
+													.getColumnIndex(colRac[0])));
+									element.put(
+											controle[1],
+											cursorA.getString(cursorA
+													.getColumnIndex(colRac[1])));
+									element.put(
+											controle[2],
+											cursorA.getString(cursorA
+													.getColumnIndex(colRac[2])));
+									element.put(
+											controle[3],
+											cursorA.getString(cursorA
+													.getColumnIndex(colRac[3])));
+									element.put(
+											controle[4],
+											cursorA.getString(cursorA
+													.getColumnIndex(colRac[4])));
+									element.put(
+											controle[5],
+											cursorA.getString(cursorA
+													.getColumnIndex(colRac[5])));
+									element.put(
+											controle[6],
+											cursorA.getString(cursorA
+													.getColumnIndex(colRac[6])));
+									
+									liste.add(element);
+
+									
+									displayContentProvider();
+									scanEnCours = false;
+
+								} else {
+									Toast.makeText(
+											ControleSertissageTa.this,
+											"Ce cable ne correspond pas",
+											Toast.LENGTH_SHORT).show();
+								}
+							}
+
+						});
+
+				builder.setNegativeButton("Annuler",
+						new DialogInterface.OnClickListener() {
+							public void onClick(
+									final DialogInterface dialog,
+									final int id) {
+
+								dialog.cancel();
+							}
+						});
+				
+
+				builder.show();
+			}
+				
 			}
 		}
+	}
+
+	public void entreCable(String message) {
 	}
 
 }

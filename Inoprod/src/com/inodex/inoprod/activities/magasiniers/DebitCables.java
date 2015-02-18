@@ -1,6 +1,17 @@
 package com.inodex.inoprod.activities.magasiniers;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -11,7 +22,10 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageButton;
@@ -50,7 +64,7 @@ public class DebitCables extends Activity {
 	private Uri urlKitting = KittingProvider.CONTENT_URI;
 	private Uri urlSeq = SequencementProvider.CONTENT_URI;
 	private Uri urlProd = ProductionProvider.CONTENT_URI;
-	private String clause, numeroOperation;
+	private String clause, numeroOperation, numeroCo;
 
 	/** Tableau des opérations à réaliser */
 	private int opId[] = null;
@@ -71,9 +85,10 @@ public class DebitCables extends Activity {
 	private String nomPrenomOperateur[] = null;
 
 	/** Curseur et Content Resolver à utiliser lors des requêtes */
-	private Cursor cursor, cursorA, cursorB;
+	private Cursor cursor, cursorA, cursorInfo;
 	private ContentResolver cr;
 	private ContentValues contact;
+	private boolean affichage;
 
 	/** Colonnes utilisés pour les requêtes */
 	private String columnsDuree[] = new String[] { Duree._id,
@@ -108,7 +123,6 @@ public class DebitCables extends Activity {
 		nomPrenomOperateur = intent.getStringArrayExtra("Noms");
 		opId = intent.getIntArrayExtra("opId");
 		cr = getContentResolver();
-		
 
 		// initialisation de la production
 		prodAchevee = false;
@@ -119,7 +133,8 @@ public class DebitCables extends Activity {
 
 		// Récuperation du numéro d'opération courant
 		clause = new String(Operation._id + "='" + opId[indiceCourant] + "'");
-		cursor = cr.query(urlSeq, columnsSeq, clause, null, Operation._id + " ASC" );
+		cursor = cr.query(urlSeq, columnsSeq, clause, null, Operation._id
+				+ " ASC");
 		if (cursor.moveToFirst()) {
 			operation.setText(cursor.getString(cursor
 					.getColumnIndex(Operation.RANG_1_1)));
@@ -130,13 +145,17 @@ public class DebitCables extends Activity {
 		// Récupération du numéro de débit
 		clause = new String(Kitting.NUMERO_OPERATION + "='" + numeroOperation
 				+ "'");
-		cursorA = cr.query(urlKitting, columnsKitting, clause, null, Kitting._id + " ASC");
+		cursorA = cr.query(urlKitting, columnsKitting, clause, null,
+				Kitting._id + " ASC");
 		if (cursorA.moveToFirst()) {
 			numeroDebit = cursorA.getInt(cursorA
 					.getColumnIndex(Kitting.NUMERO_DEBIT));
+			numeroCo = cursorA.getString(cursorA
+					.getColumnIndex(Kitting.NUMERO_COMPOSANT));
 			idFirst = cursorA.getInt(cursorA.getColumnIndex(Kitting._id));
-			cursorB = cr.query(urlProd, columnsProd,Fil.NUMERO_FIL_CABLE + " = " +Kitting.NUMERO_FIL_CABLE , null,null );
-			
+			cursorInfo = cr.query(urlProd, columnsProd, Fil.NUMERO_FIL_CABLE
+					+ " = " + Kitting.NUMERO_FIL_CABLE, null, null);
+			Log.e("NumeroConnectuer", numeroCo);
 		} else {
 			Toast.makeText(this, "Debit non trouvée", Toast.LENGTH_LONG).show();
 		}
@@ -146,9 +165,46 @@ public class DebitCables extends Activity {
 				.getCount();
 
 		contact = new ContentValues();
+		affichage = false;
 
 		// Affichage de la prémiere ligne du contenu
-		displayContentProvider();
+		// displayContentProvider();
+
+		// Simulation lecture fichier excel
+		InputStream input = null;
+		try {
+			input = new FileInputStream(Environment.getDataDirectory()
+					.getAbsolutePath()
+					+ "/data/com.inodex.inoprod/"
+					+ "debitCables.xls");
+			POIFSFileSystem fs = new POIFSFileSystem(input);
+			HSSFWorkbook wb = new HSSFWorkbook(fs);
+			HSSFSheet sheet = wb.getSheetAt(0);
+			// Iteration sur chacune des lignes du fichier
+			Iterator rows = sheet.rowIterator();
+			HSSFRow row = (HSSFRow) rows.next();
+			HashMap<String, Integer> colonnes = new HashMap<String, Integer>();
+
+			// Stockage des indices des colonnes
+			for (int i = 0; i < row.getLastCellNum(); i++) {
+				colonnes.put(row.getCell(i).toString(), i);
+
+			}
+			/*
+			
+			for (int i=1; i<= nbRows; i++) {
+				Date debut = new Date();
+				while( new Date().getTime() - debut.getTime() <2000) {
+					
+				}
+				displayContentProvider();
+				indiceCourant++;
+			} */
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			Log.e("Fichier", "Erreur lecture");
+		}
 
 		// Etape suivante
 		boutonCheck = (ImageButton) findViewById(R.id.exitButton1);
@@ -159,7 +215,7 @@ public class DebitCables extends Activity {
 				indiceCourant++;
 				// Controle de l'état de la production
 				if (prodAchevee) { // Fin de la prodction
-					
+
 					try {
 						int test = opId[indiceCourant]; // Si OK il reste encore
 														// des cables à débiter
@@ -169,6 +225,7 @@ public class DebitCables extends Activity {
 						toNext.putExtra("opId", opId);
 						toNext.putExtra("Indice", indiceCourant);
 						startActivity(toNext);
+						finish();
 
 					} catch (ArrayIndexOutOfBoundsException e) {
 						// Il ne reste plus de cables à débiter
@@ -194,42 +251,49 @@ public class DebitCables extends Activity {
 						toNext.putExtra("opId", opId);
 						toNext.putExtra("Indice", 0);
 						startActivity(toNext);
+						finish();
 
 					}
 				} else { // Production toujours en cours
 					// On affiche le cable suivant à débiter
+
 					displayContentProvider();
+											
+
 				}
 			}
-		});
-		
-		// Info Produit
-				infoProduit = (ImageButton) findViewById(R.id.infoButton1);
-				infoProduit.setOnClickListener(new View.OnClickListener() {
 
-					@Override
-					public void onClick(View v) {
-						Intent toInfo = new Intent(DebitCables.this,
-								InfoProduit.class);
-						labels= new String[7];
-						
-						if (cursorB.moveToFirst()) {
-						labels[0] = cursorB.getString(cursorB.getColumnIndex(Fil.DESIGNATION_PRODUIT));
-						labels[1] = cursorB.getString(cursorB.getColumnIndex(Fil.NUMERO_HARNAIS_FAISCEAUX));
-						labels[2] = cursorB.getString(cursorB.getColumnIndex(Fil.STANDARD));
-						labels[3] = "";
-						labels[4] = "";
-						labels[5] = cursorB.getString(cursorB.getColumnIndex(Fil.NUMERO_REVISION_HARNAIS));
-						labels[6] = cursorB.getString(cursorB.getColumnIndex(Fil.REFERENCE_FICHIER_SOURCE));
-						toInfo.putExtra("Labels", labels);
-						}
-						
-						
-						
-						startActivity(toInfo);
-						
-					}
-				});
+		});
+
+		// Info Produit
+		infoProduit = (ImageButton) findViewById(R.id.infoButton1);
+		infoProduit.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Intent toInfo = new Intent(DebitCables.this, InfoProduit.class);
+				labels = new String[7];
+
+				if (cursorInfo.moveToFirst()) {
+					labels[0] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Fil.DESIGNATION_PRODUIT));
+					labels[1] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Fil.NUMERO_HARNAIS_FAISCEAUX));
+					labels[2] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Fil.STANDARD));
+					labels[3] = "";
+					labels[4] = "";
+					labels[5] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Fil.NUMERO_REVISION_HARNAIS));
+					labels[6] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Fil.REFERENCE_FICHIER_SOURCE));
+					toInfo.putExtra("Labels", labels);
+				}
+
+				startActivity(toInfo);
+
+			}
+		});
 
 	}
 
@@ -260,6 +324,8 @@ public class DebitCables extends Activity {
 		cursor = cr.query(urlKitting, columnsKitting, clause, null, null);
 		sca.changeCursor(cursor);
 
+		affichage = false;
+
 		// Vérification de l'état de la production
 		if (cursor.getCount() == nbRows) {
 			prodAchevee = true;
@@ -268,9 +334,8 @@ public class DebitCables extends Activity {
 		}
 
 	}
-	
-	
-	/**Bloquage du bouton retour */
+
+	/** Bloquage du bouton retour */
 	public void onBackPressed() {
 
 	}

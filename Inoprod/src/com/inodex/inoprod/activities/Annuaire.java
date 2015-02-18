@@ -54,8 +54,9 @@ public class Annuaire extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				Intent toMain = new Intent(Annuaire.this, MainActivity.class);
+				Intent toMain = new Intent(Annuaire.this, Inoprod.class);
 				startActivity(toMain);
+				finish();
 
 			}
 		});

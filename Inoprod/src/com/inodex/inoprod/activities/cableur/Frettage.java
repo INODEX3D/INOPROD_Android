@@ -24,6 +24,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -62,14 +63,14 @@ public class Frettage extends Activity {
 
 	/** Heure et dates à ajouter à la table de séquencment */
 	private Date dateDebut, dateRealisation;
-	private long dureeMesuree =0;
+	private long dureeMesuree = 0;
 	private Time heureRealisation = new Time();
 
 	/** Nom de l'opérateur */
 	private String nomPrenomOperateur[] = null;
 
 	/** Curseur et Content Resolver à utiliser lors des requêtes */
-	private Cursor cursor, cursorA;
+	private Cursor cursor, cursorA, cursorB;
 	private ContentResolver cr;
 	private ContentValues contact;
 
@@ -80,8 +81,8 @@ public class Frettage extends Activity {
 	private String columnsSeq[] = new String[] { Operation._id,
 			Operation.GAMME, Operation.RANG_1_1, Operation.NUMERO_OPERATION,
 			Operation.NOM_OPERATEUR, Operation.DATE_REALISATION,
-			Operation.HEURE_REALISATION,
-			Operation.DUREE_MESUREE , Operation.DESCRIPTION_OPERATION};
+			Operation.HEURE_REALISATION, Operation.DUREE_MESUREE,
+			Operation.DESCRIPTION_OPERATION };
 
 	private int layouts[] = new int[] { R.id.numeroSection,
 			R.id.numeroSegregation, R.id.numeroConnecteur,
@@ -89,7 +90,7 @@ public class Frettage extends Activity {
 			R.id.zoneLocalisation1, R.id.localisationZoneFrettage,
 			R.id.typeSupportAboutissant, R.id.zoneLocalisation2 };
 
-	private String columnsRac[] = new String[] { Raccordement._id,
+	private String colRac[] = new String[] { Raccordement._id,
 			Raccordement.NUMERO_COMPOSANT_ABOUTISSANT,
 			Raccordement.NUMERO_COMPOSANT_TENANT,
 			Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT,
@@ -99,19 +100,22 @@ public class Frettage extends Activity {
 			Raccordement.NUMERO_POSITION_CHARIOT, Raccordement.ZONE_ACTIVITE,
 			Raccordement.LOCALISATION1 };
 
-	private String colChe[] = new String[] { Cheminement._id,
-			Cheminement.NUMERO_COMPOSANT, Cheminement.LOCALISATION1,
+	private String colChe[] = new String[] { Cheminement.LOCALISATION1,
+			Cheminement.NUMERO_COMPOSANT,
 			Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT,
-			Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT,
-			Cheminement.TYPE_SUPPORT };
+			Cheminement.NUMERO_SECTION_CHEMINEMENT,
+			Cheminement.ORDRE_REALISATION, Cheminement.REPERE_ELECTRIQUE,
+			Cheminement.ZONE_ACTIVITE, Cheminement._id, Cheminement.TYPE_SUPPORT
+
+	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_frettage);
-		
-		//Initialisation du temps
-				dateDebut = new Date();
+
+		// Initialisation du temps
+		dateDebut = new Date();
 		// Récupération des éléments
 		Intent intent = getIntent();
 		indiceCourant = intent.getIntExtra("Indice", 0);
@@ -143,12 +147,64 @@ public class Frettage extends Activity {
 		cursor = cr.query(urlSeq, columnsSeq, clause, null, Operation._id
 				+ " ASC");
 		if (cursor.moveToFirst()) {
+			Log.e("Frettage","1");
 			numeroOperation = cursor.getString(cursor
 					.getColumnIndex(Operation.NUMERO_OPERATION));
 			description = cursor.getString(cursor
 					.getColumnIndex(Operation.NUMERO_OPERATION));
 			numeroCo = (cursor.getString(cursor
 					.getColumnIndex(Operation.RANG_1_1))).substring(11, 14);
+
+			cursorA = cr.query(urlRac, colRac,
+					Raccordement.NUMERO_COMPOSANT_TENANT + "='" + numeroCo
+							+ "'", null, Raccordement._id);
+			if (cursorA.moveToFirst()) {
+				HashMap<String, String> element = new HashMap<String, String>();
+
+				int numeroSection = cursorA
+						.getInt(cursorA
+								.getColumnIndex(Raccordement.NUMERO_SECTION_CHEMINEMENT));
+				element.put(colRac[0], "" + numeroSection);
+				element.put(colRac[2], numeroCo);
+				element.put(colRac[3], cursorA.getString(cursorA
+						.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
+				cursorB = cr.query(urlChe, colChe,
+						Cheminement.NUMERO_SECTION_CHEMINEMENT + "='"
+								+ numeroSection + "'", null, Cheminement._id);
+
+				if (cursorB.moveToFirst()) {
+					element.put(colRac[4], cursorB.getString(cursorB
+							.getColumnIndex(Cheminement.TYPE_SUPPORT)));
+					element.put(
+							colRac[5],
+							cursorB.getString(cursorB
+									.getColumnIndex(Cheminement.ZONE_ACTIVITE))
+									+ "-"
+									+ cursorB.getString(cursorB
+											.getColumnIndex(Cheminement.LOCALISATION1))
+									+ "-"
+									+ cursorB.getString(cursorB
+											.getColumnIndex(Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT)));
+					String zonePose = "";
+					
+
+					do {
+						zonePose += cursorB.getString(cursorB.getColumnIndex(Cheminement.ZONE_ACTIVITE))
+								+ "-"
+								+ cursorB.getString(cursorB
+										.getColumnIndex(Cheminement.LOCALISATION1)) +"-"
+										+ cursorB.getString(cursorB
+												.getColumnIndex(Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT)) +", " ;
+						
+					} while(cursorB.moveToNext());
+					element.put(colRac[6], zonePose);
+					liste.add(element);
+
+						
+					
+				
+				}
+			}
 
 		}
 
@@ -157,6 +213,19 @@ public class Frettage extends Activity {
 
 			@Override
 			public void onClick(View v) {
+
+				// Signalement du point de controle
+				clause = Operation.RANG_1_1 + " LIKE '%" + numeroCo + "%' AND "
+						+ Operation.NUMERO_OPERATION + " LIKE '7-%' ";
+				cursor = cr.query(urlSeq, columnsSeq, clause, null,
+						Operation._id);
+				if (cursor.moveToFirst()) {
+
+					contact.put(Operation.REALISABLE, 1);
+					int id = cursor.getInt(cursor.getColumnIndex(Operation._id));
+					cr.update(urlSeq, contact, clause, null);
+					contact.clear();
+				}
 
 				indiceCourant++;
 				String nextOperation = null;
@@ -197,8 +266,7 @@ public class Frettage extends Activity {
 							toNext = new Intent(Frettage.this,
 									CheminementTa.class);
 						} else if (nextOperation.startsWith("Frettage")) {
-							toNext = new Intent(Frettage.this,
-									Frettage.class);
+							toNext = new Intent(Frettage.this, Frettage.class);
 						}
 						if (toNext != null) {
 
@@ -206,6 +274,7 @@ public class Frettage extends Activity {
 							toNext.putExtra("Noms", nomPrenomOperateur);
 							toNext.putExtra("Indice", indiceCourant);
 							startActivity(toNext);
+							finish();
 						}
 
 					}
@@ -217,36 +286,76 @@ public class Frettage extends Activity {
 					toNext.putExtra("opId", opId);
 					toNext.putExtra("Indice", indiceCourant);
 					startActivity(toNext);
+					finish();
 				}
 			}
 
 		});
-		
-		//Petite Pause
-				petitePause.setOnClickListener(new View.OnClickListener() {
 
-					@Override
-					public void onClick(View v) {
-						dureeMesuree += new Date().getTime() - dateDebut.getTime();
-						AlertDialog.Builder builder = new AlertDialog.Builder(
-								Frettage.this);
-						builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
-						builder.setCancelable(false);
+		// Grande pause
+		grandePause.setOnClickListener(new View.OnClickListener() {
 
-						builder.setNegativeButton("Retour",
-								new DialogInterface.OnClickListener() {
-									public void onClick(final DialogInterface dialog,
-											final int id) {
+			@Override
+			public void onClick(View v) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						Frettage.this);
+				builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
+				builder.setCancelable(false);
+				builder.setPositiveButton("Oui",
+						new DialogInterface.OnClickListener() {
 
-										dateDebut= new Date();
-										dialog.cancel();
+							public void onClick(DialogInterface dialog,
+									int which) {
+								/*
+								 * Intent toMain = new Intent(
+								 * CheminementTa.this, MainActivity.class);
+								 * startActivity(toMain);
+								 */
+								finish();
 
-									}
-								});
-						builder.show();
+							}
 
-					}
-				});
+						});
+
+				builder.setNegativeButton("Non",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+
+								dialog.cancel();
+
+							}
+						});
+				builder.show();
+
+			}
+		});
+
+		// Petite Pause
+		petitePause.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				dureeMesuree += new Date().getTime() - dateDebut.getTime();
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						Frettage.this);
+				builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
+				builder.setCancelable(false);
+
+				builder.setNegativeButton("Retour",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+
+								dateDebut = new Date();
+								dialog.cancel();
+
+							}
+						});
+				builder.show();
+
+			}
+		});
 
 		// Affichage du contenu
 		displayContentProvider();
@@ -254,9 +363,10 @@ public class Frettage extends Activity {
 	}
 
 	private void displayContentProvider() {
+
 		// Création du SimpleCursorAdapter affilié au GridView
 		SimpleAdapter sca = new SimpleAdapter(this, liste,
-				R.layout.grid_layout_frettage, null, layouts);
+				R.layout.grid_layout_frettage, colRac, layouts);
 
 		gridView.setAdapter(sca);
 		// MAJ Table de sequencement
@@ -271,10 +381,10 @@ public class Frettage extends Activity {
 		cr.update(urlSeq, contact, Operation._id + " = ?",
 				new String[] { Integer.toString(opId[indiceCourant]) });
 		contact.clear();
-		
-		//MAJ de la durée
+
+		// MAJ de la durée
 		dureeMesuree = 0;
-		dateDebut= new Date();
+		dateDebut = new Date();
 
 	}
 

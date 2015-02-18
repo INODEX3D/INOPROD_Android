@@ -164,9 +164,9 @@ public class EnfichagesTa extends Activity {
 					.append(" : "
 							+ cursorA.getString(cursorA
 									.getColumnIndex(Raccordement.NUMERO_POSITION_CHARIOT)));
-			longueur.append(" : "
+			/*longueur.append(" : "
 					+ cursorA.getString(cursorA
-							.getColumnIndex(Raccordement.LONGUEUR_FIL_CABLE)));
+							.getColumnIndex(Raccordement.LONGUEUR_FIL_CABLE))); */
 			referenceFabricant
 					.append(" : "
 							+ cursorA.getString(cursorA
@@ -182,10 +182,10 @@ public class EnfichagesTa extends Activity {
 								+ cursorA.getString(cursorA
 										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
 				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
-						+ numeroCo + "' AND ( " + Raccordement.FAUX_CONTACT
-						+ "='" + 0 + "' OR " + Raccordement.OBTURATEUR + "='"
-						+ 0 + "' OR " + Raccordement.REPRISE_BLINDAGE
-						+ " IS NULL )";
+						+ numeroCo + "' AND  " + Raccordement.FAUX_CONTACT
+						+ "='" + 0 + "' AND " + Raccordement.OBTURATEUR + "='"
+						+ 0 + "' AND " + Raccordement.REPRISE_BLINDAGE
+						+ " IS NULL ";
 			} else {
 				titre.setText(R.string.enfichageTb);
 				repereElectrique
@@ -193,10 +193,11 @@ public class EnfichagesTa extends Activity {
 								+ cursorA.getString(cursorA
 										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT)));
 				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
-						+ numeroCo + "' AND ( " + Raccordement.FAUX_CONTACT
-						+ "='" + 0 + "' OR " + Raccordement.OBTURATEUR + "='"
-						+ 0 + "' OR " + Raccordement.REPRISE_BLINDAGE
-						+ " IS NULL )";
+						+ numeroCo + "' AND  " + Raccordement.FAUX_CONTACT
+						+ "='" + 0 + "' AND " + Raccordement.OBTURATEUR + "='"
+						+ 0 + "' AND " + Raccordement.REPRISE_BLINDAGE
+						+ " IS NULL ";
+				colRac[6]= Raccordement.NUMERO_BORNE_ABOUTISSANT;
 			}
 
 		}
@@ -217,7 +218,7 @@ public class EnfichagesTa extends Activity {
 				// Vérification de l'état de la production
 				if (prodAchevee) {
 
-					indiceCourant++;
+					//indiceCourant++;
 					String nextOperation = null;
 					// Passage à l'étape suivante en fonction de sa description
 					try {
@@ -264,6 +265,7 @@ public class EnfichagesTa extends Activity {
 								toNext.putExtra("Noms", nomPrenomOperateur);
 								toNext.putExtra("Indice", indiceCourant);
 								startActivity(toNext);
+								finish();
 							}
 
 						}
@@ -276,6 +278,7 @@ public class EnfichagesTa extends Activity {
 						toNext.putExtra("opId", opId);
 						toNext.putExtra("Indice", indiceCourant);
 						startActivity(toNext);
+						finish();
 
 					}
 					// Si production non achevée
@@ -290,77 +293,7 @@ public class EnfichagesTa extends Activity {
 								"QR_CODE_MODE");
 						startActivityForResult(intent, 0);
 					} catch (ActivityNotFoundException e) {
-						AlertDialog.Builder builder = new AlertDialog.Builder(
-								EnfichagesTa.this);
-						builder.setMessage("Impossible de trouver une application pour le scan. Entrez le N° de cable.");
-						builder.setCancelable(false);
-						final EditText cable = new EditText(EnfichagesTa.this);
-						builder.setView(cable);
-						builder.setPositiveButton("Valider",
-								new DialogInterface.OnClickListener() {
-
-									public void onClick(DialogInterface dialog,
-											int which) {
-										// Recherche du cable entré
-										numeroCable = cable.getText()
-												.toString();
-										
-
-										clause = Raccordement.NUMERO_FIL_CABLE
-												+ "='"
-												+ numeroCable
-												+ "' AND ("
-												+ Raccordement.NUMERO_COMPOSANT_TENANT
-												+ "='"
-												+ numeroCo
-												+ "' OR "
-												+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-												+ "='" + numeroCo + "' )";
-										cursorA = cr.query(urlRac, colRac,
-												clause, null, Raccordement._id);
-										if (cursorA.moveToFirst()) {
-											if (clauseTotal == null) {
-												clauseTotal = Raccordement.NUMERO_FIL_CABLE
-														+ "='"
-														+ numeroCable
-														+ "'";
-											} else {
-												oldClauseTotal = clauseTotal;
-												clauseTotal += " OR "
-														+ Raccordement.NUMERO_FIL_CABLE
-														+ "='" + numeroCable
-														+ "'";
-											}
-											// Ajout du cable à la liste des
-											// éléments à afficher
-											indiceLimite++;
-											displayContentProvider();
-											indiceCourant++;
-										} else {
-											// Le cable n'est pas utilisé pour
-											// ce connecteur
-											Toast.makeText(
-													EnfichagesTa.this,
-													"Ce cable ne correspond pas",
-													Toast.LENGTH_SHORT).show();
-
-										}
-									}
-
-								});
-
-						builder.setNegativeButton("Annuler",
-								new DialogInterface.OnClickListener() {
-									public void onClick(
-											final DialogInterface dialog,
-											final int id) {
-
-										dialog.cancel();
-
-									}
-								});
-
-						builder.show();
+						entreCable("Impossible de trouver une application pour le scan. Entrez le N° de cable.");
 					}
 
 				}
@@ -391,6 +324,45 @@ public class EnfichagesTa extends Activity {
 				displayContentProvider();
 			}
 		});
+		
+		//Grande pause
+				grandePause.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						AlertDialog.Builder builder = new AlertDialog.Builder(
+								EnfichagesTa.this);
+						builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
+						builder.setCancelable(false);
+						builder.setPositiveButton("Oui",
+								new DialogInterface.OnClickListener() {
+
+									public void onClick(DialogInterface dialog,
+											int which) {
+									/*	Intent toMain = new Intent(
+												CheminementTa.this,
+												MainActivity.class);
+										startActivity(toMain); */
+										finish();
+
+									}
+
+								});
+
+						builder.setNegativeButton("Non",
+								new DialogInterface.OnClickListener() {
+									public void onClick(final DialogInterface dialog,
+											final int id) {
+
+										dialog.cancel();
+
+									}
+								});
+						builder.show();
+
+					}
+				});
+
 		
 		//Petite Pause
 				petitePause.setOnClickListener(new View.OnClickListener() {
@@ -472,13 +444,133 @@ public class EnfichagesTa extends Activity {
 		if (requestCode == 0) {
 			if (resultCode == RESULT_OK) {
 				String contents = intent.getStringExtra("SCAN_RESULT");
-				/* ACTION A EFFECTUER */
+				numeroCable = contents;
 				String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
-			} else if (resultCode == RESULT_CANCELED) {
-				Toast.makeText(EnfichagesTa.this, "Echec du scan ",
-						Toast.LENGTH_SHORT).show();
+				clause = Raccordement.NUMERO_FIL_CABLE
+						+ "='"
+						+ numeroCable
+						+ "' AND ("
+						+ Raccordement.NUMERO_COMPOSANT_TENANT
+						+ "='"
+						+ numeroCo
+						+ "' OR "
+						+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+						+ "='" + numeroCo + "' )";
+				cursorA = cr.query(urlRac, colRac,
+						clause, null, Raccordement._id);
+				if (cursorA.moveToFirst()) {
+					if (clauseTotal == null) {
+						clauseTotal = Raccordement.NUMERO_FIL_CABLE
+								+ "='"
+								+ numeroCable
+								+ "'";
+					} else {
+						oldClauseTotal = clauseTotal;
+						clauseTotal += " OR "
+								+ Raccordement.NUMERO_FIL_CABLE
+								+ "='" + numeroCable
+								+ "'";
+					}
+					// Ajout du cable à la liste des
+					// éléments à afficher
+					indiceLimite++;
+					displayContentProvider();
+					indiceCourant++;
+				} else {
+					// Le cable n'est pas utilisé pour
+					// ce connecteur
+					Toast.makeText(
+							EnfichagesTa.this,
+							"Ce cable ne correspond pas",
+							Toast.LENGTH_SHORT).show();
+
+				}
 			}
-		}
+				
+			} else if (resultCode == RESULT_CANCELED) {
+				entreCable("Echec du scan. Entrez le n° de cable :");
+			}
+		
+	}
+	
+	/**
+	 * Entrée du numéro de cable au clavier dans une dialog box
+	 * 
+	 * @param message
+	 *            à afficher dans la dialog box
+	 */
+	public void entreCable(String message) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(
+				EnfichagesTa.this);
+		builder.setMessage(message);
+		builder.setCancelable(false);
+		final EditText cable = new EditText(EnfichagesTa.this);
+		builder.setView(cable);
+		builder.setPositiveButton("Valider",
+				new DialogInterface.OnClickListener() {
+
+					public void onClick(DialogInterface dialog,
+							int which) {
+						// Recherche du cable entré
+						numeroCable = cable.getText()
+								.toString();
+						
+
+						clause = Raccordement.NUMERO_FIL_CABLE
+								+ "='"
+								+ numeroCable
+								+ "' AND ("
+								+ Raccordement.NUMERO_COMPOSANT_TENANT
+								+ "='"
+								+ numeroCo
+								+ "' OR "
+								+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+								+ "='" + numeroCo + "' )";
+						cursorA = cr.query(urlRac, colRac,
+								clause, null, Raccordement._id);
+						if (cursorA.moveToFirst()) {
+							if (clauseTotal == null) {
+								clauseTotal = Raccordement.NUMERO_FIL_CABLE
+										+ "='"
+										+ numeroCable
+										+ "'";
+							} else {
+								oldClauseTotal = clauseTotal;
+								clauseTotal += " OR "
+										+ Raccordement.NUMERO_FIL_CABLE
+										+ "='" + numeroCable
+										+ "'";
+							}
+							// Ajout du cable à la liste des
+							// éléments à afficher
+							indiceLimite++;
+							displayContentProvider();
+							indiceCourant++;
+						} else {
+							// Le cable n'est pas utilisé pour
+							// ce connecteur
+							Toast.makeText(
+									EnfichagesTa.this,
+									"Ce cable ne correspond pas",
+									Toast.LENGTH_SHORT).show();
+
+						}
+					}
+
+				});
+
+		builder.setNegativeButton("Annuler",
+				new DialogInterface.OnClickListener() {
+					public void onClick(
+							final DialogInterface dialog,
+							final int id) {
+
+						dialog.cancel();
+
+					}
+				});
+
+		builder.show();
 	}
 
 }

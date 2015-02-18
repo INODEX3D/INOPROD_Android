@@ -148,6 +148,7 @@ public class MiseLongueurTb extends Activity {
 							toNext.putExtra("Noms", nomPrenomOperateur);
 							toNext.putExtra("Indice", indiceCourant);
 							startActivity(toNext);
+							finish();
 
 						} catch (ArrayIndexOutOfBoundsException e) {
 							Intent toNext = new Intent(MiseLongueurTb.this,
@@ -156,6 +157,7 @@ public class MiseLongueurTb extends Activity {
 							toNext.putExtra("opId", opId);
 							toNext.putExtra("Indice", indiceCourant);
 							startActivity(toNext);
+							finish();
 
 						}
 					}

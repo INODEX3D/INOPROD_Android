@@ -2,7 +2,7 @@ package com.inodex.inoprod.activities.controleur;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.R.layout;
-import com.inodex.inoprod.activities.MainActivity;
+import com.inodex.inoprod.activities.Inoprod;
 import com.inodex.inoprod.activities.cableur.CheminementTa;
 import com.inodex.inoprod.activities.cableur.DenudageSertissageContactTa;
 import com.inodex.inoprod.activities.cableur.DenudageSertissageEnfichageTa;
@@ -92,8 +92,7 @@ public class MainMenuControleur extends Activity {
 							public void onClick(DialogInterface dialog,
 									int which) {
 								Intent toMain = new Intent(
-										MainMenuControleur.this,
-										MainActivity.class);
+										MainMenuControleur.this, Inoprod.class);
 								startActivity(toMain);
 								finish();
 
@@ -141,6 +140,7 @@ public class MainMenuControleur extends Activity {
 						toNext.putExtra("Noms", nomPrenomOperateur);
 						toNext.putExtra("Indice", indiceCourant);
 						startActivity(toNext);
+						finish();
 					}
 				}
 			}
@@ -159,12 +159,14 @@ public class MainMenuControleur extends Activity {
 		GridView gridView = (GridView) findViewById(R.id.gridview);
 		gridView.setAdapter(sca);
 		// Requête dans la table sequencement
-		clause = new String(Operation.REALISABLE
-				+ "='"+1+ "' AND " + Operation.NOM_OPERATEUR
-				+ " IS NULL AND " + Operation.GAMME + " LIKE 'Cont%'");
+		clause = new String(Operation.REALISABLE + "='" + 1 + "' AND "
+				+ Operation.GAMME + " LIKE 'Cont%' AND "
+				+ Operation.NOM_OPERATEUR + " IS NULL AND " + "("
+				+ Operation.RANG_1_1 + " LIKE '%P06%' OR " + Operation.RANG_1_1
+				+ " LIKE '%P04%' )");
 		cursor = cr.query(url, columns, clause + " GROUP BY "
 				+ Operation.DESCRIPTION_OPERATION, null, Operation._id + " ASC"
-				+ " LIMIT 30");
+		/* + " LIMIT 30" */);
 
 		sca.changeCursor(cursor);
 

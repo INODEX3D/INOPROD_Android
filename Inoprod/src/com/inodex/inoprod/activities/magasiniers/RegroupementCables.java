@@ -204,6 +204,7 @@ public class RegroupementCables extends Activity {
 					toNext.putExtra("opId", opId);
 					toNext.putExtra("Indice", indiceCourant);
 					startActivity(toNext);
+					finish();
 
 				} catch (ArrayIndexOutOfBoundsException e) {
 					// Il ne reste plus de cables à regrouper
@@ -232,6 +233,7 @@ public class RegroupementCables extends Activity {
 					toNext.putExtra("opId", opId);
 					toNext.putExtra("Indice", indiceCourant);
 					startActivity(toNext);
+					finish();
 
 				}
 			}

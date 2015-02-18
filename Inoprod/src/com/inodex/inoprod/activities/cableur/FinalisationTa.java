@@ -63,7 +63,7 @@ public class FinalisationTa extends Activity {
 	private ContentResolver cr;
 	private ContentValues contact;
 
-	private String clause, numeroOperation, numeroCo, description;
+	private String clause, numeroOperation, numeroCo, description,ordre;
 
 	/** Colonnes utilisés pour les requêtes */
 	private String columnsSeq[] = new String[] { Operation._id,
@@ -127,29 +127,30 @@ public class FinalisationTa extends Activity {
 			numeroOperation = cursor.getString(cursor
 					.getColumnIndex(Operation.NUMERO_OPERATION));
 			description = cursor.getString(cursor
-					.getColumnIndex(Operation.NUMERO_OPERATION));
+					.getColumnIndex(Operation.DESCRIPTION_OPERATION));
 			numeroCo = (cursor.getString(cursor
 					.getColumnIndex(Operation.RANG_1_1))).substring(11, 14);
 			numeroConnecteur.append(" : " + numeroCo);
 		}
 
-		if (description.contains("Tête A")) {
+		if (description.contains("A")) {
 			clause = new String(Raccordement.NUMERO_COMPOSANT_TENANT + "='"
-					+ numeroCo + "' GROUP BY "
-					+ Raccordement.NUMERO_COMPOSANT_TENANT);
+					+ numeroCo +"'");
 			titre.setText(R.string.finalisation_ta);
+			ordre = "A";
 			/*
 			 * repereElectrique .append(" : " + cursorA.getString(cursorA
 			 * .getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
 			 */
 		} else {
 			clause = new String(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-					+ "='" + numeroCo + "' GROUP BY "
-					+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT);
+					+ "='" + numeroCo +"'");
 			titre.setText(R.string.finalisationTb);
+			ordre = "B";
 			/*
 			 * repereElectrique .append(" : " + cursorA.getString(cursorA
 			 * .getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT)));
+			 * 
 			 */
 		}
 		cursorA = cr.query(urlRac, colRac, clause, null, Raccordement._id
@@ -181,11 +182,11 @@ public class FinalisationTa extends Activity {
 			public void onClick(View v) {
 
 				// Signalement du point de controle
-				clause = Operation.RANG_1_1 + "='" + numeroCo + "' AND ( "
+				clause = Operation.RANG_1_1 + " LIKE '%" + numeroCo + "%' AND ( "
 						+ Operation.DESCRIPTION_OPERATION
-						+ " LIKE 'Contrôle rétention%' OR + "
+						+ " LIKE 'Contrôle rétention tête "+ordre+"%' OR + "
 						+ Operation.DESCRIPTION_OPERATION
-						+ " LIKE 'Contrôle final%')";
+						+ " LIKE 'Contrôle final tête "+ordre+"%')";
 				cursor = cr.query(urlSeq, columnsSeq, clause, null,
 						Operation._id);
 				if (cursor.moveToFirst()) {
@@ -248,6 +249,7 @@ public class FinalisationTa extends Activity {
 							toNext.putExtra("Noms", nomPrenomOperateur);
 							toNext.putExtra("Indice", indiceCourant);
 							startActivity(toNext);
+							finish();
 						}
 
 					}
@@ -259,11 +261,51 @@ public class FinalisationTa extends Activity {
 					toNext.putExtra("opId", opId);
 					toNext.putExtra("Indice", indiceCourant);
 					startActivity(toNext);
+					finish();
 
 				}
 			}
 
 		});
+		
+		//Grande pause
+				grandePause.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						AlertDialog.Builder builder = new AlertDialog.Builder(
+								FinalisationTa.this);
+						builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
+						builder.setCancelable(false);
+						builder.setPositiveButton("Oui",
+								new DialogInterface.OnClickListener() {
+
+									public void onClick(DialogInterface dialog,
+											int which) {
+									/*	Intent toMain = new Intent(
+												CheminementTa.this,
+												MainActivity.class);
+										startActivity(toMain); */
+										finish();
+
+									}
+
+								});
+
+						builder.setNegativeButton("Non",
+								new DialogInterface.OnClickListener() {
+									public void onClick(final DialogInterface dialog,
+											final int id) {
+
+										dialog.cancel();
+
+									}
+								});
+						builder.show();
+
+					}
+				});
+
 
 		// Petite Pause
 		petitePause.setOnClickListener(new View.OnClickListener() {

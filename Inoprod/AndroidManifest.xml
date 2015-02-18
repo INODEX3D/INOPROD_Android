@@ -21,12 +21,13 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name" >
+        android:icon="@drawable/ic_launcher_inoprod"
+        android:label="@string/inoprod"
+        android:theme="@android:style/Theme.Light.NoTitleBar.Fullscreen" >
         <activity
-            android:name=".activities.MainActivity"
+            android:name=".activities.Inoprod"
             android:configChanges="orientation"
-            android:label="@string/title_activity_main"
+            android:label="@string/inoprod"
             android:screenOrientation="landscape" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -95,119 +96,177 @@
 
         <activity
             android:name=".activities.LoginProfil"
-            android:label="@string/title_activity_login_profil" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_login_profil"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.magasiniers.MainMenuMagasinier"
-            android:label="@string/title_activity_main_menu_magasinier" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_main_menu_magasinier"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.magasiniers.ImportCoupeCables"
-            android:label="@string/title_activity_import_coupe_cables" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_import_coupe_cables"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.magasiniers.DebitCables"
-            android:label="@string/title_activity_debit_cables" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_debit_cables"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.magasiniers.RegroupementCables"
-            android:label="@string/title_activity_regroupement_cables" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_regroupement_cables"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.magasiniers.SaisieTracabiliteComposant"
-            android:label="@string/title_activity_saisie_tracabilite_composant" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_saisie_tracabilite_composant"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.magasiniers.ServitudeComposants"
-            android:label="@string/title_activity_servitude_composants" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_servitude_composants"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.magasiniers.KittingCablesComposants"
-            android:label="@string/title_activity_kitting_cables_composants" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_kitting_cables_composants"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.cableur.MainMenuCableur"
-            android:label="@string/title_activity_main_menu_cableur" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_main_menu_cableur"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.cableur.RepriseBlindageTa"
-            android:label="@string/title_activity_reprise_blindage_ta" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_reprise_blindage_ta"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.cableur.DenudageSertissageContactTa"
-            android:label="@string/title_activity_denudage_sertissage_contact_ta" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_denudage_sertissage_contact_ta"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.controleur.MainMenuControleur"
-            android:label="@string/title_activity_main_menu_controleur" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_main_menu_controleur"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.preparateur.MainMenuPreparateur"
-            android:label="@string/title_activity_main_menu_preparateur" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_main_menu_preparateur"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.InfoProduit"
-            android:label="@string/title_activity_info_produit" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_info_produit"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.cableur.FinalisationTa"
-            android:label="@string/title_activity_finalisation_ta" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_finalisation_ta"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.cableur.TriAboutissantsTa"
-            android:label="@string/title_activity_tri_aboutissants_ta" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_tri_aboutissants_ta"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.cableur.PreparationTa"
-            android:label="@string/title_activity_preparation_ta" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_preparation_ta"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.cableur.DenudageSertissageEnfichageTa"
-            android:label="@string/title_activity_denudage_sertissage_enfichage_ta" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_denudage_sertissage_enfichage_ta"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.cableur.EnfichagesTa"
-            android:label="@string/title_activity_enfichages_ta" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_enfichages_ta"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.cableur.CheminementTa"
-            android:label="@string/title_activity_cheminement_ta" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_cheminement_ta"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.cableur.PositionnementTaTab"
-            android:label="@string/title_activity_positionnement_ta_tab" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_positionnement_ta_tab"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.cableur.CheminementFilAFil"
-            android:label="@string/title_activity_cheminement_fil_afil" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_cheminement_fil_afil"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.cableur.Frettage"
-            android:label="@string/title_activity_frettage" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_frettage"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.cableur.DenudageSertissageManchonsCossesTb"
-            android:label="@string/title_activity_denudage_sertissage_manchons_cosses_tb" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_denudage_sertissage_manchons_cosses_tb"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.controleur.ControleFinalisationTa"
-            android:label="@string/title_activity_controle_finalisation_ta" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_controle_finalisation_ta"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.controleur.ControleSertissageTa"
-            android:label="@string/title_activity_controle_sertissage_ta" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_controle_sertissage_ta"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.controleur.ControleRetentionTa"
-            android:label="@string/title_activity_controle_retention_ta" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_controle_retention_ta"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name=".activities.controleur.ControleFinalHarnais"
-            android:label="@string/title_activity_controle_final_harnais" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_controle_final_harnais"
+            android:screenOrientation="landscape" >
         </activity>
         <activity
             android:name="com.inodex.inoprod.activities.cableur.MiseLongueurTb"
-            android:label="@string/title_activity_mise_longueur_tb" >
+            android:configChanges="orientation"
+            android:label="@string/title_activity_mise_longueur_tb"
+            android:screenOrientation="landscape" >
         </activity>
     </application>
 

@@ -56,6 +56,10 @@ public class TableRaccordement {
 		public static final String NUMERO_SERIE_OUTIL = "NUMERO_SERIE_OUTIL";
 		public static final String NUMERO_FICHE_JALON = "NUMERO_FICHE_JALON";
 		public static final String DESIGNATION = "DESIGNATION";
+		public static final String NUMERO_REVISION_HARNAIS = "NUMERO_REVISION_HARNAIS";
+		public static final String STANDARD = "STANDARD";
+		public static final String REFERENCE_FICHIER_SOURCE = "REFERENCE_FICHIER_SOURCE";
+		public static final String NUMERO_HARNAIS_FAISCEAUX = "NUMERO_HARNAIS_FAISCEAUX";
 	}
 
 }

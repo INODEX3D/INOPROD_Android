@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageButton;
@@ -17,7 +18,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import com.inodex.inoprod.R;
-import com.inodex.inoprod.activities.MainActivity;
+import com.inodex.inoprod.activities.Inoprod;
 import com.inodex.inoprod.activities.magasiniers.ImportCoupeCables;
 import com.inodex.inoprod.activities.magasiniers.MainMenuMagasinier;
 import com.inodex.inoprod.business.SequencementProvider;
@@ -60,7 +61,7 @@ public class MainMenuCableur extends Activity {
 	private String columns[] = { Operation.DESCRIPTION_OPERATION,
 			Operation.RANG_1_1, Operation.GAMME, Operation.NOM_OPERATEUR,
 			Operation.NUMERO_OPERATION, Operation._id, Operation.REALISABLE,
-			Operation.DUREE_THEORIQUE };
+			Operation.DUREE_THEORIQUE, Operation.DESCRIPTION_OPERATION };
 	private int layouts[] = { R.id.operationsRealiser };
 
 	@Override
@@ -92,8 +93,7 @@ public class MainMenuCableur extends Activity {
 							public void onClick(DialogInterface dialog,
 									int which) {
 								Intent toMain = new Intent(
-										MainMenuCableur.this,
-										MainActivity.class);
+										MainMenuCableur.this, Inoprod.class);
 								startActivity(toMain);
 								finish();
 
@@ -164,6 +164,7 @@ public class MainMenuCableur extends Activity {
 						toNext.putExtra("Noms", nomPrenomOperateur);
 						toNext.putExtra("Indice", indiceCourant);
 						startActivity(toNext);
+						finish();
 					}
 				}
 			}
@@ -183,22 +184,26 @@ public class MainMenuCableur extends Activity {
 		gridView.setAdapter(sca);
 		// Génération de l'ordre du jour
 
-		clause = new String(Operation.REALISABLE
-				+ "='"+1+"' AND " + Operation.NOM_OPERATEUR
-				+ " IS NULL AND " + Operation.GAMME
+		clause = new String("(" + Operation.NOM_OPERATEUR + " IS NULL OR "
+				+ Operation.NOM_OPERATEUR + " LIKE '' ) AND "
+				+ Operation.REALISABLE + "='" + 1 + "' AND ("
+				+ Operation.RANG_1_1 + " LIKE '%P06%' OR " + Operation.RANG_1_1
+				+ " LIKE '%J08%' ) AND " + Operation.GAMME
 				+ "!='Contrôle jalons' AND " + Operation.GAMME
-				+ "!='Contrôle final'");
+				+ "!='Contrôle final'  ");
 		cursor = cr.query(url, columns, clause + " GROUP BY "
 				+ Operation.DESCRIPTION_OPERATION, null, Operation._id + " ASC"
 				+ " LIMIT 30");
 
 		sca.changeCursor(cursor);
 
-		cursor = cr.query(url, columns, clause, null, Operation._id + " ASC"+ " LIMIT 30");
+		cursor = cr.query(url, columns, clause, null, Operation._id + " ASC"
+				+ " LIMIT 70");
 
 		// Rempliassage du tableau pour chaque numero de cable
 		if (cursor.moveToFirst()) {
 			opId = new int[cursor.getCount()];
+			Log.e("Position curseur", "" + cursor.getPosition());
 			do {
 				opId[cursor.getPosition()] = cursor.getInt(cursor
 						.getColumnIndex(Operation._id));

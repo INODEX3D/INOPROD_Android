@@ -30,7 +30,7 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.inodex.inoprod.R;
-import com.inodex.inoprod.activities.MainActivity;
+import com.inodex.inoprod.activities.Inoprod;
 import com.inodex.inoprod.business.BOMProvider;
 import com.inodex.inoprod.business.ChariotProvider;
 import com.inodex.inoprod.business.CheminementProvider;
@@ -145,7 +145,10 @@ public class MainMenuPreparateur extends Activity {
 			Fil.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT,
 			Fil.REGLAGE_OUTIL_ABOUTISSANT, Fil.OBTURATEUR, Fil.FAUX_CONTACT,
 			Fil.ETAT_FINALISATION_PRISE, Fil.ORIENTATION_RACCORD_ARRIERE,
-			Fil.ZONE_ACTIVITE, Fil._id, Fil.DESIGNATION_PRODUIT };
+			Fil.ZONE_ACTIVITE, Fil._id, Fil.DESIGNATION_PRODUIT,
+			Fil.ACCESSOIRE_COMPOSANT1, Fil.ACCESSOIRE_COMPOSANT2,
+			Fil.DESIGNATION_PRODUIT, Fil.NUMERO_REVISION_HARNAIS, Fil.STANDARD,
+			Fil.NUMERO_HARNAIS_FAISCEAUX, Fil.REFERENCE_FICHIER_SOURCE };
 
 	private String colNom3[] = new String[] { Cable.NORME_CABLE,
 			Cable.EQUIPEMENT, Cable._id, Cable.NUMERO_COMPOSANT,
@@ -198,7 +201,7 @@ public class MainMenuPreparateur extends Activity {
 			Raccordement.ZONE_ACTIVITE,
 			Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT,
 			Raccordement.REPERE_ELECTRIQUE_TENANT, Raccordement.FIL_SENSIBLE,
-			Raccordement.REFERENCE_FABRICANT2 };
+			Raccordement.REFERENCE_FABRICANT2, Raccordement.NUMERO_FIL_CABLE };
 
 	private String clause, rep, norme, numeroOperation, num, gamme, rang,
 			rang_1, descriptionOperation, num1, referenceCourante,
@@ -234,8 +237,7 @@ public class MainMenuPreparateur extends Activity {
 							public void onClick(DialogInterface dialog,
 									int which) {
 								Intent toMain = new Intent(
-										MainMenuPreparateur.this,
-										MainActivity.class);
+										MainMenuPreparateur.this, Inoprod.class);
 								startActivity(toMain);
 								finish();
 
@@ -269,7 +271,12 @@ public class MainMenuPreparateur extends Activity {
 					Toast.makeText(MainMenuPreparateur.this,
 							"Import des fichiers sources réussis",
 							Toast.LENGTH_SHORT).show();
-					creationTables();
+					try {
+						creationTables();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					generationTableSequencement();
 				}
 
@@ -324,77 +331,146 @@ public class MainMenuPreparateur extends Activity {
 	 * l'import des bases de données sources
 	 * 
 	 */
-	protected void creationTables() {
+	protected void creationTables() throws IOException {
 
 		ContentValues contact = new ContentValues();
 
 		indiceChariotA = 1;
 		indiceChariotB = 1;
 
-		// Création de la table de cheminement
-		chemin = 1;
-		// Aboutissant
-		cursor = cr.query(urlProduction, ColProd2,
-				Fil.NUMERO_COMPOSANT_ABOUTISSANT + "!='" + "null"
-						+ "' GROUP BY " + Fil.NUMERO_COMPOSANT_ABOUTISSANT,
-				null, null);
-		if (cursor.moveToFirst()) {
+		// Création d'un InputStream vers le fichier Excel
+		InputStream input = this.getResources().openRawResource(
+				R.raw.table_cheminement);
+		// Interpretation du fichier a l'aide de Apache POI
+		POIFSFileSystem fs = new POIFSFileSystem(input);
+		HSSFWorkbook wb = new HSSFWorkbook(fs);
 
-			do {
+		// Feuille outillages
+		HSSFSheet sheet = wb.getSheetAt(0);
+
+		// Iteration sur chacune des lignes du fichier
+		Iterator rows = sheet.rowIterator();
+		rows.next();
+		HSSFRow row = (HSSFRow) rows.next();
+		HashMap<String, Integer> colonnes = new HashMap<String, Integer>();
+		// Stockage des indices des colonnes
+		for (int i = 0; i < row.getLastCellNum(); i++) {
+			colonnes.put(row.getCell(i).toString(), i);
+
+		}
+
+		while (rows.hasNext()) {
+			row = (HSSFRow) rows.next();
+			try {
 				contact.put(
-						Cheminement.REPERE_ELECTRIQUE,
-						cursor.getString(cursor
-								.getColumnIndex(Fil.REPERE_ELECTRIQUE_ABOUTISSANT)));
-
+						Cheminement.NUMERO_SECTION_CHEMINEMENT,
+						row.getCell(
+								colonnes.get("Numéro de section de cheminement"))
+								.toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Cheminement.LOCALISATION1,
+						row.getCell(colonnes.get("Localisation_1 (68)"))
+								.toString());
+			} catch (NullPointerException e) {
+			}
+			try {
 				contact.put(
 						Cheminement.NUMERO_COMPOSANT,
-						cursor.getString(cursor
-								.getColumnIndex(Fil.NUMERO_COMPOSANT_ABOUTISSANT)));
+						row.getCell(
+								colonnes.get("Numéro de composant (9 & 12)"))
+								.toString());
+			} catch (NullPointerException e) {
+			}
+			try {
 				contact.put(Cheminement.ORDRE_REALISATION,
-						cursor.getString(cursor
-								.getColumnIndex(Fil.ORDRE_REALISATION)));
-				contact.put(Cheminement.ZONE_ACTIVITE, cursor.getString(cursor
-						.getColumnIndex(Fil.ZONE_ACTIVITE)));
-				contact.put(Cheminement.NUMERO_SECTION_CHEMINEMENT, chemin++);
-				// Ajout de l'entité
-				getContentResolver().insert(urlCheminement, contact);
-				// Ecrasement de ses données pour passer à la suivante
-				contact.clear();
+						row.getCell(colonnes.get("Ordre de réalisation (24)"))
+								.toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Cheminement.ZONE_ACTIVITE,
+						row.getCell(colonnes.get("Zone-activité (67)"))
+								.toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(
+						Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT,
+						row.getCell(
+								colonnes.get("N° de repère de la table de cheminement"))
+								.toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Cheminement.TYPE_SUPPORT,
+						row.getCell(colonnes.get("Type de support")).toString());
+			} catch (NullPointerException e) {
+			}
+			try {
+				contact.put(Cheminement.REPERE_ELECTRIQUE,
+						row.getCell(colonnes.get("Repère electrique (8 & 11)"))
+								.toString());
+			} catch (NullPointerException e) {
+			}
 
-			} while (cursor.moveToNext());
+			// Ajout de l'entité
+			getContentResolver().insert(urlCheminement, contact);
+			// Ecrasement de ses données pour passer à la suivante
+			contact.clear();
 
 		}
 
-		// Tenant
-		cursor = cr.query(urlProduction, ColProd2, Fil.NUMERO_COMPOSANT_TENANT
-				+ "!='" + "null" + "' GROUP BY " + Fil.NUMERO_COMPOSANT_TENANT,
-				null, null);
-		if (cursor.moveToFirst()) {
-
-			do {
-				contact.put(Cheminement.REPERE_ELECTRIQUE, cursor
-						.getString(cursor
-								.getColumnIndex(Fil.REPERE_ELECTRIQUE_TENANT)));
-
-				contact.put(Cheminement.NUMERO_COMPOSANT, cursor
-						.getString(cursor
-								.getColumnIndex(Fil.NUMERO_COMPOSANT_TENANT)));
-				contact.put(Cheminement.ORDRE_REALISATION,
-						cursor.getString(cursor
-								.getColumnIndex(Fil.ORDRE_REALISATION)));
-				contact.put(Cheminement.ZONE_ACTIVITE, cursor.getString(cursor
-						.getColumnIndex(Fil.ZONE_ACTIVITE)));
-				contact.put(Cheminement.NUMERO_SECTION_CHEMINEMENT, chemin++);
-				// Ajout de l'entité
-				getContentResolver().insert(urlCheminement, contact);
-				// Ecrasement de ses données pour passer à la suivante
-				contact.clear();
-
-			} while (cursor.moveToNext());
-			Toast.makeText(this, "Table cheminement créée", Toast.LENGTH_SHORT)
-					.show();
-
-		}
+		// Création de la table de cheminement
+		/*
+		 * chemin = 1; // Aboutissant cursor = cr.query(urlProduction, ColProd2,
+		 * Fil.NUMERO_COMPOSANT_ABOUTISSANT + "!='" + "null" + "' GROUP BY " +
+		 * Fil.NUMERO_COMPOSANT_ABOUTISSANT, null, null); if
+		 * (cursor.moveToFirst()) {
+		 * 
+		 * do { contact.put( Cheminement.REPERE_ELECTRIQUE,
+		 * cursor.getString(cursor
+		 * .getColumnIndex(Fil.REPERE_ELECTRIQUE_ABOUTISSANT)));
+		 * 
+		 * contact.put( Cheminement.NUMERO_COMPOSANT, cursor.getString(cursor
+		 * .getColumnIndex(Fil.NUMERO_COMPOSANT_ABOUTISSANT)));
+		 * contact.put(Cheminement.ORDRE_REALISATION, cursor.getString(cursor
+		 * .getColumnIndex(Fil.ORDRE_REALISATION)));
+		 * contact.put(Cheminement.ZONE_ACTIVITE, cursor.getString(cursor
+		 * .getColumnIndex(Fil.ZONE_ACTIVITE)));
+		 * contact.put(Cheminement.NUMERO_SECTION_CHEMINEMENT, chemin++); //
+		 * Ajout de l'entité getContentResolver().insert(urlCheminement,
+		 * contact); // Ecrasement de ses données pour passer à la suivante
+		 * contact.clear();
+		 * 
+		 * } while (cursor.moveToNext());
+		 * 
+		 * }
+		 * 
+		 * // Tenant cursor = cr.query(urlProduction, ColProd2,
+		 * Fil.NUMERO_COMPOSANT_TENANT + "!='" + "null" + "' GROUP BY " +
+		 * Fil.NUMERO_COMPOSANT_TENANT, null, null); if (cursor.moveToFirst()) {
+		 * 
+		 * do { contact.put(Cheminement.REPERE_ELECTRIQUE, cursor
+		 * .getString(cursor .getColumnIndex(Fil.REPERE_ELECTRIQUE_TENANT)));
+		 * 
+		 * contact.put(Cheminement.NUMERO_COMPOSANT, cursor .getString(cursor
+		 * .getColumnIndex(Fil.NUMERO_COMPOSANT_TENANT)));
+		 * contact.put(Cheminement.ORDRE_REALISATION, cursor.getString(cursor
+		 * .getColumnIndex(Fil.ORDRE_REALISATION)));
+		 * contact.put(Cheminement.ZONE_ACTIVITE, cursor.getString(cursor
+		 * .getColumnIndex(Fil.ZONE_ACTIVITE)));
+		 * contact.put(Cheminement.NUMERO_SECTION_CHEMINEMENT, chemin++); //
+		 * Ajout de l'entité getContentResolver().insert(urlCheminement,
+		 * contact); // Ecrasement de ses données pour passer à la suivante
+		 * contact.clear();
+		 * 
+		 * } while (cursor.moveToNext()); Toast.makeText(this,
+		 * "Table cheminement créée", Toast.LENGTH_SHORT) .show();
+		 * 
+		 * }
+		 */
 
 		// Création de la table de kitting
 		debit = 1;
@@ -571,6 +647,7 @@ public class MainMenuPreparateur extends Activity {
 							+ cursor.getString(cursor
 									.getColumnIndex(Kitting.REPERE_ELECTRIQUE))
 							+ ")";
+					rang_1 = descriptionOperation;
 
 					// Ajout des opérations à la table de séquencement
 					contact.put(Operation.GAMME, gamme);
@@ -678,6 +755,23 @@ public class MainMenuPreparateur extends Activity {
 						Raccordement.REFERENCE_OUTIL_ABOUTISSANT,
 						cursor.getString(cursor
 								.getColumnIndex(Fil.REFERENCE_OUTIL_ABOUTISSANT)));
+				contact.put(Raccordement.STANDARD,
+						cursor.getString(cursor.getColumnIndex(Fil.STANDARD)));
+				contact.put(Raccordement.NUMERO_HARNAIS_FAISCEAUX, cursor
+						.getString(cursor
+								.getColumnIndex(Fil.NUMERO_HARNAIS_FAISCEAUX)));
+				contact.put(
+						Raccordement.REFERENCE_OUTIL_ABOUTISSANT,
+						cursor.getString(cursor
+								.getColumnIndex(Fil.REFERENCE_OUTIL_ABOUTISSANT)));
+				contact.put(Raccordement.DESIGNATION, cursor.getString(cursor
+						.getColumnIndex(Fil.DESIGNATION_PRODUIT)));
+				contact.put(Raccordement.NUMERO_REVISION_HARNAIS, cursor
+						.getString(cursor
+								.getColumnIndex(Fil.NUMERO_REVISION_HARNAIS)));
+				contact.put(Raccordement.REFERENCE_FICHIER_SOURCE, cursor
+						.getString(cursor
+								.getColumnIndex(Fil.REFERENCE_FICHIER_SOURCE)));
 				contact.put(Raccordement.REFERENCE_OUTIL_TENANT, cursor
 						.getString(cursor
 								.getColumnIndex(Fil.REFERENCE_OUTIL_TENANT)));
@@ -711,6 +805,12 @@ public class MainMenuPreparateur extends Activity {
 				contact.put(Raccordement.TYPE_RACCORDEMENT_TENANT, cursor
 						.getString(cursor
 								.getColumnIndex(Fil.TYPE_RACCORDEMENT_TENANT)));
+				contact.put(Raccordement.ACCESSOIRE_COMPOSANT1, cursor
+						.getString(cursor
+								.getColumnIndex(Fil.ACCESSOIRE_COMPOSANT1)));
+				contact.put(Raccordement.ACCESSOIRE_COMPOSANT2, cursor
+						.getString(cursor
+								.getColumnIndex(Fil.ACCESSOIRE_COMPOSANT2)));
 
 				// Numéro Position Chariot
 				clause = new String(Kitting.NUMERO_FIL_CABLE + "='"
@@ -736,8 +836,8 @@ public class MainMenuPreparateur extends Activity {
 
 				}
 
-				clause = new String(Cheminement.NUMERO_COMPOSANT + "='"
-						+ numeroComposant + "'");
+				clause = new String(Cheminement.NUMERO_COMPOSANT + " LIKE '%"
+						+ numeroComposant + "%'");
 				cursorB = cr
 						.query(urlCheminement, ColChem1, clause, null, null);
 
@@ -746,6 +846,8 @@ public class MainMenuPreparateur extends Activity {
 							.getInt(cursorB
 									.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
 					contact.put(Raccordement.NUMERO_CHEMINEMENT,
+							numeroCheminement);
+					contact.put(Raccordement.NUMERO_SECTION_CHEMINEMENT,
 							numeroCheminement);
 					contact.put(Raccordement.ZONE_ACTIVITE, cursorB
 							.getString(cursorB
@@ -1947,6 +2049,7 @@ public class MainMenuPreparateur extends Activity {
 		indiceControleJalons = 1;
 		indiceControleFinal = 1;
 		indiceControleCheminement = 1;
+		int FIL_SENSIBLE = 1;
 
 		String numeroComposant;
 
@@ -2062,7 +2165,8 @@ public class MainMenuPreparateur extends Activity {
 				// Recherche des reprises blindages
 				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
 						+ numeroComposant + "' AND "
-						+ Raccordement.REPRISE_BLINDAGE + "!='" + "null" + "'";
+						+ Raccordement.REPRISE_BLINDAGE + "!='" + "null"
+						+ "' GROUP BY " + Raccordement.REPRISE_BLINDAGE;
 				cursorA = cr.query(urlRaccordement, colRac, clause, null,
 						Raccordement._id);
 				if (cursorA.moveToFirst()) {
@@ -2106,7 +2210,8 @@ public class MainMenuPreparateur extends Activity {
 				// Ajout des autres cables
 				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
 						+ numeroComposant + "' AND "
-						+ Raccordement.NUMERO_OPERATION + " IS NULL";
+						+ Raccordement.NUMERO_OPERATION + " IS NULL GROUP BY "
+						+ Raccordement.NUMERO_FIL_CABLE;
 				cursorA = cr.query(urlRaccordement, colRac, clause, null,
 						Raccordement.NUMERO_BORNE_TENANT);
 
@@ -2116,6 +2221,8 @@ public class MainMenuPreparateur extends Activity {
 					// Verifications de la sensibilité des fils
 					if (cursorA.getInt(cursorA
 							.getColumnIndex(Raccordement.FIL_SENSIBLE)) == 1) {
+
+						FIL_SENSIBLE = 0;
 
 						// CONTROLE FIL SENSIBLE
 						gamme = "Contrôle jalons";
@@ -2305,7 +2412,7 @@ public class MainMenuPreparateur extends Activity {
 				contact.put(Operation.DESCRIPTION_OPERATION,
 						descriptionOperation);
 				contact.put(Operation.NUMERO_OPERATION, num1);
-				contact.put(Operation.REALISABLE, 1);
+				contact.put(Operation.REALISABLE, FIL_SENSIBLE);
 				contact.put(Operation.DUREE_THEORIQUE, SERTISSAGE_CONTACTS);
 
 				// Ajout de l'entité
@@ -2327,7 +2434,7 @@ public class MainMenuPreparateur extends Activity {
 				contact.put(Operation.DESCRIPTION_OPERATION,
 						descriptionOperation);
 				contact.put(Operation.NUMERO_OPERATION, num1);
-				contact.put(Operation.REALISABLE, 1);
+				contact.put(Operation.REALISABLE, FIL_SENSIBLE);
 				contact.put(Operation.DUREE_THEORIQUE, SERTISSAGE_CONTACTS);
 
 				// Ajout de l'entité
@@ -2363,8 +2470,12 @@ public class MainMenuPreparateur extends Activity {
 
 				// Cheminement des têtes
 				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
-						+ numeroComposant + "'";
-				cursorA = cr.query(urlRaccordement, colRac, clause, null,
+						+ numeroComposant + "'AND  "
+						+ Raccordement.FAUX_CONTACT + "='" + 0 + "' AND "
+						+ Raccordement.OBTURATEUR + "='" + 0 + "' AND "
+						+ Raccordement.REPRISE_BLINDAGE + " IS NULL ";
+				cursorA = cr.query(urlRaccordement, colRac, clause
+						+ " GROUP BY " + Raccordement.NUMERO_FIL_CABLE, null,
 						Raccordement._id);
 				if (cursorA.moveToFirst()) {
 					do {
@@ -2451,6 +2562,7 @@ public class MainMenuPreparateur extends Activity {
 		/* TETES B */
 
 		indice = 1;
+		FIL_SENSIBLE = 1;
 
 		// Filtre par connecteur et N° cheminement
 		clause = Raccordement.ORDRE_REALISATION + "='" + "Tête B"
@@ -2563,7 +2675,8 @@ public class MainMenuPreparateur extends Activity {
 				// Recherche des reprises blindages
 				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
 						+ numeroComposant + "' AND "
-						+ Raccordement.REPRISE_BLINDAGE + "!='" + "null" + "'";
+						+ Raccordement.REPRISE_BLINDAGE + "!='" + "null"
+						+ "' GROUP BY " + Raccordement.REPRISE_BLINDAGE;
 				cursorA = cr.query(urlRaccordement, colRac, clause, null,
 						Raccordement._id);
 				if (cursorA.moveToFirst()) {
@@ -2608,7 +2721,8 @@ public class MainMenuPreparateur extends Activity {
 				// Ajout des autres cables
 				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
 						+ numeroComposant + "' AND "
-						+ Raccordement.NUMERO_OPERATION + " IS NULL";
+						+ Raccordement.NUMERO_OPERATION + " IS NULL GROUP BY "
+						+ Raccordement.NUMERO_FIL_CABLE;
 				cursorA = cr.query(urlRaccordement, colRac, clause, null,
 						Raccordement.NUMERO_BORNE_ABOUTISSANT);
 
@@ -2619,6 +2733,7 @@ public class MainMenuPreparateur extends Activity {
 					if (cursorA.getInt(cursorA
 							.getColumnIndex(Raccordement.FIL_SENSIBLE)) == 1) {
 
+						FIL_SENSIBLE = 0;
 						// CONTROLE FIL SENSIBLE
 						gamme = "Contrôle jalons";
 						numeroOperation = "9-000";
@@ -2817,8 +2932,12 @@ public class MainMenuPreparateur extends Activity {
 
 				// Cheminement Fil à fil
 				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
-						+ numeroComposant + "'";
-				cursorA = cr.query(urlRaccordement, colRac, clause, null,
+						+ numeroComposant + "'AND  "
+						+ Raccordement.FAUX_CONTACT + "='" + 0 + "' AND "
+						+ Raccordement.OBTURATEUR + "='" + 0 + "' AND "
+						+ Raccordement.REPRISE_BLINDAGE + " IS NULL ";
+				cursorA = cr.query(urlRaccordement, colRac, clause
+						+ " GROUP BY " + Raccordement.NUMERO_FIL_CABLE, null,
 						Raccordement._id);
 				if (cursorA.moveToFirst()) {
 					do {

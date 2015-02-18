@@ -195,5 +195,7 @@
     <string name="instructionMiseLongueur">Veuillez couper les câbles aux côtes définies sur le gabarit</string>
     <string name="controleFinalisationTb">Contrôle finalisation têtes B</string>
     <string name="controleSertissageTb">Contôle des sertissages têtes B</string>
+    <string name="inoprod">Inoprod</string>
+    <string name="controleRetentionTb">Contrôle rétention des têtes B</string>
 
 </resources>

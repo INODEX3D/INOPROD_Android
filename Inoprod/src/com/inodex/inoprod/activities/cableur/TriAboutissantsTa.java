@@ -57,14 +57,14 @@ public class TriAboutissantsTa extends Activity {
 
 	/** Heure et dates à ajouter à la table de séquencment */
 	private Date dateDebut, dateRealisation;
-	private long dureeMesuree =0;
+	private long dureeMesuree = 0;
 	private Time heureRealisation = new Time();
 
 	/** Nom de l'opérateur */
 	private String nomPrenomOperateur[] = null;
 
 	/** Curseur et Content Resolver à utiliser lors des requêtes */
-	private Cursor cursor, cursorA;
+	private Cursor cursor, cursorA, cursorB;
 	private ContentResolver cr;
 	private ContentValues contact;
 
@@ -75,8 +75,7 @@ public class TriAboutissantsTa extends Activity {
 			Operation.GAMME, Operation.RANG_1_1, Operation.NUMERO_OPERATION,
 			Operation.NOM_OPERATEUR, Operation.DATE_REALISATION,
 			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION,
-			Operation.REALISABLE,
-			Operation.DUREE_MESUREE };
+			Operation.REALISABLE, Operation.DUREE_MESUREE };
 
 	private int layouts[] = new int[] { R.id.groupe, R.id.numeroFilCable,
 			R.id.typeCable, R.id.numeroSegregation, R.id.connecteurAboutissant,
@@ -89,13 +88,14 @@ public class TriAboutissantsTa extends Activity {
 			Raccordement.NUMERO_COMPOSANT_ABOUTISSANT,
 			Raccordement.ZONE_ACTIVITE, Raccordement._id,
 			Raccordement.NUMERO_POSITION_CHARIOT,
-			Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT };
+			Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT,
+			Raccordement.LOCALISATION1 };
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_tri_aboutissants_ta);
-		//Initialisation du temps
+		// Initialisation du temps
 		dateDebut = new Date();
 
 		// Récupération des éléments
@@ -170,29 +170,58 @@ public class TriAboutissantsTa extends Activity {
 
 		}
 
-		cursorA = cr.query(urlRac, colRac, " (" + clauseTotal + ") GROUP BY "
-				+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT, null,
-				Raccordement._id);
+		cursorA = cr.query(urlRac, colRac, " (" + clauseTotal + ") AND "
+				+ Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT + "!='null' GROUP BY " + Raccordement.NUMERO_FIL_CABLE,
+				null, Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT);
 
 		if (cursorA.moveToFirst()) {
+
+			String repCourant = cursorA
+					.getString(cursorA
+							.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
+			numeroGroupe = 1;
 			do {
 				HashMap<String, String> element;
+				if (!(repCourant
+						.equals(cursorA.getString(cursorA
+								.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT))))) {
+					numeroGroupe++;
+					repCourant = cursorA
+							.getString(cursorA
+									.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
+				}
+
+				int nbFils = cr.query(
+						urlRac,
+						colRac,
+						" (" + clauseTotal + ") AND "
+								+ Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT
+								+ "='" + repCourant + "' GROUP BY "
+								+ Raccordement.NUMERO_FIL_CABLE, null,
+						Raccordement._id).getCount();
 
 				element = new HashMap<String, String>();
-				element.put(colRac[0], Integer.toString(numeroGroupe++));
+				element.put(colRac[0], Integer.toString(numeroGroupe));
 				element.put(colRac[1],
 						cursorA.getString(cursorA.getColumnIndex(colRac[1])));
 				element.put(colRac[2],
 						cursorA.getString(cursorA.getColumnIndex(colRac[2])));
-				element.put(colRac[3],
-						cursorA.getString(cursorA.getColumnIndex(colRac[3])));
-				element.put(colRac[4],
-						cursorA.getString(cursorA.getColumnIndex(colRac[4])));
-				element.put(colRac[5],
-						cursorA.getString(cursorA.getColumnIndex(colRac[5])));
-				element.put(colRac[6],
-						cursorA.getString(cursorA.getColumnIndex(colRac[6])));
-				element.put(colRac[7], "X");
+				/*
+				 * element.put(colRac[3],
+				 * cursorA.getString(cursorA.getColumnIndex(colRac[3])));
+				 */
+				element.put(colRac[4], repCourant);
+				element.put(
+						colRac[5],
+						cursorA.getString(cursorA.getColumnIndex(colRac[5]))
+								+ "-"
+								+ cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.LOCALISATION1)));
+				/*
+				 * element.put(colRac[6],
+				 * cursorA.getString(cursorA.getColumnIndex(colRac[6])));
+				 */
+				element.put(colRac[7], "" + nbFils);
 
 				liste.add(element);
 			} while (cursorA.moveToNext());
@@ -203,14 +232,16 @@ public class TriAboutissantsTa extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				
+
 				// MAJ Table de sequencement
 				dateRealisation = new Date();
-				contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0] + " "
-						+ nomPrenomOperateur[1]);
-				contact.put(Operation.DATE_REALISATION, dateRealisation.toGMTString());
+				contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0]
+						+ " " + nomPrenomOperateur[1]);
+				contact.put(Operation.DATE_REALISATION,
+						dateRealisation.toGMTString());
 				heureRealisation.setToNow();
-				contact.put(Operation.HEURE_REALISATION, heureRealisation.toString());
+				contact.put(Operation.HEURE_REALISATION,
+						heureRealisation.toString());
 				dureeMesuree += dateRealisation.getTime() - dateDebut.getTime();
 				contact.put(Operation.DUREE_MESUREE, dureeMesuree / 1000);
 				cr.update(urlSeq, contact, Operation._id + " = ?",
@@ -218,12 +249,11 @@ public class TriAboutissantsTa extends Activity {
 				contact.clear();
 
 				// Signalement du point de controle
-				clause = Operation.RANG_1_1
-						+ "='"
-						+ numeroCo
-						+ "' AND ( "
+				clause = Operation.RANG_1_1 + " LIKE '%" + numeroCo
+						+ "%' AND ( " + Operation.DESCRIPTION_OPERATION
+						+ " LIKE 'Contrôle rétention%' OR "
 						+ Operation.DESCRIPTION_OPERATION
-						+ " LIKE 'Contrôle rétention%' OR "+ Operation.DESCRIPTION_OPERATION+" LIKE 'Contrôle final%')";
+						+ " LIKE 'Contrôle final%')";
 				cursor = cr.query(urlSeq, columnsSeq, clause, null,
 						Operation._id);
 				if (cursor.moveToFirst()) {
@@ -282,6 +312,7 @@ public class TriAboutissantsTa extends Activity {
 							toNext.putExtra("Noms", nomPrenomOperateur);
 							toNext.putExtra("Indice", indiceCourant);
 							startActivity(toNext);
+							finish();
 						}
 
 					}
@@ -293,6 +324,7 @@ public class TriAboutissantsTa extends Activity {
 					toNext.putExtra("opId", opId);
 					toNext.putExtra("Indice", indiceCourant);
 					startActivity(toNext);
+					finish();
 
 				}
 			}
@@ -315,7 +347,6 @@ public class TriAboutissantsTa extends Activity {
 				R.layout.grid_layout_tri_aboutissants_ta, colRac, layouts);
 
 		gridView.setAdapter(sca);
-		
 
 	}
 

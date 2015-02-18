@@ -26,8 +26,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.inodex.inoprod.R;
+import com.inodex.inoprod.business.CheminementProvider;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
+import com.inodex.inoprod.business.TableCheminement.Cheminement;
 import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
 
@@ -43,6 +45,7 @@ public class CheminementTa extends Activity {
 	/** Uri à manipuler */
 	private Uri urlSeq = SequencementProvider.CONTENT_URI;
 	private Uri urlRac = RaccordementProvider.CONTENT_URI;
+	private Uri urlChe = CheminementProvider.CONTENT_URI;
 
 	/** Tableau des opérations à réaliser */
 	private int opId[] = null;
@@ -60,14 +63,14 @@ public class CheminementTa extends Activity {
 
 	/** Heure et dates à ajouter à la table de séquencment */
 	private Date dateDebut, dateRealisation;
-	private long dureeMesuree =0;
+	private long dureeMesuree = 0;
 	private Time heureRealisation = new Time();
 
 	/** Nom de l'opérateur */
 	private String nomPrenomOperateur[] = null;
 
 	/** Curseur et Content Resolver à utiliser lors des requêtes */
-	private Cursor cursor, cursorA;
+	private Cursor cursor, cursorA, cursorB, cursorC;
 	private ContentResolver cr;
 	private ContentValues contact;
 
@@ -96,16 +99,27 @@ public class CheminementTa extends Activity {
 			Raccordement.NUMERO_OPERATION,
 			Raccordement.NUMERO_POSITION_CHARIOT,
 			Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT,
-			Raccordement.NUMERO_CHEMINEMENT };
+			Raccordement.NUMERO_CHEMINEMENT, Raccordement.LOCALISATION1,
+			Raccordement.NUMERO_SECTION_CHEMINEMENT,
+			Raccordement.NUMERO_REPERE_TABLE_CHEMINEMENT };
+
+	private String colChe[] = new String[] { Cheminement.LOCALISATION1,
+			Cheminement.NUMERO_COMPOSANT,
+			Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT,
+			Cheminement.NUMERO_SECTION_CHEMINEMENT,
+			Cheminement.ORDRE_REALISATION, Cheminement.REPERE_ELECTRIQUE,
+			Cheminement.ZONE_ACTIVITE, Cheminement._id,
+			Cheminement.TYPE_SUPPORT
+
+	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_cheminement_ta);
-		//Initialisation du temps
-				dateDebut = new Date();
-		
-		
+		// Initialisation du temps
+		dateDebut = new Date();
+
 		// Récupération des éléments
 		Intent intent = getIntent();
 		indiceCourant = intent.getIntExtra("Indice", 0);
@@ -143,12 +157,17 @@ public class CheminementTa extends Activity {
 					.getColumnIndex(Operation.RANG_1_1))).substring(11, 14);
 			numeroConnecteur.append(" : " + numeroCo);
 			description = cursor.getString(cursor
-					.getColumnIndex(Operation.NUMERO_OPERATION));
+					.getColumnIndex(Operation.DESCRIPTION_OPERATION));
 		}
 
 		// Recuperation de la première opération
-		clause = new String(Raccordement.NUMERO_OPERATION + "='"
-				+ numeroOperation + "'");
+		if (description.contains("Tête A")) {
+		clause = new String(Raccordement.NUMERO_COMPOSANT_TENANT + "='"
+				+ numeroCo + "'");
+		} else {
+			clause = new String(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + "='"
+					+ numeroCo + "'");
+		}
 		cursorA = cr.query(urlRac, colRac, clause, null, Raccordement._id
 				+ " ASC");
 		if (cursorA.moveToFirst()) {
@@ -159,7 +178,9 @@ public class CheminementTa extends Activity {
 									.getColumnIndex(Raccordement.NUMERO_POSITION_CHARIOT)));
 			zone.append(" : "
 					+ cursorA.getString(cursorA
-							.getColumnIndex(Raccordement.ZONE_ACTIVITE)));
+							.getColumnIndex(Raccordement.ZONE_ACTIVITE)) +"-" 
+							+ cursorA.getString(cursorA
+									.getColumnIndex(Raccordement.LOCALISATION1)));
 
 			numeroCheminement.append(" : "
 					+ cursorA.getString(cursorA
@@ -172,10 +193,10 @@ public class CheminementTa extends Activity {
 								+ cursorA.getString(cursorA
 										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
 				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
-						+ numeroCo + "' AND ( " + Raccordement.FAUX_CONTACT
-						+ "='" + 0 + "' OR " + Raccordement.OBTURATEUR + "='"
-						+ 0 + "' OR " + Raccordement.REPRISE_BLINDAGE
-						+ " IS NULL )";
+						+ numeroCo + "'AND  " + Raccordement.FAUX_CONTACT
+						+ "='" + 0 + "' AND " + Raccordement.OBTURATEUR + "='"
+						+ 0 + "' AND " + Raccordement.REPRISE_BLINDAGE
+						+ " IS NULL ";
 			} else {
 				titre.setText(R.string.cheminementsCablesTb);
 				repereElectrique
@@ -183,10 +204,10 @@ public class CheminementTa extends Activity {
 								+ cursorA.getString(cursorA
 										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT)));
 				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
-						+ numeroCo + "' AND ( " + Raccordement.FAUX_CONTACT
-						+ "='" + 0 + "' OR " + Raccordement.OBTURATEUR + "='"
-						+ 0 + "' OR " + Raccordement.REPRISE_BLINDAGE
-						+ " IS NULL )";
+						+ numeroCo + "' AND  " + Raccordement.FAUX_CONTACT
+						+ "='" + 0 + "' AND " + Raccordement.OBTURATEUR + "='"
+						+ 0 + "' AND " + Raccordement.REPRISE_BLINDAGE
+						+ " IS NULL ";
 			}
 
 		}
@@ -205,7 +226,7 @@ public class CheminementTa extends Activity {
 
 				// Vérification de l'état de la production
 				if (prodAchevee) {
-					indiceCourant++;
+					
 					String nextOperation = null;
 					// Passage à l'étape suivante en fonction de sa description
 					try {
@@ -254,6 +275,7 @@ public class CheminementTa extends Activity {
 								toNext.putExtra("Noms", nomPrenomOperateur);
 								toNext.putExtra("Indice", indiceCourant);
 								startActivity(toNext);
+								finish();
 							}
 
 						}
@@ -266,6 +288,7 @@ public class CheminementTa extends Activity {
 						toNext.putExtra("opId", opId);
 						toNext.putExtra("Indice", indiceCourant);
 						startActivity(toNext);
+						finish();
 
 					}
 					// Si production non achevée
@@ -281,109 +304,10 @@ public class CheminementTa extends Activity {
 						startActivityForResult(intent, 0);
 						// Si aucun scan détécté, ajout du cable au clavier
 					} catch (ActivityNotFoundException e) {
-						AlertDialog.Builder builder = new AlertDialog.Builder(
-								CheminementTa.this);
-						builder.setMessage("Impossible de trouver une application pour le scan. Entrez le N° de cable.");
-						builder.setCancelable(false);
-						final EditText cable = new EditText(CheminementTa.this);
-						builder.setView(cable);
-						builder.setPositiveButton("Valider",
-								new DialogInterface.OnClickListener() {
-
-									public void onClick(DialogInterface dialog,
-											int which) {
-										// Recherche du cable entré
-										numeroCable = cable.getText()
-												.toString();
-										Log.e("N°Cable", numeroCable);
-
-										clause = Raccordement.NUMERO_FIL_CABLE
-												+ "='"
-												+ numeroCable
-												+ "' AND ("
-												+ Raccordement.NUMERO_COMPOSANT_TENANT
-												+ "='"
-												+ numeroCo
-												+ "' OR "
-												+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-												+ "='" + numeroCo + "' )";
-										cursorA = cr.query(urlRac, colRac,
-												clause, null, Raccordement._id);
-										if (cursorA.moveToFirst()) {
-											HashMap<String, String> element;
-
-											element = new HashMap<String, String>();
-											element.put(
-													colRac[0],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[0])));
-											element.put(
-													colRac[1],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[1])));
-											element.put(
-													colRac[2],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[2])));
-											element.put(
-													colRac[3],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[3])));
-											element.put(
-													colRac[4],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[4])));
-											element.put(
-													colRac[5],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[5])));
-											element.put(
-													colRac[6],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[6])));
-											element.put(
-													colRac[7],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[7])));
-											element.put(
-													colRac[8],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[8])));
-											liste.add(element);
-
-											// Ajout du cable à la liste des
-											// éléments à afficher
-
-											indiceLimite++;
-											displayContentProvider();
-											indiceCourant++;
-										} else {
-											// Le cable n'est pas utilisé pour
-											// ce connecteur
-											Toast.makeText(
-													CheminementTa.this,
-													"Ce cable ne correspond pas",
-													Toast.LENGTH_SHORT).show();
-										}
-									}
-
-								});
-
-						builder.setNegativeButton("Annuler",
-								new DialogInterface.OnClickListener() {
-									public void onClick(
-											final DialogInterface dialog,
-											final int id) {
-
-										dialog.cancel();
-
-									}
-								});
-
-						builder.show();
+						// entreCable("Impossible de trouver une application pour le scan. Entrez le n° de cable : ");
 					}
-
 				}
+
 			}
 		});
 
@@ -401,10 +325,10 @@ public class CheminementTa extends Activity {
 					indiceCourant--;
 					Log.e("Indice", "" + indiceLimite);
 				}
-				
-				//MAJ de la durée
+
+				// MAJ de la durée
 				dureeMesuree = 0;
-				dateDebut= new Date();
+				dateDebut = new Date();
 
 				// MAJ de la clause
 				clauseTotal = oldClauseTotal;
@@ -413,32 +337,71 @@ public class CheminementTa extends Activity {
 				displayContentProvider();
 			}
 		});
-		
-		//Petite Pause
-				petitePause.setOnClickListener(new View.OnClickListener() {
 
-					@Override
-					public void onClick(View v) {
-						dureeMesuree += new Date().getTime() - dateDebut.getTime();
-						AlertDialog.Builder builder = new AlertDialog.Builder(
-								CheminementTa.this);
-						builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
-						builder.setCancelable(false);
+		// Grande pause
+		grandePause.setOnClickListener(new View.OnClickListener() {
 
-						builder.setNegativeButton("Retour",
-								new DialogInterface.OnClickListener() {
-									public void onClick(final DialogInterface dialog,
-											final int id) {
+			@Override
+			public void onClick(View v) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						CheminementTa.this);
+				builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
+				builder.setCancelable(false);
+				builder.setPositiveButton("Oui",
+						new DialogInterface.OnClickListener() {
 
-										dateDebut= new Date();
-										dialog.cancel();
+							public void onClick(DialogInterface dialog,
+									int which) {
+								/*
+								 * Intent toMain = new Intent(
+								 * CheminementTa.this, MainActivity.class);
+								 * startActivity(toMain);
+								 */
+								finish();
 
-									}
-								});
-						builder.show();
+							}
 
-					}
-				});
+						});
+
+				builder.setNegativeButton("Non",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+
+								dialog.cancel();
+
+							}
+						});
+				builder.show();
+
+			}
+		});
+
+		// Petite Pause
+		petitePause.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				dureeMesuree += new Date().getTime() - dateDebut.getTime();
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						CheminementTa.this);
+				builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
+				builder.setCancelable(false);
+
+				builder.setNegativeButton("Retour",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+
+								dateDebut = new Date();
+								dialog.cancel();
+
+							}
+						});
+				builder.show();
+
+			}
+		});
 	}
 
 	/**
@@ -464,13 +427,13 @@ public class CheminementTa extends Activity {
 		cr.update(urlSeq, contact, Operation._id + " = ?",
 				new String[] { Integer.toString(opId[indiceCourant]) });
 		contact.clear();
-		
-		//MAJ de la durée
+
+		// MAJ de la durée
 		dureeMesuree = 0;
-		dateDebut= new Date();
+		dateDebut = new Date();
 
 		// Vérification de l'état de la production
-		if (indiceLimite == nbRows) {
+		if (indiceLimite >= nbRows) {
 			prodAchevee = true;
 			Toast.makeText(this, "Production achevée", Toast.LENGTH_LONG)
 					.show();
@@ -491,14 +454,289 @@ public class CheminementTa extends Activity {
 		if (requestCode == 0) {
 			if (resultCode == RESULT_OK) {
 				String contents = intent.getStringExtra("SCAN_RESULT");
-				/* ACTION A EFFECTUER */
+				numeroCable = contents;
+				clause = Raccordement.NUMERO_FIL_CABLE + "='" + numeroCable
+						+ "' AND (" + Raccordement.NUMERO_COMPOSANT_TENANT
+						+ "='" + numeroCo + "' OR "
+						+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + "='"
+						+ numeroCo + "' )";
+				cursorA = cr.query(urlRac, colRac, clause, null,
+						Raccordement._id);
+				if (cursorA.moveToFirst()) {
+					HashMap<String, String> element;
+
+					element = new HashMap<String, String>();
+					element.put(
+							colRac[0],
+							""
+									+ cursorA.getString(cursorA
+											.getColumnIndex(Raccordement.NUMERO_REVISION_FIL)));
+					element.put(colRac[1], numeroCable);
+					element.put(colRac[2], cursorA.getString(cursorA
+							.getColumnIndex(Raccordement.TYPE_FIL_CABLE)));
+					/*
+					 * element.put(colRac[3], cursorA.getString(cursorA
+					 * .getColumnIndex(colRac[3])));
+					 */
+					cursorB = cr.query(urlRac, colRac,
+							Raccordement.NUMERO_FIL_CABLE + "='" + numeroCable
+									+ "' AND " + Raccordement.ORDRE_REALISATION
+									+ " LIKE '%B%'", null, Raccordement._id);
+					if (cursorB.moveToFirst()) {
+						String rep = cursorB
+								.getString(cursorB
+										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
+						element.put(colRac[4], rep);
+						element.put(
+								colRac[5],
+								cursorB.getString(cursorB
+										.getColumnIndex(Raccordement.ZONE_ACTIVITE))
+										+ "-"
+										+ cursorB.getString(cursorB
+												.getColumnIndex(Raccordement.LOCALISATION1))
+										+ "-"
+										+ cursorB.getString(cursorB
+												.getColumnIndex(Raccordement.NUMERO_REPERE_TABLE_CHEMINEMENT)));
+
+						cursor = cr
+								.query(urlRac,
+										colRac,
+										Raccordement.NUMERO_FIL_CABLE
+												+ "='"
+												+ numeroCable
+												+ "' AND "
+												+ Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT
+												+ "='" + rep + "' GROUP BY "
+												+ Raccordement.NUMERO_FIL_CABLE,
+										null, Raccordement._id);
+						if (cursor.moveToFirst()) {
+							String zonePose = "";
+							do {
+								int numeroSection = cursor
+										.getInt(cursor
+												.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
+								Log.e("Cheminement", "" + numeroSection);
+								cursorC = cr.query(urlChe, colChe,
+										Cheminement.NUMERO_SECTION_CHEMINEMENT
+												+ "='" + numeroSection + "'",
+										null, Cheminement._id);
+								if (cursorC.moveToFirst()) {
+									do {
+										zonePose += cursorA
+												.getString(cursorA
+														.getColumnIndex(Cheminement.ZONE_ACTIVITE))
+												+ "-"
+												+ cursorA
+														.getString(cursorA
+																.getColumnIndex(Cheminement.LOCALISATION1))
+												+ "-"
+												+ cursorA
+														.getString(cursorA
+																.getColumnIndex(Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT))
+												+ ", ";
+										Log.e("Zone posé", zonePose);
+									} while (cursorC.moveToNext());
+								}
+							} while (cursor.moveToNext());
+							element.put(colRac[7], zonePose);
+
+							element.put(colRac[8], "" + cursor.getCount());
+
+						}
+					}
+
+					/*
+					 * element.put(colRac[6], cursorA.getString(cursorA
+					 * .getColumnIndex(colRac[6])));
+					 */// AVOIR
+
+					liste.add(element);
+
+					// Ajout du cable à la liste des
+					// éléments à afficher
+
+					indiceLimite++;
+					displayContentProvider();
+					indiceCourant++;
+				} else {
+					// Le cable n'est pas utilisé pour
+					// ce connecteur
+					Toast.makeText(CheminementTa.this,
+							"Ce cable ne correspond pas", Toast.LENGTH_SHORT)
+							.show();
+				}
 				String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 			} else if (resultCode == RESULT_CANCELED) {
-				Toast.makeText(CheminementTa.this,
-						"Echec du scan de l'identifiant", Toast.LENGTH_SHORT)
-						.show();
+
+				entreCable("Echec du scan. Entrez le n° de cable :");
 			}
 		}
+
+	}
+
+	/**
+	 * Entrée du numéro de cable au clavier dans une dialog box
+	 * 
+	 * @param message
+	 *            à afficher dans la dialog box
+	 */
+	public void entreCable(String message) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(
+				CheminementTa.this);
+		builder.setMessage(message);
+		builder.setCancelable(false);
+		final EditText cable = new EditText(CheminementTa.this);
+		builder.setView(cable);
+		builder.setPositiveButton("Valider",
+				new DialogInterface.OnClickListener() {
+
+					public void onClick(DialogInterface dialog, int which) {
+						// Recherche du cable entré
+						numeroCable = cable.getText().toString();
+						Log.e("N°Cable", numeroCable);
+
+						clause = Raccordement.NUMERO_FIL_CABLE + "='"
+								+ numeroCable + "' AND ("
+								+ Raccordement.NUMERO_COMPOSANT_TENANT + "='"
+								+ numeroCo + "' OR "
+								+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+								+ "='" + numeroCo + "' )";
+						cursorA = cr.query(urlRac, colRac, clause, null,
+								Raccordement._id);
+						if (cursorA.moveToFirst()) {
+							HashMap<String, String> element;
+
+							element = new HashMap<String, String>();
+							element.put(
+									colRac[0],
+									""
+											+ cursorA.getString(cursorA
+													.getColumnIndex(Raccordement.NUMERO_REVISION_FIL)));
+							element.put(colRac[1], numeroCable);
+							element.put(colRac[2], cursorA.getString(cursorA
+									.getColumnIndex(Raccordement.TYPE_FIL_CABLE)));
+							/*
+							 * element.put(colRac[3], cursorA.getString(cursorA
+							 * .getColumnIndex(colRac[3])));
+							 */
+							cursorB = cr.query(urlRac, colRac,
+									Raccordement.NUMERO_FIL_CABLE + "='" + numeroCable
+											+ "' AND " + Raccordement.ORDRE_REALISATION
+											+ " LIKE '%B%'", null, Raccordement._id);
+							if (cursorB.moveToFirst()) {
+								String rep = cursorB
+										.getString(cursorB
+												.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
+								element.put(colRac[3], rep);
+								
+								// Signalement du point de controle
+								clause = Operation.DESCRIPTION_OPERATION + " LIKE '%" + rep + "%' AND ("
+										+ Operation.GAMME
+										+ " LIKE 'Cheminement%' OR " + Operation.GAMME + " LIKE 'Frett%')";
+								cursor = cr.query(urlSeq, columnsSeq, clause, null,
+										Operation._id);
+								if (cursor.moveToFirst()) {
+									
+									contact.put(Operation.REALISABLE, 1);
+									int id = cursor.getInt(cursor.getColumnIndex(Operation._id));
+									cr.update(urlSeq, contact,clause , null);
+									contact.clear();
+								}
+								
+								
+								element.put(
+										colRac[4],
+										cursorB.getString(cursorB
+												.getColumnIndex(Raccordement.ZONE_ACTIVITE))
+												+ "-"
+												+ cursorB.getString(cursorB
+														.getColumnIndex(Raccordement.LOCALISATION1))
+												+ "-"
+												+ cursorB.getString(cursorB
+														.getColumnIndex(Raccordement.NUMERO_REPERE_TABLE_CHEMINEMENT)));
+
+								cursor = cr
+										.query(urlRac,
+												colRac,
+												Raccordement.NUMERO_FIL_CABLE
+														+ "='"
+														+ numeroCable
+														+ "' AND "
+														+ Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT
+														+ "='" + rep + "' GROUP BY "
+														+ Raccordement.NUMERO_FIL_CABLE,
+												null, Raccordement._id);
+								if (cursor.moveToFirst()) {
+									String zonePose = "";
+									do {
+										int numeroSection = cursor
+												.getInt(cursor
+														.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
+										Log.e("Cheminement", "" + numeroSection);
+										cursorC = cr.query(urlChe, colChe,
+												Cheminement.NUMERO_SECTION_CHEMINEMENT
+														+ "='" + numeroSection + "'",
+												null, Cheminement._id);
+										if (cursorC.moveToFirst()) {
+											do {
+												zonePose += cursorC
+														.getString(cursorC
+																.getColumnIndex(Cheminement.ZONE_ACTIVITE))
+														+ "-"
+														+ cursorC
+																.getString(cursorC
+																		.getColumnIndex(Cheminement.LOCALISATION1))
+														+ "-"
+														+ cursorC
+																.getString(cursorC
+																		.getColumnIndex(Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT))
+														+ ", ";
+												Log.e("Zone posé", zonePose);
+											} while (cursorC.moveToNext());
+										}
+									} while (cursor.moveToNext());
+									element.put(colRac[6], zonePose);
+
+									element.put(colRac[7], "" + cursor.getCount());
+
+								}
+							}
+
+							/*
+							 * element.put(colRac[6], cursorA.getString(cursorA
+							 * .getColumnIndex(colRac[6])));
+							 */// AVOIR
+
+							liste.add(element);
+
+							// Ajout du cable à la liste des
+							// éléments à afficher
+
+							indiceLimite++;
+							displayContentProvider();
+							indiceCourant++;
+						} else {
+							// Le cable n'est pas utilisé pour
+							// ce connecteur
+							Toast.makeText(CheminementTa.this,
+									"Ce cable ne correspond pas",
+									Toast.LENGTH_SHORT).show();
+						}
+					}
+
+				});
+
+		builder.setNegativeButton("Annuler",
+				new DialogInterface.OnClickListener() {
+					public void onClick(final DialogInterface dialog,
+							final int id) {
+
+						dialog.cancel();
+
+					}
+				});
+
+		builder.show();
 	}
 
 }

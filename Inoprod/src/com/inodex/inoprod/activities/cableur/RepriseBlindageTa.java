@@ -7,7 +7,7 @@ import java.util.List;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.R.layout;
-import com.inodex.inoprod.activities.MainActivity;
+import com.inodex.inoprod.activities.Inoprod;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
 import com.inodex.inoprod.business.TableRaccordement.Raccordement;
@@ -63,7 +63,7 @@ public class RepriseBlindageTa extends Activity {
 
 	/** Heure et dates à ajouter à la table de séquencment */
 	private Date dateDebut, dateRealisation;
-	private long dureeMesuree =0;
+	private long dureeMesuree = 0;
 	private Time heureRealisation = new Time();
 
 	private List<HashMap<String, String>> liste = new ArrayList<HashMap<String, String>>();
@@ -84,8 +84,8 @@ public class RepriseBlindageTa extends Activity {
 	private String columnsSeq[] = new String[] { Operation._id,
 			Operation.GAMME, Operation.RANG_1_1, Operation.NUMERO_OPERATION,
 			Operation.NOM_OPERATEUR, Operation.DATE_REALISATION,
-			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION ,
-			Operation.DUREE_MESUREE};
+			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION,
+			Operation.DUREE_MESUREE };
 
 	private int layouts1[] = new int[] { R.id.statutLiaison,
 			R.id.numeroRevisionLiaison, R.id.numeroCable, R.id.typeCable,
@@ -96,25 +96,26 @@ public class RepriseBlindageTa extends Activity {
 
 	private String colRac1[] = new String[] { Raccordement.ETAT_LIAISON_FIL,
 			Raccordement.NUMERO_REVISION_FIL, Raccordement.NUMERO_FIL_CABLE,
-			Raccordement.TYPE_FIL_CABLE, Raccordement._id,
+			Raccordement.TYPE_FIL_CABLE, Raccordement.REFERENCE_FABRICANT2,
+			Raccordement.REFERENCE_INTERNE,
+			Raccordement.REFERENCE_OUTIL_TENANT,
+			Raccordement.REFERENCE_ACCESSOIRE_OUTIL_TENANT,
+			Raccordement.REGLAGE_OUTIL_TENANT, Raccordement._id,
 			Raccordement.NUMERO_COMPOSANT_TENANT,
 			Raccordement.NUMERO_COMPOSANT_ABOUTISSANT,
 			Raccordement.ORDRE_REALISATION, Raccordement.NUMERO_OPERATION,
 			Raccordement.REPRISE_BLINDAGE, Raccordement.SANS_REPRISE_BLINDAGE,
 			Raccordement.NUMERO_POSITION_CHARIOT,
 			Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT,
-			Raccordement.REPERE_ELECTRIQUE_TENANT,
-			Raccordement.REFERENCE_INTERNE,
-			Raccordement.REFERENCE_OUTIL_ABOUTISSANT,
-			Raccordement.REFERENCE_ACCESSOIRE_OUTIL_TENANT, };
+			Raccordement.REPERE_ELECTRIQUE_TENANT };
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_reprise_blindage_ta);
-		
-		//Initialisation du temps
-				dateDebut = new Date();
+
+		// Initialisation du temps
+		dateDebut = new Date();
 		// Récupération des éléments
 		Intent intent = getIntent();
 		indiceCourant = intent.getIntExtra("Indice", 0);
@@ -173,6 +174,7 @@ public class RepriseBlindageTa extends Activity {
 						+ numeroCo + "' AND " + Raccordement.REPRISE_BLINDAGE
 						+ "!='" + "null" + "' GROUP BY "
 						+ Raccordement.REPRISE_BLINDAGE;
+				
 			} else {
 				titre.setText(R.string.repriseBlindageTb);
 				repereElectrique
@@ -183,6 +185,9 @@ public class RepriseBlindageTa extends Activity {
 						+ numeroCo + "' AND " + Raccordement.REPRISE_BLINDAGE
 						+ "!='" + "null" + "' GROUP BY "
 						+ Raccordement.REPRISE_BLINDAGE;
+				colRac1[6]= Raccordement.REFERENCE_OUTIL_ABOUTISSANT;
+				colRac1[7]= Raccordement.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT;
+				colRac1[8]= Raccordement.REGLAGE_OUTIL_ABOUTISSANT;
 			}
 
 		}
@@ -202,7 +207,7 @@ public class RepriseBlindageTa extends Activity {
 			public void onClick(View v) {
 
 				if (prodAchevee) {
-					indiceCourant++;
+					//indiceCourant++;
 					String nextOperation = null;
 					try {
 						int test = opId[indiceCourant];
@@ -237,6 +242,7 @@ public class RepriseBlindageTa extends Activity {
 								toNext.putExtra("Noms", nomPrenomOperateur);
 								toNext.putExtra("Indice", indiceCourant);
 								startActivity(toNext);
+								finish();
 							}
 
 						}
@@ -248,6 +254,7 @@ public class RepriseBlindageTa extends Activity {
 						toNext.putExtra("opId", opId);
 						toNext.putExtra("Indice", indiceCourant);
 						startActivity(toNext);
+						finish();
 
 					}
 
@@ -262,134 +269,7 @@ public class RepriseBlindageTa extends Activity {
 								"QR_CODE_MODE");
 						startActivityForResult(intent, 0);
 					} catch (ActivityNotFoundException e) {
-						AlertDialog.Builder builder = new AlertDialog.Builder(
-								RepriseBlindageTa.this);
-						builder.setMessage("Impossible de trouver une application pour le scan. Entrez le N° de cable.");
-						builder.setCancelable(false);
-						final EditText cable = new EditText(
-								RepriseBlindageTa.this);
-						builder.setView(cable);
-						builder.setPositiveButton("Valider",
-								new DialogInterface.OnClickListener() {
-
-									public void onClick(DialogInterface dialog,
-											int which) {
-										numeroCable = cable.getText()
-												.toString();
-										Log.e("N°Cable", numeroCable);
-
-										clause = Raccordement.NUMERO_FIL_CABLE
-												+ "='" + numeroCable + "' AND "
-												+ Raccordement.REPRISE_BLINDAGE
-												+ "!='" + "null" + "'";
-										cursorA = cr.query(urlRac, colRac1,
-												clause, null, Raccordement._id);
-										if (cursorA.moveToFirst()) {
-
-											numeroRep = cursorA.getString(cursorA
-													.getColumnIndex(Raccordement.REPRISE_BLINDAGE));
-											numeroReprise
-													.setText("Numero Reprise: "
-															+ numeroRep);
-											sensReprise.setText("Sens reprise : "
-													+ cursorA.getString(cursorA
-															.getColumnIndex(Raccordement.SANS_REPRISE_BLINDAGE)));
-
-											clause = Raccordement.NUMERO_FIL_CABLE
-													+ "!='"
-													+ numeroCable
-													+ "' AND "
-													+ Raccordement.REPRISE_BLINDAGE
-													+ "='"
-													+ numeroRep
-													+ "' GROUP BY "
-													+ Raccordement.NUMERO_FIL_CABLE;
-											cursorB = cr.query(urlRac, colRac1,
-													clause, null,
-													Raccordement._id);
-											if (cursorB.moveToFirst()) {
-												do {
-
-													HashMap<String, String> element;
-
-													element = new HashMap<String, String>();
-													element.put(
-															colRac1[0],
-															cursorA.getString(cursorA
-																	.getColumnIndex(colRac1[0])));
-													element.put(
-															colRac1[1],
-															cursorA.getString(cursorA
-																	.getColumnIndex(colRac1[1])));
-													element.put(
-															colRac1[2],
-															cursorA.getString(cursorA
-																	.getColumnIndex(colRac1[2])));
-													element.put(
-															colRac1[3],
-															cursorA.getString(cursorA
-																	.getColumnIndex(colRac1[3])));
-													element.put(
-															colRac1[4],
-															cursorB.getString(cursorB
-																	.getColumnIndex(colRac1[2])));
-													element.put(
-															colRac1[5],
-															cursorB.getString(cursorB
-																	.getColumnIndex(colRac1[3])));
-													element.put(
-															colRac1[6],
-															cursorA.getString(cursorA
-																	.getColumnIndex(colRac1[4])));
-													element.put(
-															colRac1[7],
-															cursorA.getString(cursorA
-																	.getColumnIndex(colRac1[5])));
-													element.put(
-															colRac1[8],
-															cursorA.getString(cursorA
-																	.getColumnIndex(colRac1[6])));
-													element.put(
-															colRac1[9],
-															cursorA.getString(cursorA
-																	.getColumnIndex(colRac1[7])));
-													element.put(
-															colRac1[10],
-															cursorA.getString(cursorA
-																	.getColumnIndex(colRac1[8])));
-
-													liste.add(element);
-
-												} while (cursorB.moveToNext());
-
-											}
-
-											indiceLimite++;
-											displayContentProvider();
-											indiceCourant++;
-										} else {
-											Toast.makeText(
-													RepriseBlindageTa.this,
-													"Ce cable ne correspond pas",
-													Toast.LENGTH_SHORT).show();
-
-										}
-									}
-
-								});
-
-						builder.setNegativeButton("Annuler",
-								new DialogInterface.OnClickListener() {
-									public void onClick(
-											final DialogInterface dialog,
-											final int id) {
-
-										dialog.cancel();
-
-									}
-								});
-
-						builder.show();
+						// entreCable("Impossible de trouver une application pour le scan. Entrez le N° de cable.");
 					}
 
 				}
@@ -409,10 +289,10 @@ public class RepriseBlindageTa extends Activity {
 					indiceCourant--;
 					Log.e("Indice", "" + indiceLimite);
 				}
-				
-				//MAJ de la durée
+
+				// MAJ de la durée
 				dureeMesuree = 0;
-				dateDebut= new Date();
+				dateDebut = new Date();
 
 				clauseTotal = oldClauseTotal;
 				// Vérification de l'état de la production
@@ -420,32 +300,71 @@ public class RepriseBlindageTa extends Activity {
 				displayContentProvider();
 			}
 		});
-		
-		//Petite Pause
-				petitePause.setOnClickListener(new View.OnClickListener() {
 
-					@Override
-					public void onClick(View v) {
-						dureeMesuree += new Date().getTime() - dateDebut.getTime();
-						AlertDialog.Builder builder = new AlertDialog.Builder(
-								RepriseBlindageTa.this);
-						builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
-						builder.setCancelable(false);
+		// Grande pause
+		grandePause.setOnClickListener(new View.OnClickListener() {
 
-						builder.setNegativeButton("Retour",
-								new DialogInterface.OnClickListener() {
-									public void onClick(final DialogInterface dialog,
-											final int id) {
+			@Override
+			public void onClick(View v) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						RepriseBlindageTa.this);
+				builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
+				builder.setCancelable(false);
+				builder.setPositiveButton("Oui",
+						new DialogInterface.OnClickListener() {
 
-										dateDebut= new Date();
-										dialog.cancel();
+							public void onClick(DialogInterface dialog,
+									int which) {
+								/*
+								 * Intent toMain = new Intent(
+								 * CheminementTa.this, MainActivity.class);
+								 * startActivity(toMain);
+								 */
+								finish();
 
-									}
-								});
-						builder.show();
+							}
 
-					}
-				});
+						});
+
+				builder.setNegativeButton("Non",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+
+								dialog.cancel();
+
+							}
+						});
+				builder.show();
+
+			}
+		});
+
+		// Petite Pause
+		petitePause.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				dureeMesuree += new Date().getTime() - dateDebut.getTime();
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						RepriseBlindageTa.this);
+				builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
+				builder.setCancelable(false);
+
+				builder.setNegativeButton("Retour",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+
+								dateDebut = new Date();
+								dialog.cancel();
+
+							}
+						});
+				builder.show();
+
+			}
+		});
 
 	}
 
@@ -470,10 +389,10 @@ public class RepriseBlindageTa extends Activity {
 		cr.update(urlSeq, contact, Operation._id + " = ?",
 				new String[] { Integer.toString(opId[indiceCourant]) });
 		contact.clear();
-		
-		//MAJ de la durée
+
+		// MAJ de la durée
 		dureeMesuree = 0;
-		dateDebut= new Date();
+		dateDebut = new Date();
 		// Vérification de l'état de la production
 		if (indiceLimite == nbRows) {
 			prodAchevee = true;
@@ -493,12 +412,198 @@ public class RepriseBlindageTa extends Activity {
 		if (requestCode == 0) {
 			if (resultCode == RESULT_OK) {
 				String contents = intent.getStringExtra("SCAN_RESULT");
-				/* ACTION A EFFECTUER */
+				numeroCable = contents;
+
+				clause = Raccordement.NUMERO_FIL_CABLE + "='" + numeroCable
+						+ "' AND " + Raccordement.REPRISE_BLINDAGE + "!='"
+						+ "null" + "'";
+				cursorA = cr.query(urlRac, colRac1, clause, null,
+						Raccordement._id);
+				if (cursorA.moveToFirst()) {
+
+					numeroRep = cursorA.getString(cursorA
+							.getColumnIndex(Raccordement.REPRISE_BLINDAGE));
+					numeroReprise.setText("Numero Reprise: " + numeroRep);
+					sensReprise
+							.setText("Sens reprise : "
+									+ cursorA.getString(cursorA
+											.getColumnIndex(Raccordement.SANS_REPRISE_BLINDAGE)));
+
+					clause = Raccordement.NUMERO_FIL_CABLE + "!='"
+							+ numeroCable + "' AND "
+							+ Raccordement.REPRISE_BLINDAGE + "='" + numeroRep
+							+ "' GROUP BY " + Raccordement.NUMERO_FIL_CABLE;
+					cursorB = cr.query(urlRac, colRac1, clause, null,
+							Raccordement._id);
+					if (cursorB.moveToFirst()) {
+						do {
+
+							HashMap<String, String> element;
+
+							element = new HashMap<String, String>();
+							element.put(colRac1[0], cursorA.getString(cursorA
+									.getColumnIndex(colRac1[0])));
+							element.put(colRac1[1], cursorA.getString(cursorA
+									.getColumnIndex(colRac1[1])));
+							element.put(colRac1[2], cursorA.getString(cursorA
+									.getColumnIndex(colRac1[2])));
+							element.put(colRac1[3], cursorA.getString(cursorA
+									.getColumnIndex(colRac1[3])));
+							element.put(colRac1[4], cursorB.getString(cursorB
+									.getColumnIndex(colRac1[2])));
+							element.put(colRac1[5], cursorB.getString(cursorB
+									.getColumnIndex(colRac1[3])));
+							element.put(colRac1[6], cursorA.getString(cursorA
+									.getColumnIndex(colRac1[4])));
+							element.put(colRac1[7], cursorA.getString(cursorA
+									.getColumnIndex(colRac1[5])));
+							element.put(colRac1[8], cursorA.getString(cursorA
+									.getColumnIndex(colRac1[6])));
+							element.put(colRac1[9], cursorA.getString(cursorA
+									.getColumnIndex(colRac1[7])));
+							element.put(colRac1[10], cursorA.getString(cursorA
+									.getColumnIndex(colRac1[8])));
+
+							liste.add(element);
+
+						} while (cursorB.moveToNext());
+
+					}
+
+					indiceLimite++;
+					displayContentProvider();
+					indiceCourant++;
+				} else {
+					Toast.makeText(RepriseBlindageTa.this,
+							"Ce cable ne correspond pas", Toast.LENGTH_SHORT)
+							.show();
+
+				}
+
 				String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 			} else if (resultCode == RESULT_CANCELED) {
-				Toast.makeText(RepriseBlindageTa.this, "Echec du scan",
-						Toast.LENGTH_SHORT).show();
+				entreCable("Echec du scan. Entrez le n° de cable :");
 			}
 		}
+	}
+
+	public void entreCable(String message) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(
+				RepriseBlindageTa.this);
+		builder.setMessage(message);
+		builder.setCancelable(false);
+		final EditText cable = new EditText(RepriseBlindageTa.this);
+		builder.setView(cable);
+		builder.setPositiveButton("Valider",
+				new DialogInterface.OnClickListener() {
+
+					public void onClick(DialogInterface dialog, int which) {
+						numeroCable = cable.getText().toString();
+						Log.e("N°Cable", numeroCable);
+
+						clause = Raccordement.NUMERO_FIL_CABLE + "='"
+								+ numeroCable + "' AND "
+								+ Raccordement.REPRISE_BLINDAGE + "!='"
+								+ "null" + "'";
+						cursorA = cr.query(urlRac, colRac1, clause, null,
+								Raccordement._id);
+						if (cursorA.moveToFirst()) {
+
+							numeroRep = cursorA.getString(cursorA
+									.getColumnIndex(Raccordement.REPRISE_BLINDAGE));
+							numeroReprise.setText("Numero Reprise: "
+									+ numeroRep);
+							sensReprise.setText("Sens reprise : "
+									+ cursorA.getString(cursorA
+											.getColumnIndex(Raccordement.SANS_REPRISE_BLINDAGE)));
+
+							clause = Raccordement.NUMERO_FIL_CABLE + "!='"
+									+ numeroCable + "' AND "
+									+ Raccordement.REPRISE_BLINDAGE + "='"
+									+ numeroRep + "' GROUP BY "
+									+ Raccordement.NUMERO_FIL_CABLE;
+							cursorB = cr.query(urlRac, colRac1, clause, null,
+									Raccordement._id);
+							if (cursorB.moveToFirst()) {
+								do {
+
+									HashMap<String, String> element;
+
+									element = new HashMap<String, String>();
+									element.put(
+											colRac1[0],
+											cursorA.getString(cursorA
+													.getColumnIndex(colRac1[0])));
+									element.put(
+											colRac1[1],
+											cursorA.getString(cursorA
+													.getColumnIndex(colRac1[1])));
+									element.put(
+											colRac1[2],
+											cursorA.getString(cursorA
+													.getColumnIndex(colRac1[2])));
+									element.put(
+											colRac1[3],
+											cursorA.getString(cursorA
+													.getColumnIndex(colRac1[3])));
+									element.put(
+											colRac1[4],
+											cursorB.getString(cursorB
+													.getColumnIndex(colRac1[2])));
+									element.put(
+											colRac1[5],
+											cursorB.getString(cursorB
+													.getColumnIndex(colRac1[3])));
+									element.put(
+											colRac1[6],
+											cursorA.getString(cursorA
+													.getColumnIndex(colRac1[4])));
+									element.put(
+											colRac1[7],
+											cursorA.getString(cursorA
+													.getColumnIndex(colRac1[5])));
+									element.put(
+											colRac1[8],
+											cursorA.getString(cursorA
+													.getColumnIndex(colRac1[6])));
+									element.put(
+											colRac1[9],
+											cursorA.getString(cursorA
+													.getColumnIndex(colRac1[7])));
+									element.put(
+											colRac1[10],
+											cursorA.getString(cursorA
+													.getColumnIndex(colRac1[8])));
+
+									liste.add(element);
+
+								} while (cursorB.moveToNext());
+
+							}
+
+							indiceLimite++;
+							displayContentProvider();
+							indiceCourant++;
+						} else {
+							Toast.makeText(RepriseBlindageTa.this,
+									"Ce cable ne correspond pas",
+									Toast.LENGTH_SHORT).show();
+
+						}
+					}
+
+				});
+
+		builder.setNegativeButton("Annuler",
+				new DialogInterface.OnClickListener() {
+					public void onClick(final DialogInterface dialog,
+							final int id) {
+
+						dialog.cancel();
+
+					}
+				});
+
+		builder.show();
 	}
 }
