@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.R.layout;
+import com.inodex.inoprod.activities.InfoProduit;
 import com.inodex.inoprod.business.CheminementProvider;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
@@ -83,11 +84,11 @@ public class PositionnementTaTab extends Activity {
 			Operation.HEURE_REALISATION, Operation.DUREE_MESUREE };
 
 	private int layouts1[] = new int[] { R.id.numeroSection,
-			R.id.typeSupportAboutissant, R.id.zoneLocalisation };
+			R.id.typeSupportAboutissant, R.id.zoneLocalisation , R.id.numeroSegregation};
 
 	private int layouts2[] = new int[] { R.id.numeroSection,
 			R.id.localisationZone, R.id.typeSupportAboutissant,
-			R.id.zoneLocalisation };
+			R.id.zoneLocalisation , R.id.numeroSegregation};
 
 	private String colRac1[] = new String[] {
 			Raccordement.NUMERO_SECTION_CHEMINEMENT,
@@ -97,7 +98,7 @@ public class PositionnementTaTab extends Activity {
 			Raccordement.REPERE_ELECTRIQUE_TENANT,
 			Raccordement.NUMERO_OPERATION,
 			Raccordement.NUMERO_POSITION_CHARIOT,
-			Raccordement.NUMERO_CHEMINEMENT };
+			Raccordement.NUMERO_CHEMINEMENT , Raccordement.LOCALISATION1};
 
 	private String colRac2[] = new String[] {
 			Raccordement.NUMERO_SECTION_CHEMINEMENT,
@@ -119,6 +120,11 @@ public class PositionnementTaTab extends Activity {
 			Cheminement.ZONE_ACTIVITE, Cheminement._id
 
 	};
+	
+	private String colInfo[] = new String[] { Raccordement._id,
+			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS, Raccordement.STANDARD,
+			Raccordement.NUMERO_HARNAIS_FAISCEAUX, Raccordement.REFERENCE_FICHIER_SOURCE};
+	private Cursor cursorInfo;
 
 
 
@@ -169,8 +175,8 @@ public class PositionnementTaTab extends Activity {
 		}
 
 		clause = new String(Raccordement.NUMERO_COMPOSANT_TENANT + "='"
-				+ numeroCo + "' GROUP BY "
-				+ Raccordement.NUMERO_COMPOSANT_TENANT);
+				+ numeroCo +"'" /* + "' GROUP BY "
+				+ Raccordement.NUMERO_COMPOSANT_TENANT*/);
 
 		cursorA = cr.query(urlRac, colRac1, clause, null, Raccordement._id
 				+ " ASC");
@@ -184,6 +190,14 @@ public class PositionnementTaTab extends Activity {
 					.append(" : "
 							+ cursorA.getString(cursorA
 									.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
+			zone.append(" : "
+					+ cursorA.getString(cursorA
+							.getColumnIndex(Raccordement.ZONE_ACTIVITE)) + "-"
+							+ cursorA.getString(cursorA
+									.getColumnIndex(Raccordement.LOCALISATION1)));
+			numeroCheminement.append(" : "
+					+ cursorA.getString(cursorA
+							.getColumnIndex(Raccordement.NUMERO_CHEMINEMENT)));
 		}
 
 		// Affichage du contenu
@@ -291,6 +305,36 @@ public class PositionnementTaTab extends Activity {
 		});
 
 		// Info Produit
+		
+				infoProduit.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						cursorInfo = cr.query(urlRac, colInfo, Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+								+ " ='" + numeroCo + "' OR " + Raccordement.NUMERO_COMPOSANT_TENANT + "='" + numeroCo+"'" , null, null);
+						Intent toInfo = new Intent(PositionnementTaTab.this, InfoProduit.class);
+						labels = new String[7];
+
+						if (cursorInfo.moveToFirst()) {
+							labels[0] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Raccordement.DESIGNATION));
+							labels[1] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Raccordement.NUMERO_HARNAIS_FAISCEAUX));
+							labels[2] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Raccordement.STANDARD));
+							labels[3] = "";
+							labels[4] = "";
+							labels[5] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Raccordement.NUMERO_REVISION_HARNAIS));
+							labels[6] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Raccordement.REFERENCE_FICHIER_SOURCE));
+							toInfo.putExtra("Labels", labels);
+						}
+
+						startActivity(toInfo);
+
+					}
+				});
 	}
 
 	private void displayContentProvider() {
@@ -331,14 +375,14 @@ public class PositionnementTaTab extends Activity {
 					
 					if (cursorA.getString(
 							cursorA.getColumnIndex(Cheminement.TYPE_SUPPORT))
-							.startsWith("Dérivation")) {
+							.contains("rivation")) {
 				
-						element1.put(colChe1[2], cursorA.getString(cursorA
+						element1.put(colChe1[1], cursorA.getString(cursorA
 								.getColumnIndex(Cheminement.TYPE_SUPPORT)));
-						element2.put(colChe1[3], cursorA.getString(cursorA
+						element2.put(colChe1[2], cursorA.getString(cursorA
 								.getColumnIndex(Cheminement.TYPE_SUPPORT)));
 						element1.put(
-								colChe1[3],
+								colChe1[2],
 								cursorA.getString(cursorA
 										.getColumnIndex(Cheminement.ZONE_ACTIVITE))
 										+ "-"
@@ -346,7 +390,7 @@ public class PositionnementTaTab extends Activity {
 												.getColumnIndex(Cheminement.LOCALISATION1)));
 						
 						element2.put(
-								colChe1[4],
+								colChe1[3],
 								cursorA.getString(cursorA
 										.getColumnIndex(Cheminement.ZONE_ACTIVITE))
 										+ "-"

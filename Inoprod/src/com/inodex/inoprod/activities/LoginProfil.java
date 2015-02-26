@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -60,29 +61,19 @@ public class LoginProfil extends Activity {
 		identifiant = (EditText) findViewById(R.id.editText1);
 		mdp = (EditText) findViewById(R.id.editText2);
 
-		// Scan de l'identifiant
-		scan = (Button) findViewById(R.id.scan);
-		scan.setOnClickListener(new View.OnClickListener() {
-
+		
+		
+		identifiant.setOnKeyListener(new View.OnKeyListener() {
+			
 			@Override
-			public void onClick(View v) {
-				try {
-					Intent intent = new Intent(
-							"com.google.zxing.client.android.SCAN");
-					intent.setPackage("com.google.zxing.client.android");
-					intent.putExtra(
-							"com.google.zxing.client.android.SCAN.SCAN_MODE",
-							"QR_CODE_MODE");
-					startActivityForResult(intent, 0);
-				} catch (ActivityNotFoundException e) {
-					Toast.makeText(
-							LoginProfil.this,
-							"Impossible de trouver une application pour gérer le scan",
-							Toast.LENGTH_SHORT).show();
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+				if (event.getAction()== KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+					entrerNom();
 				}
-
+				return false;
 			}
 		});
+	      
 
 		// Retour menu principal
 		boutonExit = (ImageButton) findViewById(R.id.exitButton1);
@@ -104,76 +95,103 @@ public class LoginProfil extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				cr = getContentResolver();
-
-				// Recuperation du texte renseigné
-				idRenseigne = identifiant.getText().toString();
-				mdpRenseigne = mdp.getText().toString();
-				// Cas où un des champs à renseigner est vide
-				if (idRenseigne.equals("")) {
-					Toast.makeText(LoginProfil.this,
-							"Veuillez vous identifier", Toast.LENGTH_SHORT)
-							.show();
-				} /*
-				 * else if (mdpRenseigne.equals(null)) {
-				 * Toast.makeText(LoginProfil.this,
-				 * "Veuillez entrer votre mot de passe",
-				 * Toast.LENGTH_SHORT).show(); }
-				 */else {
-					// Chaine correspondant à la clause à utiliser lors de la
-					// seléction
-					String clause = new String(Employe.EMPLOYE_NOM + "='"
-							+ idRenseigne + "'");
-					// Recherche de l'employé correspondant
-					cursor = cr.query(url, columns, clause, null, null);
-					if (cursor.moveToFirst()) {
-
-						profil = cursor.getString(cursor
-								.getColumnIndex(Employe.EMPLOYE_METIER));
-						String noms[] = new String[] {
-								cursor.getString(cursor
-										.getColumnIndex(Employe.EMPLOYE_NOM)),
-								cursor.getString(cursor
-										.getColumnIndex(Employe.EMPLOYE_PRENOM)) };
-						// Redirection en fonction du profil connecté
-						if (profil.equals("Câbleur")) {
-							Intent toCab = new Intent(LoginProfil.this,
-									MainMenuCableur.class);
-							toCab.putExtra("Noms", noms);
-							startActivity(toCab);
-							finish();
-						} else if (profil.equals("Contrôleur")) {
-							Intent toCon = new Intent(LoginProfil.this,
-									MainMenuControleur.class);
-							toCon.putExtra("Noms", noms);
-							startActivity(toCon);
-							finish();
-						} else if (profil.equals("Préparateur")) {
-							Intent toPre = new Intent(LoginProfil.this,
-									MainMenuPreparateur.class);
-							toPre.putExtra("Noms", noms);
-							startActivity(toPre);
-							finish();
-						} else if (profil.equals("Magasinier")) {
-							Intent toMag = new Intent(LoginProfil.this,
-									MainMenuMagasinier.class);
-							toMag.putExtra("Noms", noms);
-							startActivity(toMag);
-							finish();
-						} else {
-							Toast.makeText(LoginProfil.this,
-									"Métier non renseigné", Toast.LENGTH_SHORT)
-									.show();
-						}
-					} else {
-						Toast.makeText(LoginProfil.this,
-								"Identifiant ou mot de passe incorrect",
-								Toast.LENGTH_SHORT).show();
-
-					}
-				}
+				entrerNom();
 			}
 		});
+		
+		
+		//Ouverture du scan
+		try {
+			Intent intent = new Intent(
+					"com.google.zxing.client.android.SCAN");
+			intent.setPackage("com.google.zxing.client.android");
+			intent.putExtra(
+					"com.google.zxing.client.android.SCAN.SCAN_MODE",
+					"QR_CODE_MODE");
+			startActivityForResult(intent, 0);
+		} catch (ActivityNotFoundException e) {
+			Toast.makeText(
+					LoginProfil.this,
+					"Impossible de trouver une application pour gérer le scan",
+					Toast.LENGTH_SHORT).show();
+		}
+
+	}
+	
+	public void entrerNom() {
+		cr = getContentResolver();
+
+		// Recuperation du texte renseigné
+		idRenseigne = identifiant.getText().toString();
+		mdpRenseigne = mdp.getText().toString();
+		// Cas où un des champs à renseigner est vide
+		if (idRenseigne.equals("")) {
+			Toast.makeText(LoginProfil.this,
+					"Veuillez vous identifier", Toast.LENGTH_SHORT)
+					.show();
+		} /*
+		 * else if (mdpRenseigne.equals(null)) {
+		 * Toast.makeText(LoginProfil.this,
+		 * "Veuillez entrer votre mot de passe",
+		 * Toast.LENGTH_SHORT).show(); }
+		 */else {
+			// Chaine correspondant à la clause à utiliser lors de la
+			// seléction
+			 String s1 = idRenseigne.substring(0, 1).toUpperCase();
+			 String s2 = idRenseigne.substring(1, idRenseigne.length()).toLowerCase();
+			 idRenseigne = s1 + s2;
+		
+			String clause = new String(Employe.EMPLOYE_NOM + "='"
+					+ idRenseigne + "'");
+			// Recherche de l'employé correspondant
+			cursor = cr.query(url, columns, clause, null, null);
+			if (cursor.moveToFirst()) {
+
+				profil = cursor.getString(cursor
+						.getColumnIndex(Employe.EMPLOYE_METIER));
+				String noms[] = new String[] {
+						cursor.getString(cursor
+								.getColumnIndex(Employe.EMPLOYE_NOM)),
+						cursor.getString(cursor
+								.getColumnIndex(Employe.EMPLOYE_PRENOM)) };
+				// Redirection en fonction du profil connecté
+				if (profil.equals("Câbleur")) {
+					Intent toCab = new Intent(LoginProfil.this,
+							MainMenuCableur.class);
+					toCab.putExtra("Noms", noms);
+					startActivity(toCab);
+					finish();
+				} else if (profil.equals("Contrôleur")) {
+					Intent toCon = new Intent(LoginProfil.this,
+							MainMenuControleur.class);
+					toCon.putExtra("Noms", noms);
+					startActivity(toCon);
+					finish();
+				} else if (profil.equals("Préparateur")) {
+					Intent toPre = new Intent(LoginProfil.this,
+							MainMenuPreparateur.class);
+					toPre.putExtra("Noms", noms);
+					startActivity(toPre);
+					finish();
+				} else if (profil.equals("Magasinier")) {
+					Intent toMag = new Intent(LoginProfil.this,
+							MainMenuMagasinier.class);
+					toMag.putExtra("Noms", noms);
+					startActivity(toMag);
+					finish();
+				} else {
+					Toast.makeText(LoginProfil.this,
+							"Métier non renseigné", Toast.LENGTH_SHORT)
+							.show();
+				}
+			} else {
+				Toast.makeText(LoginProfil.this,
+						"Identifiant ou mot de passe incorrect",
+						Toast.LENGTH_SHORT).show();
+
+			}
+		}
+		
 	}
 
 	// Récupération du code barre scanné

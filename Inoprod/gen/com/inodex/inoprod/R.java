@@ -46,9 +46,9 @@ public final class R {
         public static final int valider9=0x7f020015;
     }
     public static final class id {
-        public static final int GridView01=0x7f070046;
+        public static final int GridView01=0x7f070045;
         public static final int LinearLayout01=0x7f070033;
-        public static final int TextView003=0x7f070045;
+        public static final int TextView003=0x7f070044;
         public static final int TextView01=0x7f070020;
         public static final int TextView02=0x7f070021;
         public static final int TextView03=0x7f07001e;
@@ -56,9 +56,9 @@ public final class R {
         public static final int TextView05=0x7f07001f;
         public static final int articleMonte=0x7f07008b;
         public static final int articleServi=0x7f070093;
-        public static final int button1=0x7f07003c;
-        public static final int button2=0x7f07003d;
-        public static final int button3=0x7f07003e;
+        public static final int button1=0x7f07003b;
+        public static final int button2=0x7f07003c;
+        public static final int button3=0x7f07003d;
         public static final int commentaires=0x7f07005b;
         public static final int connecteurAboutissant=0x7f070052;
         public static final int controleAcceptable=0x7f070065;
@@ -74,18 +74,18 @@ public final class R {
         public static final int gridview=0x7f070002;
         public static final int groupe=0x7f070094;
         public static final int head=0x7f070010;
-        public static final int head1=0x7f070044;
+        public static final int head1=0x7f070043;
         public static final int idEmp=0x7f07004a;
         public static final int imageButton1=0x7f070000;
         public static final int imageButton2=0x7f07000a;
         public static final int imageButton3=0x7f07000b;
         public static final int imageButton4=0x7f07001b;
         public static final int imageView1=0x7f07000c;
-        public static final int imageView10=0x7f070043;
-        public static final int imageView2=0x7f07003f;
-        public static final int imageView3=0x7f070040;
-        public static final int imageView4=0x7f070041;
-        public static final int imageView5=0x7f070042;
+        public static final int imageView10=0x7f070042;
+        public static final int imageView2=0x7f07003e;
+        public static final int imageView3=0x7f07003f;
+        public static final int imageView4=0x7f070040;
+        public static final int imageView5=0x7f070041;
         public static final int infoButton1=0x7f070009;
         public static final int layout_servi=0x7f070049;
         public static final int linear=0x7f070003;
@@ -142,7 +142,7 @@ public final class R {
         public static final int reglagePince=0x7f07006f;
         public static final int reglageTemperature=0x7f070091;
         public static final int repereElectrique=0x7f070067;
-        public static final int scan=0x7f07003b;
+        public static final int scan=0x7f070046;
         public static final int scan1=0x7f070047;
         public static final int statutLiaison=0x7f070061;
         public static final int temps=0x7f070016;

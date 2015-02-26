@@ -7,9 +7,11 @@ import java.util.List;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.R.layout;
+import com.inodex.inoprod.activities.InfoProduit;
 import com.inodex.inoprod.activities.cableur.CheminementTa;
 import com.inodex.inoprod.activities.cableur.FinalisationTa;
 import com.inodex.inoprod.activities.cableur.MainMenuCableur;
+import com.inodex.inoprod.activities.cableur.MiseLongueurTb;
 import com.inodex.inoprod.activities.cableur.PreparationTa;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
@@ -65,7 +67,7 @@ public class ControleFinalisationTa extends Activity {
 
 	/** Heure et dates à ajouter à la table de séquencment */
 	private Date dateDebut, dateRealisation;
-	private long dureeMesuree =0;
+	private long dureeMesuree = 0;
 	private Time heureRealisation = new Time();
 
 	/** Nom de l'opérateur */
@@ -86,8 +88,7 @@ public class ControleFinalisationTa extends Activity {
 			Operation.DUREE_MESUREE };
 
 	private int layouts[] = new int[] { R.id.pointsVerifier,
-			R.id.valeurAttendue, 
-			R.id.commentaires };
+			R.id.valeurAttendue, R.id.commentaires };
 	private String controle[] = new String[] { "Point vérifier",
 			"Valeur attendu", "Controle valide", "Controle refuse",
 			"Commentaires" };
@@ -104,14 +105,21 @@ public class ControleFinalisationTa extends Activity {
 			Raccordement.ORDRE_REALISATION,
 			Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT,
 			Raccordement.REPERE_ELECTRIQUE_TENANT,
-			Raccordement.NUMERO_POSITION_CHARIOT };
+			Raccordement.NUMERO_POSITION_CHARIOT, Raccordement.NUMERO_FIL_CABLE };
 
+	private String colInfo[] = new String[] { Raccordement._id,
+			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS,
+			Raccordement.STANDARD, Raccordement.NUMERO_HARNAIS_FAISCEAUX,
+			Raccordement.REFERENCE_FICHIER_SOURCE };
+	private Cursor cursorInfo;
+
+	private String ordre;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_controle_finalisation_ta);
-		//Initialisation du temps
-				dateDebut = new Date();
+		// Initialisation du temps
+		dateDebut = new Date();
 
 		// Récupération des éléments
 		Intent intent = getIntent();
@@ -150,15 +158,17 @@ public class ControleFinalisationTa extends Activity {
 
 		if (description.contains("A")) {
 			clause = new String(Raccordement.NUMERO_COMPOSANT_TENANT + "='"
-					+ numeroCo + "' GROUP BY "
-					+ Raccordement.NUMERO_COMPOSANT_TENANT);
+					+ numeroCo +"'"/*+ "' GROUP BY "
+					+ Raccordement.NUMERO_COMPOSANT_TENANT*/);
 			titre.setText(R.string.controleFinalisationTa);
+			ordre = "A";
 
 		} else {
 			clause = new String(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-					+ "='" + numeroCo + "' GROUP BY "
-					+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT);
+					+ "='" + numeroCo +"'"/* + "' GROUP BY "
+					+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT*/);
 			titre.setText(R.string.controleFinalisationTb);
+			ordre = "B";
 
 		}
 		cursorA = cr.query(urlRac, colRac, clause, null, Raccordement._id
@@ -169,6 +179,15 @@ public class ControleFinalisationTa extends Activity {
 					.append(" : "
 							+ cursorA.getString(cursorA
 									.getColumnIndex(Raccordement.NUMERO_POSITION_CHARIOT)));
+			if (ordre.equals("A")) {
+				repereElectrique.append(" : "
+						+ cursorA.getString(cursorA
+								.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
+			} else {
+				repereElectrique.append(" : "
+						+ cursorA.getString(cursorA
+								.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT)));
+			}
 
 			HashMap<String, String> element;
 
@@ -178,8 +197,8 @@ public class ControleFinalisationTa extends Activity {
 				element.put(controle[0], points[i]);
 				element.put(controle[1],
 						cursorA.getString(cursorA.getColumnIndex(colRac[i])));
-				//element.put(controle[2], "" + 1);
-				//element.put(controle[3], ""+ 0);
+				// element.put(controle[2], "" + 1);
+				// element.put(controle[3], ""+ 0);
 				element.put(controle[4], "");
 				liste.add(element);
 
@@ -191,34 +210,85 @@ public class ControleFinalisationTa extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				
+
 				dateRealisation = new Date();
-				contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0] + " "
-						+ nomPrenomOperateur[1]);
-				contact.put(Operation.DATE_REALISATION, dateRealisation.toGMTString());
+				contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0]
+						+ " " + nomPrenomOperateur[1]);
+				contact.put(Operation.DATE_REALISATION,
+						dateRealisation.toGMTString());
 				heureRealisation.setToNow();
-				contact.put(Operation.HEURE_REALISATION, heureRealisation.toString());
+				contact.put(Operation.HEURE_REALISATION,
+						heureRealisation.toString());
 				dureeMesuree += dateRealisation.getTime() - dateDebut.getTime();
 				contact.put(Operation.DUREE_MESUREE, dureeMesuree / 1000);
 				cr.update(urlSeq, contact, Operation._id + " = ?",
 						new String[] { Integer.toString(opId[indiceCourant]) });
 				contact.clear();
-				
-				//MAJ de la durée
+
+				// MAJ de la durée
 				dureeMesuree = 0;
-				dateDebut= new Date();
-				
+				dateDebut = new Date();
+
 				// Signalement du point de controle
-				clause = Operation.RANG_1_1 + " LIKE '%" + numeroCo + "%' AND ("
-						+ Operation.GAMME
-						+ " LIKE 'Cheminement%' OR " + Operation.GAMME + " LIKE 'Frett%')";
+				String clauseSup = "";
+				String clauseTotal = null;
+
+				// Recherche des aboutissants
+				clause = new String(Raccordement.NUMERO_COMPOSANT_TENANT + "='"
+						+ numeroCo + "'");
+
+				cursorA = cr.query(urlRac, colRac, clause, null,
+						Raccordement._id + " ASC");
+				if (cursorA.moveToFirst()) {
+
+					do {
+						if (clauseTotal == null) {
+							clauseTotal = Raccordement.NUMERO_FIL_CABLE
+									+ "='"
+									+ cursorA.getString(cursorA
+											.getColumnIndex(Raccordement.NUMERO_FIL_CABLE))
+									+ "'";
+						} else {
+
+							clauseTotal += " OR "
+									+ Raccordement.NUMERO_FIL_CABLE
+									+ "='"
+									+ cursorA.getString(cursorA
+											.getColumnIndex(Raccordement.NUMERO_FIL_CABLE))
+									+ "'";
+						}
+					} while (cursorA.moveToNext());
+
+				}
+				cursorA = cr.query(urlRac, colRac, " (" + clauseTotal
+						+ ") AND " + Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT
+						+ "!='null' GROUP BY "
+						+ Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT, null,
+						Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT);
+
+				if (cursorA.moveToFirst()) {
+					do {
+
+						clauseSup += " OR "
+								+ Operation.RANG_1_1
+								+ " LIKE '%"
+								+ cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT))
+								+ "' ";
+
+					} while (cursorA.moveToNext());
+				}
+
+				clause = "(" + Operation.RANG_1_1 + " LIKE '%" + numeroCo
+						+ "%'" + clauseSup +  " ) AND (" + Operation.GAMME
+						+ " LIKE 'Cheminement%' )";
 				cursor = cr.query(urlSeq, columnsSeq, clause, null,
 						Operation._id);
 				if (cursor.moveToFirst()) {
-					
+
 					contact.put(Operation.REALISABLE, 1);
 					int id = cursor.getInt(cursor.getColumnIndex(Operation._id));
-					cr.update(urlSeq, contact,clause , null);
+					cr.update(urlSeq, contact, clause, null);
 					contact.clear();
 				}
 
@@ -268,73 +338,105 @@ public class ControleFinalisationTa extends Activity {
 				}
 			}
 		});
-		
+
+		infoProduit.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				cursorInfo = cr.query(urlRac, colInfo,
+						Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
+								+ numeroCo + "' OR "
+								+ Raccordement.NUMERO_COMPOSANT_TENANT + "='"
+								+ numeroCo + "'", null, null);
+				Intent toInfo = new Intent(ControleFinalisationTa.this,
+						InfoProduit.class);
+				labels = new String[7];
+
+				if (cursorInfo.moveToFirst()) {
+					labels[0] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.DESIGNATION));
+					labels[1] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_HARNAIS_FAISCEAUX));
+					labels[2] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.STANDARD));
+					labels[3] = "";
+					labels[4] = "";
+					labels[5] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_REVISION_HARNAIS));
+					labels[6] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.REFERENCE_FICHIER_SOURCE));
+					toInfo.putExtra("Labels", labels);
+				}
+
+				startActivity(toInfo);
+
+			}
+		});
+
 		// Grande pause
-				grandePause.setOnClickListener(new View.OnClickListener() {
+		grandePause.setOnClickListener(new View.OnClickListener() {
 
-					@Override
-					public void onClick(View v) {
-						AlertDialog.Builder builder = new AlertDialog.Builder(
-								ControleFinalisationTa.this);
-						builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
-						builder.setCancelable(false);
-						builder.setPositiveButton("Oui",
-								new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						ControleFinalisationTa.this);
+				builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
+				builder.setCancelable(false);
+				builder.setPositiveButton("Oui",
+						new DialogInterface.OnClickListener() {
 
-									public void onClick(DialogInterface dialog,
-											int which) {
-										/*
-										 * Intent toMain = new Intent(
-										 * CheminementTa.this, MainActivity.class);
-										 * startActivity(toMain);
-										 */
-										finish();
+							public void onClick(DialogInterface dialog,
+									int which) {
+								/*
+								 * Intent toMain = new Intent(
+								 * CheminementTa.this, MainActivity.class);
+								 * startActivity(toMain);
+								 */
+								finish();
 
-									}
+							}
 
-								});
+						});
 
-						builder.setNegativeButton("Non",
-								new DialogInterface.OnClickListener() {
-									public void onClick(final DialogInterface dialog,
-											final int id) {
+				builder.setNegativeButton("Non",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
 
-										dialog.cancel();
+								dialog.cancel();
 
-									}
-								});
-						builder.show();
+							}
+						});
+				builder.show();
 
-					}
-				});
-		
-		//Petite Pause
-				petitePause.setOnClickListener(new View.OnClickListener() {
+			}
+		});
 
-					@Override
-					public void onClick(View v) {
-						dureeMesuree += new Date().getTime() - dateDebut.getTime();
-						AlertDialog.Builder builder = new AlertDialog.Builder(
-								ControleFinalisationTa.this);
-						builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
-						builder.setCancelable(false);
+		// Petite Pause
+		petitePause.setOnClickListener(new View.OnClickListener() {
 
-						builder.setNegativeButton("Retour",
-								new DialogInterface.OnClickListener() {
-									public void onClick(final DialogInterface dialog,
-											final int id) {
+			@Override
+			public void onClick(View v) {
+				dureeMesuree += new Date().getTime() - dateDebut.getTime();
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						ControleFinalisationTa.this);
+				builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
+				builder.setCancelable(false);
 
-										dateDebut= new Date();
-										dialog.cancel();
+				builder.setNegativeButton("Retour",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
 
-									}
-								});
-						builder.show();
+								dateDebut = new Date();
+								dialog.cancel();
 
-					}
-				});
-		
-		
+							}
+						});
+				builder.show();
+
+			}
+		});
 
 		displayContentProvider();
 	}
@@ -346,8 +448,6 @@ public class ControleFinalisationTa extends Activity {
 				layouts);
 
 		gridView.setAdapter(sa);
-		
-
 
 	}
 

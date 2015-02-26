@@ -7,7 +7,9 @@ import java.util.List;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.R.layout;
+import com.inodex.inoprod.activities.InfoProduit;
 import com.inodex.inoprod.activities.cableur.DenudageSertissageEnfichageTa;
+import com.inodex.inoprod.activities.cableur.MiseLongueurTb;
 import com.inodex.inoprod.activities.cableur.PreparationTa;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
@@ -117,6 +119,12 @@ public class ControleSertissageTa extends Activity {
 			Raccordement.NUMERO_POSITION_CHARIOT,
 			Raccordement.LONGUEUR_FIL_CABLE, Raccordement.ORDRE_REALISATION };
 
+	private String colInfo[] = new String[] { Raccordement._id,
+			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS,
+			Raccordement.STANDARD, Raccordement.NUMERO_HARNAIS_FAISCEAUX,
+			Raccordement.REFERENCE_FICHIER_SOURCE };
+	private Cursor cursorInfo;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -131,7 +139,7 @@ public class ControleSertissageTa extends Activity {
 		opId = intent.getIntArrayExtra("opId");
 		cr = getContentResolver();
 		contact = new ContentValues();
-		nbValide=0;
+		nbValide = 0;
 
 		// Récuperation des éléments de la vue
 		gridView = (GridView) findViewById(R.id.gridview);
@@ -160,22 +168,19 @@ public class ControleSertissageTa extends Activity {
 			numeroConnecteur.append(" : " + numeroCo);
 		}
 
-		
 		if (description.contains("tête A")) {
-			clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
-					+ numeroCo + "' AND " + Raccordement.FAUX_CONTACT
-					+ "='" + 0 + "' AND " + Raccordement.OBTURATEUR + "='"
-					+ 0 + "' AND " + Raccordement.REPRISE_BLINDAGE
-					+ " IS NULL ";
+			clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='" + numeroCo
+					+ "' AND " + Raccordement.FAUX_CONTACT + "='" + 0
+					+ "' AND " + Raccordement.OBTURATEUR + "='" + 0 + "' AND "
+					+ Raccordement.REPRISE_BLINDAGE + " IS NULL ";
 			titre.setText(R.string.controleSertissageTa);
 			ordre = "A";
 
 		} else {
 			clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
-					+ numeroCo + "' AND " + Raccordement.FAUX_CONTACT
-					+ "='" + 0 + "' AND " + Raccordement.OBTURATEUR + "='"
-					+ 0 + "' AND " + Raccordement.REPRISE_BLINDAGE
-					+ " IS NULL ";
+					+ numeroCo + "' AND " + Raccordement.FAUX_CONTACT + "='"
+					+ 0 + "' AND " + Raccordement.OBTURATEUR + "='" + 0
+					+ "' AND " + Raccordement.REPRISE_BLINDAGE + " IS NULL ";
 			titre.setText(R.string.controleSertissageTb);
 			ordre = "B";
 
@@ -188,7 +193,17 @@ public class ControleSertissageTa extends Activity {
 					.append(" : "
 							+ cursorA.getString(cursorA
 									.getColumnIndex(Raccordement.NUMERO_POSITION_CHARIOT)));
-			
+			if (ordre.equals("A")) {
+				repereElectrique
+						.append(" : "
+								+ cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
+			} else {
+				repereElectrique
+						.append(" : "
+								+ cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT)));
+			}
 
 		}
 		nbRows = cr.query(urlRac, colRac,
@@ -203,23 +218,21 @@ public class ControleSertissageTa extends Activity {
 			public void onClick(View v) {
 
 				if (prodAchevee) {
-					
+
 					// Signalement du point de controle
 					// Cables validés
-					clause = Operation.RANG_1_1
-							+ " LIKE '%"
-							+ numeroCo
-							+ "%' AND ("
+					clause = Operation.RANG_1_1 + " LIKE '%" + numeroCo
+							+ "%' AND (" + Operation.DESCRIPTION_OPERATION
+							+ " LIKE 'Enfichage Tête " + ordre + "%' OR "
 							+ Operation.DESCRIPTION_OPERATION
-							+ " LIKE 'Enfichage Tête "+ordre+"%' OR "
+							+ " LIKE 'Finalisation Tête " + ordre + "%' OR "
 							+ Operation.DESCRIPTION_OPERATION
-							+ " LIKE 'Finalisation Tête "+ordre+"%' OR "
-							+ Operation.DESCRIPTION_OPERATION
-							+ " LIKE 'Tri des aboutissants Tête "+ordre+"%')";
+							+ " LIKE 'Tri des aboutissants Tête " + ordre
+							+ "%')";
 					cursor = cr.query(urlSeq, columnsSeq, clause, null,
 							Operation._id);
 					if (cursor.moveToFirst()) {
-						do{
+						do {
 
 							contact.put(Operation.REALISABLE, 1);
 							int id = cursor.getInt(cursor
@@ -227,21 +240,18 @@ public class ControleSertissageTa extends Activity {
 							cr.update(urlSeq, contact, Operation._id + "='"
 									+ id + "'", null);
 							contact.clear();
-							
+
 						} while (cursor.moveToNext());
 					}
-					
-					//Cables refusées
-					clause = Operation.RANG_1_1
-							+ " LIKE '%"
-							+ numeroCo
-							+ "%' AND "
-							+ Operation.DESCRIPTION_OPERATION
+
+					// Cables refusées
+					clause = Operation.RANG_1_1 + " LIKE '%" + numeroCo
+							+ "%' AND " + Operation.DESCRIPTION_OPERATION
 							+ " LIKE 'Denudage%' ";
 					cursor = cr.query(urlSeq, columnsSeq, clause, null,
 							Operation._id);
 					if (cursor.moveToFirst()) {
-						for (int i =0; i<(nbRows-nbValide); i++){
+						for (int i = 0; i < (nbRows - nbValide); i++) {
 
 							contact.put(Operation.NOM_OPERATEUR, "");
 							int id = cursor.getInt(cursor
@@ -250,10 +260,8 @@ public class ControleSertissageTa extends Activity {
 									+ id + "'", null);
 							contact.clear();
 							cursor.moveToNext();
-						} 
+						}
 					}
-
-					
 
 					indiceCourant++;
 					String nextOperation = null;
@@ -303,135 +311,136 @@ public class ControleSertissageTa extends Activity {
 				} else {
 					if (scanEnCours) {
 
-					try {
-						Intent intent = new Intent(
-								"com.google.zxing.client.android.SCAN");
-						intent.setPackage("com.google.zxing.client.android");
-						intent.putExtra(
-								"com.google.zxing.client.android.SCAN.SCAN_MODE",
-								"QR_CODE_MODE");
-						startActivityForResult(intent, 0);
-					} catch (ActivityNotFoundException e) {
-						AlertDialog.Builder builder = new AlertDialog.Builder(
-								ControleSertissageTa.this);
-						builder.setMessage("Impossible de trouver une application pour le scan. Entrez le N° de cable.");
-						builder.setCancelable(false);
-						final EditText cable = new EditText(
-								ControleSertissageTa.this);
-						builder.setView(cable);
-						builder.setPositiveButton("Valider",
-								new DialogInterface.OnClickListener() {
+						try {
+							Intent intent = new Intent(
+									"com.google.zxing.client.android.SCAN");
+							intent.setPackage("com.google.zxing.client.android");
+							intent.putExtra(
+									"com.google.zxing.client.android.SCAN.SCAN_MODE",
+									"QR_CODE_MODE");
+							startActivityForResult(intent, 0);
+						} catch (ActivityNotFoundException e) {
+							AlertDialog.Builder builder = new AlertDialog.Builder(
+									ControleSertissageTa.this);
+							builder.setMessage("Impossible de trouver une application pour le scan. Entrez le N° de cable.");
+							builder.setCancelable(false);
+							final EditText cable = new EditText(
+									ControleSertissageTa.this);
+							builder.setView(cable);
+							builder.setPositiveButton("Valider",
+									new DialogInterface.OnClickListener() {
 
-									public void onClick(DialogInterface dialog,
-											int which) {
-										numeroCable = cable.getText()
-												.toString();
+										public void onClick(
+												DialogInterface dialog,
+												int which) {
+											numeroCable = cable.getText()
+													.toString();
 
-										clause = Raccordement.NUMERO_FIL_CABLE
-												+ "='"
-												+ numeroCable
-												+ "' AND ("
-												+ Raccordement.NUMERO_COMPOSANT_TENANT
-												+ "='"
-												+ numeroCo
-												+ "' OR "
-												+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-												+ "='" + numeroCo + "' )";
-										cursorA = cr.query(urlRac, colRac,
-												clause, null, Raccordement._id);
-										if (cursorA.moveToFirst()) {
-											
+											clause = Raccordement.NUMERO_FIL_CABLE
+													+ "='"
+													+ numeroCable
+													+ "' AND ("
+													+ Raccordement.NUMERO_COMPOSANT_TENANT
+													+ "='"
+													+ numeroCo
+													+ "' OR "
+													+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+													+ "='" + numeroCo + "' )";
+											cursorA = cr.query(urlRac, colRac,
+													clause, null,
+													Raccordement._id);
+											if (cursorA.moveToFirst()) {
 
-											element = new HashMap<String, String>();
-											element.put(
-													controle[0],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[0])));
-											element.put(
-													controle[1],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[1])));
-											element.put(
-													controle[2],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[2])));
-											element.put(
-													controle[3],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[3])));
-											element.put(
-													controle[4],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[4])));
-											element.put(
-													controle[5],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[5])));
-											element.put(
-													controle[6],
-													cursorA.getString(cursorA
-															.getColumnIndex(colRac[6])));
-											
-											liste.add(element);
+												element = new HashMap<String, String>();
+												element.put(
+														controle[0],
+														cursorA.getString(cursorA
+																.getColumnIndex(colRac[0])));
+												element.put(
+														controle[1],
+														cursorA.getString(cursorA
+																.getColumnIndex(colRac[1])));
+												element.put(
+														controle[2],
+														cursorA.getString(cursorA
+																.getColumnIndex(colRac[2])));
+												element.put(
+														controle[3],
+														cursorA.getString(cursorA
+																.getColumnIndex(colRac[3])));
+												element.put(
+														controle[4],
+														cursorA.getString(cursorA
+																.getColumnIndex(colRac[4])));
+												element.put(
+														controle[5],
+														cursorA.getString(cursorA
+																.getColumnIndex(colRac[5])));
+												element.put(
+														controle[6],
+														cursorA.getString(cursorA
+																.getColumnIndex(colRac[6])));
 
-											
-											displayContentProvider();
-											scanEnCours = false;
+												if (liste.contains(element)) {
+													Toast.makeText(
+															ControleSertissageTa.this,
+															"Ce cable a dèja été utilisé",
+															Toast.LENGTH_SHORT)
+															.show();
+												} else {
 
-										} else {
-											Toast.makeText(
-													ControleSertissageTa.this,
-													"Ce cable ne correspond pas",
-													Toast.LENGTH_SHORT).show();
+													liste.add(element);
+
+													displayContentProvider();
+													scanEnCours = false;
+												}
+
+											} else {
+												Toast.makeText(
+														ControleSertissageTa.this,
+														"Ce cable ne correspond pas",
+														Toast.LENGTH_SHORT)
+														.show();
+											}
 										}
-									}
 
-								});
+									});
 
-						builder.setNegativeButton("Annuler",
-								new DialogInterface.OnClickListener() {
-									public void onClick(
-											final DialogInterface dialog,
-											final int id) {
+							builder.setNegativeButton("Annuler",
+									new DialogInterface.OnClickListener() {
+										public void onClick(
+												final DialogInterface dialog,
+												final int id) {
 
-										dialog.cancel();
-									}
-								});
-						
+											dialog.cancel();
+										}
+									});
 
-						builder.show();
-					}
+							builder.show();
+						}
 					} else {
 						AlertDialog.Builder builder = new AlertDialog.Builder(
 								ControleSertissageTa.this);
 						builder.setMessage("Quel est le résultat du controle du cable?");
 						builder.setCancelable(false);
 
-
 						builder.setPositiveButton("Valider",
 								new DialogInterface.OnClickListener() {
 
 									public void onClick(DialogInterface dialog,
 											int which) {
-										
 
-										liste.remove(liste.size()-1);
+										liste.remove(liste.size() - 1);
 
+										element.put(controle[7], "X");
 
-											element.put(
-													controle[7],
-													"X");
-											
-											liste.add(element);
+										liste.add(element);
 
-											indiceLimite++;
-											displayContentProvider();
-											scanEnCours = true;
-											nbValide++;
-											
-											
+										indiceLimite++;
+										displayContentProvider();
+										scanEnCours = true;
+										nbValide++;
 
-										
 									}
 
 								});
@@ -442,13 +451,10 @@ public class ControleSertissageTa extends Activity {
 											final DialogInterface dialog,
 											final int id) {
 
-										liste.remove(liste.size()-1);
+										liste.remove(liste.size() - 1);
 
+										element.put(controle[9], "X");
 
-										element.put(
-												controle[9],
-												"X");
-										
 										liste.add(element);
 
 										indiceLimite++;
@@ -462,13 +468,10 @@ public class ControleSertissageTa extends Activity {
 											final DialogInterface dialog,
 											final int id) {
 
-										liste.remove(liste.size()-1);
+										liste.remove(liste.size() - 1);
 
+										element.put(controle[8], "X");
 
-										element.put(
-												controle[8],
-												"X");
-										
 										liste.add(element);
 
 										indiceLimite++;
@@ -477,17 +480,50 @@ public class ControleSertissageTa extends Activity {
 										nbValide++;
 									}
 								});
-						
 
 						builder.show();
-						
+
 					}
 
 				}
 			}
 		});
-		
-		//Grande pause
+
+		infoProduit.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				cursorInfo = cr.query(urlRac, colInfo,
+						Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
+								+ numeroCo + "' OR "
+								+ Raccordement.NUMERO_COMPOSANT_TENANT + "='"
+								+ numeroCo + "'", null, null);
+				Intent toInfo = new Intent(ControleSertissageTa.this,
+						InfoProduit.class);
+				labels = new String[7];
+
+				if (cursorInfo.moveToFirst()) {
+					labels[0] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.DESIGNATION));
+					labels[1] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_HARNAIS_FAISCEAUX));
+					labels[2] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.STANDARD));
+					labels[3] = "";
+					labels[4] = "";
+					labels[5] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_REVISION_HARNAIS));
+					labels[6] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.REFERENCE_FICHIER_SOURCE));
+					toInfo.putExtra("Labels", labels);
+				}
+
+				startActivity(toInfo);
+
+			}
+		});
+
+		// Grande pause
 		grandePause.setOnClickListener(new View.OnClickListener() {
 
 			@Override
@@ -501,10 +537,11 @@ public class ControleSertissageTa extends Activity {
 
 							public void onClick(DialogInterface dialog,
 									int which) {
-							/*	Intent toMain = new Intent(
-										CheminementTa.this,
-										MainActivity.class);
-								startActivity(toMain); */
+								/*
+								 * Intent toMain = new Intent(
+								 * CheminementTa.this, MainActivity.class);
+								 * startActivity(toMain);
+								 */
 								finish();
 
 							}
@@ -595,151 +632,142 @@ public class ControleSertissageTa extends Activity {
 		if (requestCode == 0) {
 			if (resultCode == RESULT_OK) {
 				String contents = intent.getStringExtra("SCAN_RESULT");
-				
+
 				String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 				numeroCable = contents;
-				clause = Raccordement.NUMERO_FIL_CABLE
-						+ "='"
-						+ numeroCable
-						+ "' AND ("
-						+ Raccordement.NUMERO_COMPOSANT_TENANT
-						+ "='"
-						+ numeroCo
-						+ "' OR "
-						+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-						+ "='" + numeroCo + "' )";
-				cursorA = cr.query(urlRac, colRac,
-						clause, null, Raccordement._id);
+				clause = Raccordement.NUMERO_FIL_CABLE + "='" + numeroCable
+						+ "' AND (" + Raccordement.NUMERO_COMPOSANT_TENANT
+						+ "='" + numeroCo + "' OR "
+						+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + "='"
+						+ numeroCo + "' )";
+				cursorA = cr.query(urlRac, colRac, clause, null,
+						Raccordement._id);
 				if (cursorA.moveToFirst()) {
 					HashMap<String, String> element;
 
 					element = new HashMap<String, String>();
-					element.put(
-							controle[0],
-							cursorA.getString(cursorA
-									.getColumnIndex(colRac[0])));
-					element.put(
-							controle[1],
-							cursorA.getString(cursorA
-									.getColumnIndex(colRac[1])));
-					element.put(
-							controle[2],
-							cursorA.getString(cursorA
-									.getColumnIndex(colRac[2])));
-					element.put(
-							controle[3],
-							cursorA.getString(cursorA
-									.getColumnIndex(colRac[3])));
-					element.put(
-							controle[4],
-							cursorA.getString(cursorA
-									.getColumnIndex(colRac[4])));
-					element.put(
-							controle[5],
-							cursorA.getString(cursorA
-									.getColumnIndex(colRac[5])));
-					element.put(
-							controle[6],
-							cursorA.getString(cursorA
-									.getColumnIndex(colRac[6])));
-					
-					liste.add(element);
+					element.put(controle[0], cursorA.getString(cursorA
+							.getColumnIndex(colRac[0])));
+					element.put(controle[1], cursorA.getString(cursorA
+							.getColumnIndex(colRac[1])));
+					element.put(controle[2], cursorA.getString(cursorA
+							.getColumnIndex(colRac[2])));
+					element.put(controle[3], cursorA.getString(cursorA
+							.getColumnIndex(colRac[3])));
+					element.put(controle[4], cursorA.getString(cursorA
+							.getColumnIndex(colRac[4])));
+					element.put(controle[5], cursorA.getString(cursorA
+							.getColumnIndex(colRac[5])));
+					element.put(controle[6], cursorA.getString(cursorA
+							.getColumnIndex(colRac[6])));
+					if (liste.contains(element)) {
+						Toast.makeText(ControleSertissageTa.this,
+								"Ce cable a dèja été utilisé",
+								Toast.LENGTH_SHORT).show();
+					} else {
 
-				
-					displayContentProvider();
-					scanEnCours = false;
-			} else if (resultCode == RESULT_CANCELED) {
-				
-				AlertDialog.Builder builder = new AlertDialog.Builder(
-						ControleSertissageTa.this);
-				builder.setMessage("Impossible de trouver une application pour le scan. Entrez le N° de cable.");
-				builder.setCancelable(false);
-				final EditText cable = new EditText(
-						ControleSertissageTa.this);
-				builder.setView(cable);
-				builder.setPositiveButton("Valider",
-						new DialogInterface.OnClickListener() {
+						liste.add(element);
 
-							public void onClick(DialogInterface dialog,
-									int which) {
-								numeroCable = cable.getText()
-										.toString();
+						displayContentProvider();
+						scanEnCours = false;
+					}
+				} else if (resultCode == RESULT_CANCELED) {
 
-								clause = Raccordement.NUMERO_FIL_CABLE
-										+ "='"
-										+ numeroCable
-										+ "' AND ("
-										+ Raccordement.NUMERO_COMPOSANT_TENANT
-										+ "='"
-										+ numeroCo
-										+ "' OR "
-										+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-										+ "='" + numeroCo + "' )";
-								cursorA = cr.query(urlRac, colRac,
-										clause, null, Raccordement._id);
-								if (cursorA.moveToFirst()) {
-									HashMap<String, String> element;
+					AlertDialog.Builder builder = new AlertDialog.Builder(
+							ControleSertissageTa.this);
+					builder.setMessage("Impossible de trouver une application pour le scan. Entrez le N° de cable.");
+					builder.setCancelable(false);
+					final EditText cable = new EditText(
+							ControleSertissageTa.this);
+					builder.setView(cable);
+					builder.setPositiveButton("Valider",
+							new DialogInterface.OnClickListener() {
 
-									element = new HashMap<String, String>();
-									element.put(
-											controle[0],
-											cursorA.getString(cursorA
-													.getColumnIndex(colRac[0])));
-									element.put(
-											controle[1],
-											cursorA.getString(cursorA
-													.getColumnIndex(colRac[1])));
-									element.put(
-											controle[2],
-											cursorA.getString(cursorA
-													.getColumnIndex(colRac[2])));
-									element.put(
-											controle[3],
-											cursorA.getString(cursorA
-													.getColumnIndex(colRac[3])));
-									element.put(
-											controle[4],
-											cursorA.getString(cursorA
-													.getColumnIndex(colRac[4])));
-									element.put(
-											controle[5],
-											cursorA.getString(cursorA
-													.getColumnIndex(colRac[5])));
-									element.put(
-											controle[6],
-											cursorA.getString(cursorA
-													.getColumnIndex(colRac[6])));
-									
-									liste.add(element);
+								public void onClick(DialogInterface dialog,
+										int which) {
+									numeroCable = cable.getText().toString();
 
-									
-									displayContentProvider();
-									scanEnCours = false;
+									clause = Raccordement.NUMERO_FIL_CABLE
+											+ "='"
+											+ numeroCable
+											+ "' AND ("
+											+ Raccordement.NUMERO_COMPOSANT_TENANT
+											+ "='"
+											+ numeroCo
+											+ "' OR "
+											+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+											+ "='" + numeroCo + "' )";
+									cursorA = cr.query(urlRac, colRac, clause,
+											null, Raccordement._id);
+									if (cursorA.moveToFirst()) {
+										HashMap<String, String> element;
 
-								} else {
-									Toast.makeText(
-											ControleSertissageTa.this,
-											"Ce cable ne correspond pas",
-											Toast.LENGTH_SHORT).show();
+										element = new HashMap<String, String>();
+										element.put(
+												controle[0],
+												cursorA.getString(cursorA
+														.getColumnIndex(colRac[0])));
+										element.put(
+												controle[1],
+												cursorA.getString(cursorA
+														.getColumnIndex(colRac[1])));
+										element.put(
+												controle[2],
+												cursorA.getString(cursorA
+														.getColumnIndex(colRac[2])));
+										element.put(
+												controle[3],
+												cursorA.getString(cursorA
+														.getColumnIndex(colRac[3])));
+										element.put(
+												controle[4],
+												cursorA.getString(cursorA
+														.getColumnIndex(colRac[4])));
+										element.put(
+												controle[5],
+												cursorA.getString(cursorA
+														.getColumnIndex(colRac[5])));
+										element.put(
+												controle[6],
+												cursorA.getString(cursorA
+														.getColumnIndex(colRac[6])));
+
+										if (liste.contains(element)) {
+											Toast.makeText(
+													ControleSertissageTa.this,
+													"Ce cable a dèja été utilisé",
+													Toast.LENGTH_SHORT).show();
+										} else {
+
+											liste.add(element);
+
+											displayContentProvider();
+											scanEnCours = false;
+										}
+
+									} else {
+										Toast.makeText(
+												ControleSertissageTa.this,
+												"Ce cable ne correspond pas",
+												Toast.LENGTH_SHORT).show();
+									}
 								}
-							}
 
-						});
+							});
 
-				builder.setNegativeButton("Annuler",
-						new DialogInterface.OnClickListener() {
-							public void onClick(
-									final DialogInterface dialog,
-									final int id) {
+					builder.setNegativeButton("Annuler",
+							new DialogInterface.OnClickListener() {
+								public void onClick(
+										final DialogInterface dialog,
+										final int id) {
 
-								dialog.cancel();
-							}
-						});
-				
+									dialog.cancel();
+								}
+							});
 
-				builder.show();
-			}
-				
+					builder.show();
+				}
+
 			}
 		}
 	}

@@ -51,13 +51,13 @@ public class InfoProduit extends Activity {
 		referenceFichierSource = (TextView) findViewById(R.id.textView3);
 
 		// Affichae des infos sur le produit
-		designationProduit.append(labels[0]);
-		numeroHarnais.append(labels[1]);
-		standardFabrication.append(labels[2]);
-		numeroSerie.append(labels[3]);
-		numeroTraitement.append(labels[4]);
-		numeroRevisionHarnais.append(labels[5]);
-		referenceFichierSource.append(labels[6]);
+		designationProduit.append(" : " +labels[0]);
+		numeroHarnais.append(" " +labels[1]);
+		standardFabrication.append(" " +labels[2]);
+		numeroSerie.append(" " +labels[3]);
+		numeroTraitement.append(" " +labels[4]);
+		numeroRevisionHarnais.append(" : " +labels[5]);
+		referenceFichierSource.append(" " +labels[6]);
 
 		// Retour à l'activité précédente
 		boutonExit = (ImageButton) findViewById(R.id.exitButton1);

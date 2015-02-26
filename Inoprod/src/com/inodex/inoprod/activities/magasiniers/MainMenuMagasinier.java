@@ -141,8 +141,8 @@ public class MainMenuMagasinier extends Activity {
 
 		sca.changeCursor(cursor);
 
-		clause = new String(Operation.RANG_1_1 + "!='" + "Regroupement câbles"
-				+ "' AND " + Operation.RANG_1 + "='" + "Kitting câble" + "'"
+		clause = new String(Operation.RANG_1_1 + " LIKE '%" + "Débit"
+				+ "%' AND " + Operation.RANG_1 + "='" + "Kitting câble" + "'"
 				);
 		cursor = cr.query(url, columns, clause, null, Operation._id + " ASC");
 		// Rempliassage du tableau pour chaque numero de cable

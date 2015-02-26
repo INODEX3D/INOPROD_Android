@@ -60,7 +60,7 @@ public class KittingCablesComposants extends Activity {
 
 	/** Tableau des opérations à réaliser */
 	private int opId[] = null;
-	
+
 	/** Tableau des infos produit */
 	private String labels[];
 
@@ -72,7 +72,7 @@ public class KittingCablesComposants extends Activity {
 	private Date dateRealisation = new Date();
 	private Time heureRealisation = new Time();
 	private Date dateDebut;
-	private long dureeMesuree =0;
+	private long dureeMesuree = 0;
 
 	/** Nom de l'opérateur */
 	private String nomPrenomOperateur[] = null;
@@ -87,35 +87,37 @@ public class KittingCablesComposants extends Activity {
 	private String columnsSeq[] = new String[] { Operation._id,
 			Operation.GAMME, Operation.RANG_1_1, Operation.NUMERO_OPERATION,
 			Operation.NOM_OPERATEUR, Operation.DATE_REALISATION,
-			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION, Operation.DUREE_MESUREE };
+			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION,
+			Operation.DUREE_MESUREE };
 
 	private String columnsBOM[] = new String[] { BOM.REPERE_ELECTRIQUE_TENANT,
 			BOM.NUMERO_COMPOSANT, BOM.NUMERO_POSITION_CHARIOT,
 			BOM.ORDRE_REALISATION, BOM.QUANTITE, BOM.UNITE,
 			BOM.NUMERO_LOT_SCANNE, BOM.NUMERO_DEBIT, BOM.DESIGNATION_COMPOSANT,
 			BOM.FOURNISSEUR_FABRICANT, BOM.REFERENCE_IMPOSEE,
-			BOM.REFERENCE_INTERNE, BOM.REFERENCE_FABRICANT2, BOM._id, BOM.NUMERO_POSITION_CHARIOT };
+			BOM.REFERENCE_INTERNE, BOM.REFERENCE_FABRICANT2, BOM._id,
+			BOM.NUMERO_POSITION_CHARIOT };
 	private int[] layouts = new int[] { R.id.numeroCable, R.id.typeCable,
 			R.id.designation, R.id.referenceFabricant, R.id.referenceInterne,
 			R.id.quantite, R.id.uniteMesure };
 
 	private String columnsKitting[] = new String[] { Kitting.NUMERO_FIL_CABLE,
-			Kitting.TYPE_FIL_CABLE, Kitting.REFERENCE_FABRICANT2,
-			Kitting.REFERENCE_INTERNE, Kitting.NUMERO_POSITION_CHARIOT,
+			Kitting.TYPE_FIL_CABLE, Kitting.DESIGNATION_COMPOSANT,
+			Kitting.REFERENCE_FABRICANT2, Kitting.REFERENCE_INTERNE,
+			Kitting._id, Kitting.UNITE, Kitting.NUMERO_POSITION_CHARIOT,
 			Kitting.REPERE_ELECTRIQUE, Kitting.NUMERO_COMPOSANT,
 			Kitting.ORDRE_REALISATION, Kitting.LONGUEUR_FIL_CABLE,
-			Kitting.UNITE, Kitting.NUMERO_CHEMINEMENT, Kitting._id,
-			Kitting.NUMERO_OPERATION };
+			Kitting.NUMERO_CHEMINEMENT, Kitting._id, Kitting.NUMERO_OPERATION };
 
 	private String columnsChem[] = new String[] { Cheminement._id,
 			Cheminement.NUMERO_SECTION_CHEMINEMENT,
 			Cheminement.NUMERO_COMPOSANT, Cheminement.REPERE_ELECTRIQUE,
 			Cheminement.ORDRE_REALISATION };
-	
 
 	private String columnsProd[] = new String[] { Fil._id,
 			Fil.DESIGNATION_PRODUIT, Fil.NUMERO_REVISION_HARNAIS, Fil.STANDARD,
-			Fil.NUMERO_HARNAIS_FAISCEAUX, Fil.REFERENCE_FICHIER_SOURCE};
+			Fil.NUMERO_HARNAIS_FAISCEAUX, Fil.REFERENCE_FICHIER_SOURCE,
+			Fil.NUMERO_COMPOSANT_ABOUTISSANT, Fil.NUMERO_COMPOSANT_TENANT };
 	private Cursor cursorInfo;
 	private Uri urlProd = ProductionProvider.CONTENT_URI;
 
@@ -123,7 +125,7 @@ public class KittingCablesComposants extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_kitting_cables_composants);
-		//Initialisation du temps
+		// Initialisation du temps
 		dateDebut = new Date();
 
 		// Récupération des éléments
@@ -166,28 +168,33 @@ public class KittingCablesComposants extends Activity {
 					.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
 
 			// Affichage des éléments du regroupement en cours
-	/*		try {
-				numeroChariot.append(cursorA.getString(cursorA
-						.getColumnIndex(Cheminement.)));
-			} catch (NullPointerException e) {
-			} */
+			/*
+			 * try { numeroChariot.append(cursorA.getString(cursorA
+			 * .getColumnIndex(Cheminement.))); } catch (NullPointerException e)
+			 * { }
+			 */
 			try {
-				numeroComposant.append(cursorA.getString(cursorA
-						.getColumnIndex(Cheminement.NUMERO_COMPOSANT)));
-			} catch (NullPointerException e) {
-			}
-			try {
-				repereElectrique.append(cursorA.getString(cursorA
-						.getColumnIndex(Cheminement.REPERE_ELECTRIQUE)));
+				numeroComposant.append(": "
+						+ cursorA.getString(cursorA
+								.getColumnIndex(Cheminement.NUMERO_COMPOSANT)));
 			} catch (NullPointerException e) {
 			}
 			try {
-				ordreRealisation.append(cursorA.getString(cursorA
-						.getColumnIndex(Cheminement.ORDRE_REALISATION)));
+				repereElectrique
+						.append(": "
+								+ cursorA.getString(cursorA
+										.getColumnIndex(Cheminement.REPERE_ELECTRIQUE)));
 			} catch (NullPointerException e) {
 			}
 			try {
-				numeroCheminement.append(Integer.toString(numeroCh));
+				ordreRealisation
+						.append(": "
+								+ cursorA.getString(cursorA
+										.getColumnIndex(Cheminement.ORDRE_REALISATION)));
+			} catch (NullPointerException e) {
+			}
+			try {
+				numeroCheminement.append(": " + Integer.toString(numeroCh));
 			} catch (NullPointerException e) {
 			}
 		} else {
@@ -218,10 +225,10 @@ public class KittingCablesComposants extends Activity {
 				cr.update(urlSeq, contact, Operation._id + " = ?",
 						new String[] { Integer.toString(opId[indiceCourant]) });
 				contact.clear();
-				
-				//MAJ de la durée
+
+				// MAJ de la durée
 				dureeMesuree = 0;
-				dateDebut= new Date();
+				dateDebut = new Date();
 
 				indiceCourant += 2;
 				try {
@@ -250,65 +257,106 @@ public class KittingCablesComposants extends Activity {
 			}
 
 		});
-		
-		
-		//Petite Pause
-				petitePause.setOnClickListener(new View.OnClickListener() {
 
-					@Override
-					public void onClick(View v) {
-						dureeMesuree += new Date().getTime() - dateDebut.getTime();
-						AlertDialog.Builder builder = new AlertDialog.Builder(
-								KittingCablesComposants.this);
-						builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
-						builder.setCancelable(false);
+		// Grande pause
+		grandePause.setOnClickListener(new View.OnClickListener() {
 
-						builder.setNegativeButton("Retour",
-								new DialogInterface.OnClickListener() {
-									public void onClick(final DialogInterface dialog,
-											final int id) {
+			@Override
+			public void onClick(View v) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						KittingCablesComposants.this);
+				builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
+				builder.setCancelable(false);
+				builder.setPositiveButton("Oui",
+						new DialogInterface.OnClickListener() {
 
-										dateDebut= new Date();
-										dialog.cancel();
+							public void onClick(DialogInterface dialog,
+									int which) {
+								/*
+								 * Intent toMain = new Intent(
+								 * CheminementTa.this, MainActivity.class);
+								 * startActivity(toMain);
+								 */
+								finish();
 
-									}
-								});
-						builder.show();
+							}
 
-					}
-				});
-				
-				// Info Produit
-				infoProduit = (ImageButton) findViewById(R.id.infoButton1);
-				infoProduit.setOnClickListener(new View.OnClickListener() {
+						});
 
-					@Override
-					public void onClick(View v) {
-						cursorInfo = cr.query(urlProd, columnsProd, Fil.NUMERO_FIL_CABLE
-								+ " = " + Kitting.NUMERO_FIL_CABLE, null, null);
-						Intent toInfo = new Intent(KittingCablesComposants.this, InfoProduit.class);
-						labels = new String[7];
+				builder.setNegativeButton("Non",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
 
-						if (cursorInfo.moveToFirst()) {
-							labels[0] = cursorInfo.getString(cursorInfo
-									.getColumnIndex(Fil.DESIGNATION_PRODUIT));
-							labels[1] = cursorInfo.getString(cursorInfo
-									.getColumnIndex(Fil.NUMERO_HARNAIS_FAISCEAUX));
-							labels[2] = cursorInfo.getString(cursorInfo
-									.getColumnIndex(Fil.STANDARD));
-							labels[3] = "";
-							labels[4] = "";
-							labels[5] = cursorInfo.getString(cursorInfo
-									.getColumnIndex(Fil.NUMERO_REVISION_HARNAIS));
-							labels[6] = cursorInfo.getString(cursorInfo
-									.getColumnIndex(Fil.REFERENCE_FICHIER_SOURCE));
-							toInfo.putExtra("Labels", labels);
-						}
+								dialog.cancel();
 
-						startActivity(toInfo);
+							}
+						});
+				builder.show();
 
-					}
-				});
+			}
+		});
+
+		// Petite Pause
+		petitePause.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				dureeMesuree += new Date().getTime() - dateDebut.getTime();
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						KittingCablesComposants.this);
+				builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
+				builder.setCancelable(false);
+
+				builder.setNegativeButton("Retour",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+
+								dateDebut = new Date();
+								dialog.cancel();
+
+							}
+						});
+				builder.show();
+
+			}
+		});
+
+		// Info Produit
+		infoProduit = (ImageButton) findViewById(R.id.infoButton1);
+		infoProduit.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				cursorInfo = cr.query(urlProd, columnsProd,
+						Fil.NUMERO_COMPOSANT_ABOUTISSANT + " ='" + numeroCom
+								+ "' OR " + Fil.NUMERO_COMPOSANT_TENANT + "='"
+								+ numeroCom + "'", null, null);
+				Intent toInfo = new Intent(KittingCablesComposants.this,
+						InfoProduit.class);
+				labels = new String[7];
+
+				if (cursorInfo.moveToFirst()) {
+					labels[0] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Fil.DESIGNATION_PRODUIT));
+					labels[1] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Fil.NUMERO_HARNAIS_FAISCEAUX));
+					labels[2] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Fil.STANDARD));
+					labels[3] = "";
+					labels[4] = "";
+					labels[5] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Fil.NUMERO_REVISION_HARNAIS));
+					labels[6] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Fil.REFERENCE_FICHIER_SOURCE));
+					toInfo.putExtra("Labels", labels);
+				}
+
+				startActivity(toInfo);
+
+			}
+		});
 
 	}
 
@@ -328,8 +376,8 @@ public class KittingCablesComposants extends Activity {
 		cursor = cr.query(urlKitting, columnsKitting, clause, null, null);
 		sca.changeCursor(cursor);
 	}
-	
-	/**Bloquage du bouton retour */
+
+	/** Bloquage du bouton retour */
 	public void onBackPressed() {
 
 	}

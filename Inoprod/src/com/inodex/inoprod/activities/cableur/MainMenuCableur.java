@@ -157,6 +157,10 @@ public class MainMenuCableur extends Activity {
 					} else if (firstOperation.startsWith("Frettage")) {
 						toNext = new Intent(MainMenuCableur.this,
 								Frettage.class);
+					} 
+					else if (firstOperation.startsWith("Mise")) {
+						toNext = new Intent(MainMenuCableur.this,
+								MiseLongueurTb.class);
 					}
 					if (toNext != null) {
 
@@ -188,7 +192,10 @@ public class MainMenuCableur extends Activity {
 				+ Operation.NOM_OPERATEUR + " LIKE '' ) AND "
 				+ Operation.REALISABLE + "='" + 1 + "' AND ("
 				+ Operation.RANG_1_1 + " LIKE '%P06%' OR " + Operation.RANG_1_1
-				+ " LIKE '%J08%' ) AND " + Operation.GAMME
+				+ " LIKE '%J08%' OR " + Operation.RANG_1_1
+				+ " LIKE '%P14%' OR " + Operation.RANG_1_1
+				+ " LIKE '%P09%'  OR " + Operation.RANG_1_1
+				+ " LIKE '%J12%') AND " + Operation.GAMME
 				+ "!='Contrôle jalons' AND " + Operation.GAMME
 				+ "!='Contrôle final'  ");
 		cursor = cr.query(url, columns, clause + " GROUP BY "

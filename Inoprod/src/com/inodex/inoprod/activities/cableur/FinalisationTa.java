@@ -20,6 +20,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 import com.inodex.inoprod.R;
+import com.inodex.inoprod.activities.InfoProduit;
 import com.inodex.inoprod.business.NomenclatureProvider;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
@@ -88,6 +89,12 @@ public class FinalisationTa extends Activity {
 			Raccordement.REPERE_ELECTRIQUE_TENANT,
 			Raccordement.NUMERO_POSITION_CHARIOT,
 			Raccordement.ETAT_FINALISATION_PRISE };
+	
+	private String colInfo[] = new String[] { Raccordement._id,
+			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS, Raccordement.STANDARD,
+			Raccordement.NUMERO_HARNAIS_FAISCEAUX, Raccordement.REFERENCE_FICHIER_SOURCE};
+	private Cursor cursorInfo;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -140,11 +147,11 @@ public class FinalisationTa extends Activity {
 			ordre = "A";
 			/*
 			 * repereElectrique .append(" : " + cursorA.getString(cursorA
-			 * .getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
+			  .getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
 			 */
 		} else {
 			clause = new String(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-					+ "='" + numeroCo +"'");
+					+ "='" + numeroCo +"' GROUP BY " + Raccordement.REFERENCE_FABRICANT2);
 			titre.setText(R.string.finalisationTb);
 			ordre = "B";
 			/*
@@ -154,7 +161,7 @@ public class FinalisationTa extends Activity {
 			 */
 		}
 		cursorA = cr.query(urlRac, colRac, clause, null, Raccordement._id
-				+ " ASC");
+				+ " ASC LIMIT 1");
 		if (cursorA.moveToFirst()) {
 
 			positionChariot
@@ -169,6 +176,13 @@ public class FinalisationTa extends Activity {
 					.append(" : "
 							+ cursorA.getString(cursorA
 									.getColumnIndex(Raccordement.ETAT_FINALISATION_PRISE)));
+			if (ordre.equals("A")) {
+				repereElectrique .append(" : " + cursorA.getString(cursorA
+						  .getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
+			} else {
+				repereElectrique .append(" : " + cursorA.getString(cursorA
+						  .getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT)));
+			}
 
 		}
 
@@ -302,6 +316,38 @@ public class FinalisationTa extends Activity {
 									}
 								});
 						builder.show();
+
+					}
+				});
+				
+				// Info Produit
+				
+				infoProduit.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						cursorInfo = cr.query(urlRac, colInfo, Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+								+ " ='" + numeroCo + "' OR " + Raccordement.NUMERO_COMPOSANT_TENANT + "='" + numeroCo+"'" , null, null);
+						Intent toInfo = new Intent(FinalisationTa.this, InfoProduit.class);
+						labels = new String[7];
+
+						if (cursorInfo.moveToFirst()) {
+							labels[0] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Raccordement.DESIGNATION));
+							labels[1] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Raccordement.NUMERO_HARNAIS_FAISCEAUX));
+							labels[2] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Raccordement.STANDARD));
+							labels[3] = "";
+							labels[4] = "";
+							labels[5] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Raccordement.NUMERO_REVISION_HARNAIS));
+							labels[6] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Raccordement.REFERENCE_FICHIER_SOURCE));
+							toInfo.putExtra("Labels", labels);
+						}
+
+						startActivity(toInfo);
 
 					}
 				});

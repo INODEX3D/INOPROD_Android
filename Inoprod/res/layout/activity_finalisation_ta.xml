@@ -228,13 +228,14 @@
         android:id="@+id/gridview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/head"  
-        android:layout_toLeftOf="@id/exitButton1"
-        android:layout_toRightOf="@id/infoButton1"     
+        android:layout_above="@id/exitButton1"
+        android:layout_below="@+id/head"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="30dp"
+        android:layout_toLeftOf="@id/exitButton1"
+        android:layout_toRightOf="@id/infoButton1"
         android:numColumns="1"
         android:stretchMode="columnWidth" >
+
     </GridView>
 
        

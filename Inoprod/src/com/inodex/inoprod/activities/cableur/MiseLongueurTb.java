@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.R.layout;
+import com.inodex.inoprod.activities.InfoProduit;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
 import com.inodex.inoprod.business.TableRaccordement.Raccordement;
@@ -47,7 +48,8 @@ public class MiseLongueurTb extends Activity {
 	private String labels[];
 
 	/** Heure et dates à ajouter à la table de séquencment */
-	private Date dateRealisation = new Date();
+	private Date dateDebut, dateRealisation;
+	private long dureeMesuree =0;
 	private Time heureRealisation = new Time();
 
 	/** Nom de l'opérateur */
@@ -80,6 +82,12 @@ public class MiseLongueurTb extends Activity {
 			Raccordement.NUMERO_COMPOSANT_ABOUTISSANT,
 			Raccordement.NUMERO_COMPOSANT_TENANT,
 			Raccordement.NUMERO_BORNE_ABOUTISSANT };
+	
+	private String colInfo[] = new String[] { Raccordement._id,
+			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS, Raccordement.STANDARD,
+			Raccordement.NUMERO_HARNAIS_FAISCEAUX, Raccordement.REFERENCE_FICHIER_SOURCE};
+	private Cursor cursorInfo;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -117,8 +125,8 @@ public class MiseLongueurTb extends Activity {
 		}
 
 		// Recuperation de la première opération
-		clause = new String(Raccordement.NUMERO_OPERATION + "='"
-				+ numeroOperation + "'");
+		clause = new String(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + "='"
+				+ numeroCo + "'");
 		cursorA = cr.query(urlRac, colRac, clause, null, Raccordement._id
 				+ " ASC");
 		if (cursorA.moveToFirst()) {
@@ -135,20 +143,72 @@ public class MiseLongueurTb extends Activity {
 
 					@Override
 					public void onClick(View v) {
+						
+						dateRealisation = new Date();
+						contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0] + " "
+								+ nomPrenomOperateur[1]);
+						contact.put(Operation.DATE_REALISATION, dateRealisation.toGMTString());
+						heureRealisation.setToNow();
+						contact.put(Operation.HEURE_REALISATION, heureRealisation.toString());
+					
+						cr.update(urlSeq, contact, Operation._id + " = ?",
+								new String[] { Integer.toString(opId[indiceCourant]) });
+						contact.clear();
 
 						indiceCourant++;
 						String nextOperation = null;
 						try {
 							int test = opId[indiceCourant];
 
-							Intent toNext = new Intent(MiseLongueurTb.this,
-									RepriseBlindageTa.class);
+							clause = Operation._id + "='" + test + "'";
+							cursor = cr.query(urlSeq, columnsSeq, clause, null,
+									Operation._id);
+							if (cursor.moveToFirst()) {
+								nextOperation = cursor.getString(cursor
+										.getColumnIndex(Operation.DESCRIPTION_OPERATION));
+								Intent toNext = null;
+								if (nextOperation.startsWith("Préparation")) {
+									toNext = new Intent(MiseLongueurTb.this,
+											PreparationTa.class);
+								} else if (nextOperation.startsWith("Reprise")) {
+									toNext = new Intent(MiseLongueurTb.this,
+											RepriseBlindageTa.class);
+								} else if (nextOperation
+										.startsWith("Denudage Sertissage Enfichage")) {
+									toNext = new Intent(MiseLongueurTb.this,
+											DenudageSertissageEnfichageTa.class);
+								} else if (nextOperation
+										.startsWith("Denudage Sertissage de")) {
+									toNext = new Intent(MiseLongueurTb.this,
+											EnfichagesTa.class);
 
-							toNext.putExtra("opId", opId);
-							toNext.putExtra("Noms", nomPrenomOperateur);
-							toNext.putExtra("Indice", indiceCourant);
-							startActivity(toNext);
-							finish();
+								} else if (nextOperation.startsWith("Finalisation")) {
+									toNext = new Intent(MiseLongueurTb.this,
+											FinalisationTa.class);
+								} else if (nextOperation.startsWith("Tri")) {
+									toNext = new Intent(MiseLongueurTb.this,
+											TriAboutissantsTa.class);
+								} else if (nextOperation
+										.startsWith("Positionnement")) {
+									toNext = new Intent(MiseLongueurTb.this,
+											PositionnementTaTab.class);
+								} else if (nextOperation.startsWith("Cheminement")) {
+									toNext = new Intent(MiseLongueurTb.this,
+											CheminementTa.class);
+								} else if (nextOperation
+										.startsWith("Mise")) {
+									toNext = new Intent(MiseLongueurTb.this,
+											MiseLongueurTb.class);
+								}
+								if (toNext != null) {
+
+									toNext.putExtra("opId", opId);
+									toNext.putExtra("Noms", nomPrenomOperateur);
+									toNext.putExtra("Indice", indiceCourant);
+									startActivity(toNext);
+									finish();
+								}
+							}
 
 						} catch (ArrayIndexOutOfBoundsException e) {
 							Intent toNext = new Intent(MiseLongueurTb.this,
@@ -162,6 +222,38 @@ public class MiseLongueurTb extends Activity {
 						}
 					}
 
+				});
+				
+				// Info Produit
+				
+				infoProduit.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						cursorInfo = cr.query(urlRac, colInfo, Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+								+ " ='" + numeroCo + "' OR " + Raccordement.NUMERO_COMPOSANT_TENANT + "='" + numeroCo+"'" , null, null);
+						Intent toInfo = new Intent(MiseLongueurTb.this, InfoProduit.class);
+						labels = new String[7];
+
+						if (cursorInfo.moveToFirst()) {
+							labels[0] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Raccordement.DESIGNATION));
+							labels[1] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Raccordement.NUMERO_HARNAIS_FAISCEAUX));
+							labels[2] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Raccordement.STANDARD));
+							labels[3] = "";
+							labels[4] = "";
+							labels[5] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Raccordement.NUMERO_REVISION_HARNAIS));
+							labels[6] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Raccordement.REFERENCE_FICHIER_SOURCE));
+							toInfo.putExtra("Labels", labels);
+						}
+
+						startActivity(toInfo);
+
+					}
 				});
 	}
 }

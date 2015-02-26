@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.R.layout;
+import com.inodex.inoprod.activities.InfoProduit;
 import com.inodex.inoprod.business.CheminementProvider;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
@@ -98,16 +99,24 @@ public class Frettage extends Activity {
 			Raccordement.NUMERO_CHEMINEMENT,
 			Raccordement.NUMERO_SECTION_CHEMINEMENT,
 			Raccordement.NUMERO_POSITION_CHARIOT, Raccordement.ZONE_ACTIVITE,
-			Raccordement.LOCALISATION1 };
+			Raccordement.LOCALISATION1, Raccordement.REFERENCE_INTERNE,
+			Raccordement.REFERENCE_FABRICANT2 };
 
 	private String colChe[] = new String[] { Cheminement.LOCALISATION1,
 			Cheminement.NUMERO_COMPOSANT,
 			Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT,
 			Cheminement.NUMERO_SECTION_CHEMINEMENT,
 			Cheminement.ORDRE_REALISATION, Cheminement.REPERE_ELECTRIQUE,
-			Cheminement.ZONE_ACTIVITE, Cheminement._id, Cheminement.TYPE_SUPPORT
+			Cheminement.ZONE_ACTIVITE, Cheminement._id,
+			Cheminement.TYPE_SUPPORT
 
 	};
+
+	private String colInfo[] = new String[] { Raccordement._id,
+			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS,
+			Raccordement.STANDARD, Raccordement.NUMERO_HARNAIS_FAISCEAUX,
+			Raccordement.REFERENCE_FICHIER_SOURCE };
+	private Cursor cursorInfo;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -147,7 +156,7 @@ public class Frettage extends Activity {
 		cursor = cr.query(urlSeq, columnsSeq, clause, null, Operation._id
 				+ " ASC");
 		if (cursor.moveToFirst()) {
-			Log.e("Frettage","1");
+			Log.e("Frettage", "1");
 			numeroOperation = cursor.getString(cursor
 					.getColumnIndex(Operation.NUMERO_OPERATION));
 			description = cursor.getString(cursor
@@ -159,6 +168,18 @@ public class Frettage extends Activity {
 					Raccordement.NUMERO_COMPOSANT_TENANT + "='" + numeroCo
 							+ "'", null, Raccordement._id);
 			if (cursorA.moveToFirst()) {
+
+				zone.append(" : "
+						+ cursorA.getString(cursorA
+								.getColumnIndex(Raccordement.ZONE_ACTIVITE))
+						+ "-"
+						+ cursorA.getString(cursorA
+								.getColumnIndex(Raccordement.LOCALISATION1)));
+				referenceInterne.append((" : " + cursorA.getString(cursorA
+						.getColumnIndex(Raccordement.REFERENCE_INTERNE))));
+				referenceFabricant.append((" : " + cursorA.getString(cursorA
+						.getColumnIndex(Raccordement.REFERENCE_FABRICANT2))));
+
 				HashMap<String, String> element = new HashMap<String, String>();
 
 				int numeroSection = cursorA
@@ -186,23 +207,24 @@ public class Frettage extends Activity {
 									+ cursorB.getString(cursorB
 											.getColumnIndex(Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT)));
 					String zonePose = "";
-					
 
 					do {
-						zonePose += cursorB.getString(cursorB.getColumnIndex(Cheminement.ZONE_ACTIVITE))
+						zonePose += cursorB.getString(cursorB
+								.getColumnIndex(Cheminement.ZONE_ACTIVITE))
 								+ "-"
-								+ cursorB.getString(cursorB
-										.getColumnIndex(Cheminement.LOCALISATION1)) +"-"
-										+ cursorB.getString(cursorB
-												.getColumnIndex(Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT)) +", " ;
-						
-					} while(cursorB.moveToNext());
+								+ cursorB
+										.getString(cursorB
+												.getColumnIndex(Cheminement.LOCALISATION1))
+								+ "-"
+								+ cursorB
+										.getString(cursorB
+												.getColumnIndex(Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT))
+								+ ", ";
+
+					} while (cursorB.moveToNext());
 					element.put(colRac[6], zonePose);
 					liste.add(element);
 
-						
-					
-				
 				}
 			}
 
@@ -267,6 +289,9 @@ public class Frettage extends Activity {
 									CheminementTa.class);
 						} else if (nextOperation.startsWith("Frettage")) {
 							toNext = new Intent(Frettage.this, Frettage.class);
+						} else if (nextOperation.startsWith("Mise")) {
+							toNext = new Intent(Frettage.this,
+									MiseLongueurTb.class);
 						}
 						if (toNext != null) {
 
@@ -290,6 +315,41 @@ public class Frettage extends Activity {
 				}
 			}
 
+		});
+
+		// Info Produit
+
+		infoProduit.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				cursorInfo = cr.query(urlRac, colInfo,
+						Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
+								+ numeroCo + "' OR "
+								+ Raccordement.NUMERO_COMPOSANT_TENANT + "='"
+								+ numeroCo + "'", null, null);
+				Intent toInfo = new Intent(Frettage.this, InfoProduit.class);
+				labels = new String[7];
+
+				if (cursorInfo.moveToFirst()) {
+					labels[0] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.DESIGNATION));
+					labels[1] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_HARNAIS_FAISCEAUX));
+					labels[2] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.STANDARD));
+					labels[3] = "";
+					labels[4] = "";
+					labels[5] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_REVISION_HARNAIS));
+					labels[6] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.REFERENCE_FICHIER_SOURCE));
+					toInfo.putExtra("Labels", labels);
+				}
+
+				startActivity(toInfo);
+
+			}
 		});
 
 		// Grande pause

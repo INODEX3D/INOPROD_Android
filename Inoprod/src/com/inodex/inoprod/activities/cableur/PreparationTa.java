@@ -24,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.inodex.inoprod.R;
+import com.inodex.inoprod.activities.InfoProduit;
 import com.inodex.inoprod.business.NomenclatureProvider;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
@@ -55,7 +56,6 @@ public class PreparationTa extends Activity {
 	private String labels[];
 
 	private int nbRows;
-	
 
 	private List<HashMap<String, String>> liste = new ArrayList<HashMap<String, String>>();
 
@@ -63,9 +63,7 @@ public class PreparationTa extends Activity {
 	/** Heure et dates à ajouter à la table de séquencment */
 	private Time heureRealisation = new Time();
 	private Date dateDebut, dateRealisation;
-	private long dureeMesuree =0;
-	
-	
+	private long dureeMesuree = 0;
 
 	/** Nom de l'opérateur */
 	private String nomPrenomOperateur[] = null;
@@ -75,7 +73,7 @@ public class PreparationTa extends Activity {
 	private ContentResolver cr;
 	private ContentValues contact;
 
-	private String clause, numeroOperation, numeroCo;
+	private String clause, numeroOperation, numeroCo, numeroCable;
 	private boolean prodAchevee;
 
 	/** Colonnes utilisés pour les requêtes */
@@ -83,7 +81,7 @@ public class PreparationTa extends Activity {
 			Operation.GAMME, Operation.RANG_1_1, Operation.NUMERO_OPERATION,
 			Operation.NOM_OPERATEUR, Operation.DATE_REALISATION,
 			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION,
-			Operation.DUREE_MESUREE };
+			Operation.DUREE_MESUREE, Operation.RANG_1_1_1 };
 
 	private int layouts[] = new int[] { R.id.designation,
 			R.id.referenceFabricant, R.id.referenceInterne, R.id.numeroBorne,
@@ -99,16 +97,21 @@ public class PreparationTa extends Activity {
 			Raccordement.REPERE_ELECTRIQUE_TENANT,
 			Raccordement.NUMERO_COMPOSANT_ABOUTISSANT,
 			Raccordement.NUMERO_COMPOSANT_TENANT,
-			Raccordement.NUMERO_BORNE_ABOUTISSANT };
+			Raccordement.NUMERO_BORNE_ABOUTISSANT, Raccordement.NUMERO_FIL_CABLE };
 
+	private String colInfo[] = new String[] { Raccordement._id,
+			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS,
+			Raccordement.STANDARD, Raccordement.NUMERO_HARNAIS_FAISCEAUX,
+			Raccordement.REFERENCE_FICHIER_SOURCE };
+	private Cursor cursorInfo;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_preparation_ta);
-		//Initialisation du temps
+		// Initialisation du temps
 		dateDebut = new Date();
-	
+
 		// Récupération des éléments
 		Intent intent = getIntent();
 		indiceCourant = intent.getIntExtra("Indice", 0);
@@ -187,19 +190,17 @@ public class PreparationTa extends Activity {
 				.getCount();
 		Log.e("NombreLignes", "" + nbRows);
 
-	
-
 		// Etape suivante
 
 		boutonCheck.setOnClickListener(new View.OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				
+
 				indiceLimite++;
 				// Controle de l'état de la production
 				if (prodAchevee) { // Fin de la prodction
-					
+
 					String nextOperation = null;
 					try {
 						int test = opId[indiceCourant];
@@ -224,7 +225,12 @@ public class PreparationTa extends Activity {
 									.startsWith("Denudage Sertissage de")) {
 								toNext = new Intent(PreparationTa.this,
 										DenudageSertissageContactTa.class);
-							}
+							
+						} else if (nextOperation
+								.startsWith("Mise")) {
+							toNext = new Intent(PreparationTa.this,
+									MiseLongueurTb.class);
+						}
 							if (toNext != null) {
 
 								toNext.putExtra("opId", opId);
@@ -264,6 +270,8 @@ public class PreparationTa extends Activity {
 						element.put(colRac[3], cursorA.getString(cursorA
 								.getColumnIndex(colRac[3])));
 						element.put(colRac[4], "X");
+						numeroCable = cursorA.getString(cursorA
+								.getColumnIndex(Raccordement.NUMERO_FIL_CABLE));
 
 						liste.add(element);
 
@@ -272,6 +280,42 @@ public class PreparationTa extends Activity {
 
 					}
 				}
+			}
+		});
+
+		// Info Produit
+
+		infoProduit.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				cursorInfo = cr.query(urlRac, colInfo,
+						Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
+								+ numeroCo + "' OR "
+								+ Raccordement.NUMERO_COMPOSANT_TENANT + "='"
+								+ numeroCo + "'", null, null);
+				Intent toInfo = new Intent(PreparationTa.this,
+						InfoProduit.class);
+				labels = new String[7];
+
+				if (cursorInfo.moveToFirst()) {
+					labels[0] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.DESIGNATION));
+					labels[1] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_HARNAIS_FAISCEAUX));
+					labels[2] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.STANDARD));
+					labels[3] = "";
+					labels[4] = "";
+					labels[5] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_REVISION_HARNAIS));
+					labels[6] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.REFERENCE_FICHIER_SOURCE));
+					toInfo.putExtra("Labels", labels);
+				}
+
+				startActivity(toInfo);
+
 			}
 		});
 
@@ -289,62 +333,61 @@ public class PreparationTa extends Activity {
 					Log.e("Indice", "" + indiceLimite);
 				}
 
-				//liste = oldListe;
-				if (!(liste.isEmpty())) { 
-				liste.remove(liste.size() -1);
+				// liste = oldListe;
+				if (!(liste.isEmpty())) {
+					liste.remove(liste.size() - 1);
 				}
-				
-				//MAJ de la durée
+
+				// MAJ de la durée
 				dureeMesuree = 0;
-				dateDebut= new Date();
+				dateDebut = new Date();
 
 				// Vérification de l'état de la production
 				prodAchevee = (indiceLimite >= nbRows);
 				displayContentProvider();
 			}
 		});
-		
-		//Grande pause
-				grandePause.setOnClickListener(new View.OnClickListener() {
 
-					@Override
-					public void onClick(View v) {
-						AlertDialog.Builder builder = new AlertDialog.Builder(
-								PreparationTa.this);
-						builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
-						builder.setCancelable(false);
-						builder.setPositiveButton("Oui",
-								new DialogInterface.OnClickListener() {
+		// Grande pause
+		grandePause.setOnClickListener(new View.OnClickListener() {
 
-									public void onClick(DialogInterface dialog,
-											int which) {
-									/*	Intent toMain = new Intent(
-												CheminementTa.this,
-												MainActivity.class);
-										startActivity(toMain); */
-										finish();
+			@Override
+			public void onClick(View v) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						PreparationTa.this);
+				builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
+				builder.setCancelable(false);
+				builder.setPositiveButton("Oui",
+						new DialogInterface.OnClickListener() {
 
-									}
+							public void onClick(DialogInterface dialog,
+									int which) {
+								/*
+								 * Intent toMain = new Intent(
+								 * CheminementTa.this, MainActivity.class);
+								 * startActivity(toMain);
+								 */
+								finish();
 
-								});
+							}
 
-						builder.setNegativeButton("Non",
-								new DialogInterface.OnClickListener() {
-									public void onClick(final DialogInterface dialog,
-											final int id) {
+						});
 
-										dialog.cancel();
+				builder.setNegativeButton("Non",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
 
-									}
-								});
-						builder.show();
+								dialog.cancel();
 
-					}
-				});
+							}
+						});
+				builder.show();
 
-		
-		
-		//Petite Pause
+			}
+		});
+
+		// Petite Pause
 		petitePause.setOnClickListener(new View.OnClickListener() {
 
 			@Override
@@ -360,7 +403,7 @@ public class PreparationTa extends Activity {
 							public void onClick(final DialogInterface dialog,
 									final int id) {
 
-								dateDebut= new Date();
+								dateDebut = new Date();
 								dialog.cancel();
 
 							}
@@ -369,7 +412,6 @@ public class PreparationTa extends Activity {
 
 			}
 		});
-		
 
 		// Info Produit
 	}
@@ -386,20 +428,23 @@ public class PreparationTa extends Activity {
 				+ nomPrenomOperateur[1]);
 		dateRealisation = new Date();
 
-		
 		contact.put(Operation.DATE_REALISATION, dateRealisation.toGMTString());
 		heureRealisation.setToNow();
 		contact.put(Operation.HEURE_REALISATION, heureRealisation.toString());
-		
+
 		dureeMesuree += dateRealisation.getTime() - dateDebut.getTime();
 		contact.put(Operation.DUREE_MESUREE, dureeMesuree / 1000);
+		/*cr.update(urlSeq, contact, Operation.RANG_1_1_1 + "='" + numeroCable
+				+ "' AND " + Operation.DESCRIPTION_OPERATION
+				+ " LIKE '%Préparat%' AND " + Operation.RANG_1_1 + " LIKE '%"
+				+ numeroCo + "%'", null); */
 		cr.update(urlSeq, contact, Operation._id + " = ?",
 				new String[] { Integer.toString(opId[indiceCourant]) });
 		contact.clear();
-		
-		//MAJ de la durée
+
+		// MAJ de la durée
 		dureeMesuree = 0;
-		dateDebut= new Date();
+		dateDebut = new Date();
 
 		// Vérification de l'état de la production
 		if (indiceLimite == nbRows) {

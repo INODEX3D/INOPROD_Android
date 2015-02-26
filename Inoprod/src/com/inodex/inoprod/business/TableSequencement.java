@@ -12,6 +12,7 @@ public class TableSequencement {
 		public static final String GAMME = "GAMME";
 		public static final String RANG_1 = "RANG_1";
 		public static final String RANG_1_1 = "RANG_1_1";
+		public static final String RANG_1_1_1 = "RANG_1_1_1";
 		public static final String NUMERO_OPERATION = "NUMERO_OPERATION";
 		public static final String DESCRIPTION_OPERATION = "DESCRIPTION_OPERATION";
 		public static final String DATE_DEBUT = "DATE_DEBUT";
@@ -23,6 +24,7 @@ public class TableSequencement {
 		public static final String DUREE_THEORIQUE = "DUREE_THEORIQUE";
 		public static final String DUREE_ECART = "DUREE_ECART";
 		public static final String REALISABLE = "REALISABLE";
+		public static final String SECONDE_DUREE_MESUREE = "SECONDE_DUREE_MESUREE";
 		
 		
 		

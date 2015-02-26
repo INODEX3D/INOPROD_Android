@@ -168,7 +168,7 @@ public class DebitCables extends Activity {
 		affichage = false;
 
 		// Affichage de la prémiere ligne du contenu
-		// displayContentProvider();
+		 displayContentProvider();
 
 		// Simulation lecture fichier excel
 		InputStream input = null;
@@ -230,8 +230,8 @@ public class DebitCables extends Activity {
 					} catch (ArrayIndexOutOfBoundsException e) {
 						// Il ne reste plus de cables à débiter
 						// On passe donc au regroupement
-						clause = new String(Operation.RANG_1_1 + "='"
-								+ "Regroupement câbles" + "'");
+						clause = new String(Operation.RANG_1_1 + " LIKE '%"
+								+ "Regroupement des câbles%" + "'");
 						cursor = cr.query(urlSeq, columnsSeq, clause, null,
 								Operation._id + " ASC");
 						// Rempliassage du tableau pour chaque regroupement

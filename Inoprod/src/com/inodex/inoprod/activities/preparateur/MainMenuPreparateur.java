@@ -1,6 +1,7 @@
 package com.inodex.inoprod.activities.preparateur;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +32,7 @@ import android.widget.Toast;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.activities.Inoprod;
+import com.inodex.inoprod.activities.cableur.CheminementTa;
 import com.inodex.inoprod.business.BOMProvider;
 import com.inodex.inoprod.business.ChariotProvider;
 import com.inodex.inoprod.business.CheminementProvider;
@@ -92,7 +94,7 @@ public class MainMenuPreparateur extends Activity {
 	/** Curseur et Content Resolver à utiliser lors des requêtes */
 	private Cursor cursor, cursorA, cursorB;
 	private ContentResolver cr;
-
+	boolean finImport = false;
 	/** Uri à manipuler */
 	private Uri urlNomenclature = NomenclatureProvider.CONTENT_URI;
 	private Uri urlProduction = ProductionProvider.CONTENT_URI;
@@ -201,7 +203,8 @@ public class MainMenuPreparateur extends Activity {
 			Raccordement.ZONE_ACTIVITE,
 			Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT,
 			Raccordement.REPERE_ELECTRIQUE_TENANT, Raccordement.FIL_SENSIBLE,
-			Raccordement.REFERENCE_FABRICANT2, Raccordement.NUMERO_FIL_CABLE };
+			Raccordement.REFERENCE_FABRICANT2, Raccordement.NUMERO_FIL_CABLE,
+			Raccordement.LOCALISATION1 };
 
 	private String clause, rep, norme, numeroOperation, num, gamme, rang,
 			rang_1, descriptionOperation, num1, referenceCourante,
@@ -266,11 +269,9 @@ public class MainMenuPreparateur extends Activity {
 
 			@Override
 			public void onClick(View v) {
+		
 				boolean importReussi = importSources();
 				if (importReussi) {
-					Toast.makeText(MainMenuPreparateur.this,
-							"Import des fichiers sources réussis",
-							Toast.LENGTH_SHORT).show();
 					try {
 						creationTables();
 					} catch (IOException e) {
@@ -278,7 +279,9 @@ public class MainMenuPreparateur extends Activity {
 						e.printStackTrace();
 					}
 					generationTableSequencement();
+					finImport= true;
 				}
+	
 
 			}
 
@@ -339,8 +342,20 @@ public class MainMenuPreparateur extends Activity {
 		indiceChariotB = 1;
 
 		// Création d'un InputStream vers le fichier Excel
-		InputStream input = this.getResources().openRawResource(
-				R.raw.table_cheminement);
+		String nomFichier = null;
+		File data = new File(Environment.getDataDirectory().getAbsolutePath()
+				+ "/data/com.inodex.inoprod/");
+
+		for (String file : data.list()) {
+			Log.d("Nom Fichier", file);
+			if (file.contains("cheminement")) {
+				nomFichier = file;
+				Log.e("Nom Fichier", nomFichier);
+			}
+		}
+
+		InputStream input = new FileInputStream(Environment.getDataDirectory()
+				.getAbsolutePath() + "/data/com.inodex.inoprod/" + nomFichier);
 		// Interpretation du fichier a l'aide de Apache POI
 		POIFSFileSystem fs = new POIFSFileSystem(input);
 		HSSFWorkbook wb = new HSSFWorkbook(fs);
@@ -1121,8 +1136,25 @@ public class MainMenuPreparateur extends Activity {
 
 	private void insertRecordsOutillage() throws IOException {
 		// Création d'un InputStream vers le fichier Excel
-		InputStream input = this.getResources().openRawResource(
-				R.raw.table_outillage);
+		/*
+		 * InputStream input = this.getResources().openRawResource(
+		 * R.raw.table_outillage);
+		 */
+		String nomFichier = null;
+		File data = new File(Environment.getDataDirectory().getAbsolutePath()
+				+ "/data/com.inodex.inoprod/");
+
+		for (String file : data.list()) {
+			Log.d("Nom Fichier", file);
+			if (file.contains("outillage")) {
+				nomFichier = file;
+				Log.e("Nom Fichier", nomFichier);
+			}
+		}
+
+		InputStream input = new FileInputStream(Environment.getDataDirectory()
+				.getAbsolutePath() + "/data/com.inodex.inoprod/" + nomFichier);
+
 		// Interpretation du fichier a l'aide de Apache POI
 		POIFSFileSystem fs = new POIFSFileSystem(input);
 		HSSFWorkbook wb = new HSSFWorkbook(fs);
@@ -1331,7 +1363,20 @@ public class MainMenuPreparateur extends Activity {
 
 	private void insertRecordsDurees() throws IOException {
 		// Création d'un InputStream vers le fichier Excel
-		InputStream input = this.getResources().openRawResource(R.raw.bd_temps);
+		String nomFichier = null;
+		File data = new File(Environment.getDataDirectory().getAbsolutePath()
+				+ "/data/com.inodex.inoprod/");
+
+		for (String file : data.list()) {
+			Log.d("Nom Fichier", file);
+			if (file.contains("temps")) {
+				nomFichier = file;
+				Log.e("Nom Fichier", nomFichier);
+			}
+		}
+
+		InputStream input = new FileInputStream(Environment.getDataDirectory()
+				.getAbsolutePath() + "/data/com.inodex.inoprod/" + nomFichier);
 		// Interpretation du fichier a l'aide de Apache POI
 		POIFSFileSystem fs = new POIFSFileSystem(input);
 		HSSFWorkbook wb = new HSSFWorkbook(fs);
@@ -1382,8 +1427,20 @@ public class MainMenuPreparateur extends Activity {
 	private void insertRecordsProduction() throws IOException {
 
 		// Création d'un InputStream vers le fichier Excel
-		InputStream input = this.getResources().openRawResource(
-				R.raw.bd_production);
+		String nomFichier = null;
+		File data = new File(Environment.getDataDirectory().getAbsolutePath()
+				+ "/data/com.inodex.inoprod/");
+
+		for (String file : data.list()) {
+			Log.d("Nom Fichier", file);
+			if (file.contains("production")) {
+				nomFichier = file;
+				Log.e("Nom Fichier", nomFichier);
+			}
+		}
+
+		InputStream input = new FileInputStream(Environment.getDataDirectory()
+				.getAbsolutePath() + "/data/com.inodex.inoprod/" + nomFichier);
 		// Interpretation du fichier a l'aide de Apache POI
 		POIFSFileSystem fs = new POIFSFileSystem(input);
 		HSSFWorkbook wb = new HSSFWorkbook(fs);
@@ -1709,8 +1766,20 @@ public class MainMenuPreparateur extends Activity {
 	 */
 	private void insertRecordsNomenclature() throws IOException {
 		// Création d'un InputStream vers le fichier Excel
-		InputStream input = this.getResources().openRawResource(
-				R.raw.bd_nomenclature);
+		String nomFichier = null;
+		File data = new File(Environment.getDataDirectory().getAbsolutePath()
+				+ "/data/com.inodex.inoprod/");
+
+		for (String file : data.list()) {
+			Log.d("Nom Fichier", file);
+			if (file.contains("nomenclature")) {
+				nomFichier = file;
+				Log.e("Nom Fichier", nomFichier);
+			}
+		}
+
+		InputStream input = new FileInputStream(Environment.getDataDirectory()
+				.getAbsolutePath() + "/data/com.inodex.inoprod/" + nomFichier);
 		// Interpretation du fichier a l'aide de Apache POI
 		POIFSFileSystem fs = new POIFSFileSystem(input);
 		HSSFWorkbook wb = new HSSFWorkbook(fs);
@@ -2094,6 +2163,10 @@ public class MainMenuPreparateur extends Activity {
 								descriptionOperation);
 						contact.put(Operation.NUMERO_OPERATION, num1);
 						contact.put(Operation.REALISABLE, 1);
+						contact.put(
+								Operation.RANG_1_1_1,
+								cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
 						contact.put(Operation.DUREE_THEORIQUE,
 								ENFICHAGE_FC_OBTURATEURS);
 
@@ -2141,6 +2214,10 @@ public class MainMenuPreparateur extends Activity {
 						contact.put(Operation.REALISABLE, 1);
 						contact.put(Operation.DUREE_THEORIQUE,
 								ENFICHAGE_FC_OBTURATEURS);
+						contact.put(
+								Operation.RANG_1_1_1,
+								cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2186,6 +2263,10 @@ public class MainMenuPreparateur extends Activity {
 						contact.put(Operation.NUMERO_OPERATION, num1);
 						contact.put(Operation.REALISABLE, 1);
 						contact.put(Operation.DUREE_THEORIQUE, REPRISE_BLINDAGE);
+						contact.put(
+								Operation.RANG_1_1_1,
+								cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2301,6 +2382,10 @@ public class MainMenuPreparateur extends Activity {
 							contact.put(Operation.REALISABLE, 1);
 							contact.put(Operation.DUREE_THEORIQUE,
 									SERTISSAGE_CONTACTS);
+							contact.put(
+									Operation.RANG_1_1_1,
+									cursorA.getString(cursorA
+											.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
 
 							// Ajout de l'entité
 							getContentResolver().insert(urlSequencement,
@@ -2342,6 +2427,10 @@ public class MainMenuPreparateur extends Activity {
 							contact.put(Operation.REALISABLE, 0);
 							contact.put(Operation.DUREE_THEORIQUE,
 									ENFICHAGE_FC_OBTURATEURS);
+							contact.put(
+									Operation.RANG_1_1_1,
+									cursorA.getString(cursorA
+											.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
 
 							// Ajout de l'entité
 							getContentResolver().insert(urlSequencement,
@@ -2374,6 +2463,10 @@ public class MainMenuPreparateur extends Activity {
 							contact.put(Operation.REALISABLE, 1);
 							contact.put(Operation.DUREE_THEORIQUE,
 									SERTISSAGE_CONTACTS);
+							contact.put(
+									Operation.RANG_1_1_1,
+									cursorA.getString(cursorA
+											.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
 
 							// Ajout de l'entité
 							getContentResolver().insert(urlSequencement,
@@ -2496,6 +2589,10 @@ public class MainMenuPreparateur extends Activity {
 						contact.put(Operation.REALISABLE, 0);
 						contact.put(Operation.DUREE_THEORIQUE,
 								SERTISSAGE_CONTACTS);
+						contact.put(
+								Operation.RANG_1_1_1,
+								cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2511,7 +2608,10 @@ public class MainMenuPreparateur extends Activity {
 				// Frettage
 				descriptionOperation = "Frettage Zone  "
 						+ cursor.getString(cursor
-								.getColumnIndex(Raccordement.ZONE_ACTIVITE));
+								.getColumnIndex(Raccordement.ZONE_ACTIVITE))
+						+ "-"
+						+ cursor.getString(cursor
+								.getColumnIndex(Raccordement.LOCALISATION1));
 
 				// Ajout des opérations à la table de séquencement
 				num1 = numeroOperation + Integer.toString(indiceFrettage++);
@@ -2606,6 +2706,10 @@ public class MainMenuPreparateur extends Activity {
 						contact.put(Operation.REALISABLE, 0);
 						contact.put(Operation.DUREE_THEORIQUE,
 								ENFICHAGE_FC_OBTURATEURS);
+						contact.put(
+								Operation.RANG_1_1_1,
+								cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2651,6 +2755,10 @@ public class MainMenuPreparateur extends Activity {
 						contact.put(Operation.REALISABLE, 0);
 						contact.put(Operation.DUREE_THEORIQUE,
 								ENFICHAGE_FC_OBTURATEURS);
+						contact.put(
+								Operation.RANG_1_1_1,
+								cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2671,6 +2779,26 @@ public class MainMenuPreparateur extends Activity {
 
 					} while (cursorA.moveToNext());
 				}
+
+				// Mise à longueur
+				descriptionOperation = "Mise à longueur Tête B  "
+						+ numeroComposant;
+
+				// Ajout des opérations à la table de séquencement
+				num1 = numeroOperation + indice++;
+				contact.put(Operation.GAMME, gamme);
+				contact.put(Operation.RANG_1, rang);
+				contact.put(Operation.RANG_1_1, rang_1);
+				contact.put(Operation.DESCRIPTION_OPERATION,
+						descriptionOperation);
+				contact.put(Operation.NUMERO_OPERATION, num1);
+				contact.put(Operation.REALISABLE, 0);
+				contact.put(Operation.DUREE_THEORIQUE, ENFICHAGE_FC_OBTURATEURS);
+
+				// Ajout de l'entité
+				getContentResolver().insert(urlSequencement, contact);
+				// Ecrasement de ses données pour passer à la suivante
+				contact.clear();
 
 				// Recherche des reprises blindages
 				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
@@ -2697,6 +2825,10 @@ public class MainMenuPreparateur extends Activity {
 						contact.put(Operation.REALISABLE, 0);
 						contact.put(Operation.DUREE_THEORIQUE,
 								ENFICHAGE_FC_OBTURATEURS);
+						contact.put(
+								Operation.RANG_1_1_1,
+								cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2849,6 +2981,10 @@ public class MainMenuPreparateur extends Activity {
 							contact.put(Operation.REALISABLE, 0);
 							contact.put(Operation.DUREE_THEORIQUE,
 									ENFICHAGE_FC_OBTURATEURS);
+							contact.put(
+									Operation.RANG_1_1_1,
+									cursorA.getString(cursorA
+											.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
 
 							// Ajout de l'entité
 							getContentResolver().insert(urlSequencement,
@@ -2880,6 +3016,10 @@ public class MainMenuPreparateur extends Activity {
 							contact.put(Operation.REALISABLE, 0);
 							contact.put(Operation.DUREE_THEORIQUE,
 									SERTISSAGE_CONTACTS);
+							contact.put(
+									Operation.RANG_1_1_1,
+									cursorA.getString(cursorA
+											.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
 
 							// Ajout de l'entité
 							getContentResolver().insert(urlSequencement,
@@ -2958,6 +3098,10 @@ public class MainMenuPreparateur extends Activity {
 						contact.put(Operation.REALISABLE, 0);
 						contact.put(Operation.DUREE_THEORIQUE,
 								SERTISSAGE_CONTACTS);
+						contact.put(
+								Operation.RANG_1_1_1,
+								cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);

@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.R.layout;
+import com.inodex.inoprod.activities.InfoProduit;
 import com.inodex.inoprod.activities.Inoprod;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
@@ -108,6 +109,11 @@ public class RepriseBlindageTa extends Activity {
 			Raccordement.NUMERO_POSITION_CHARIOT,
 			Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT,
 			Raccordement.REPERE_ELECTRIQUE_TENANT };
+	
+	private String colInfo[] = new String[] { Raccordement._id,
+			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS, Raccordement.STANDARD,
+			Raccordement.NUMERO_HARNAIS_FAISCEAUX, Raccordement.REFERENCE_FICHIER_SOURCE};
+	private Cursor cursorInfo;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -235,6 +241,10 @@ public class RepriseBlindageTa extends Activity {
 							} else if (nextOperation.startsWith("Enfichage")) {
 								toNext = new Intent(RepriseBlindageTa.this,
 										EnfichagesTa.class);
+							} else if (nextOperation
+									.startsWith("Mise")) {
+								toNext = new Intent(RepriseBlindageTa.this,
+										MiseLongueurTb.class);
 							}
 							if (toNext != null) {
 
@@ -336,6 +346,36 @@ public class RepriseBlindageTa extends Activity {
 							}
 						});
 				builder.show();
+
+			}
+		});
+		
+		infoProduit.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				cursorInfo = cr.query(urlRac, colInfo, Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+						+ " ='" + numeroCo + "' OR " + Raccordement.NUMERO_COMPOSANT_TENANT + "='" + numeroCo+"'" , null, null);
+				Intent toInfo = new Intent(RepriseBlindageTa.this, InfoProduit.class);
+				labels = new String[7];
+
+				if (cursorInfo.moveToFirst()) {
+					labels[0] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.DESIGNATION));
+					labels[1] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_HARNAIS_FAISCEAUX));
+					labels[2] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.STANDARD));
+					labels[3] = "";
+					labels[4] = "";
+					labels[5] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_REVISION_HARNAIS));
+					labels[6] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.REFERENCE_FICHIER_SOURCE));
+					toInfo.putExtra("Labels", labels);
+				}
+
+				startActivity(toInfo);
 
 			}
 		});

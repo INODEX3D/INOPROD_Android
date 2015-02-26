@@ -151,22 +151,22 @@ public class RegroupementCables extends Activity {
 			} catch (NullPointerException e) {
 			} */
 			try {
-				numeroComposant.append(cursorA.getString(cursorA
+				numeroComposant.append(": "+cursorA.getString(cursorA
 						.getColumnIndex(Cheminement.NUMERO_COMPOSANT)));
 			} catch (NullPointerException e) {
 			}
 			try {
-				repereElectrique.append(cursorA.getString(cursorA
+				repereElectrique.append(": "+cursorA.getString(cursorA
 						.getColumnIndex(Cheminement.REPERE_ELECTRIQUE)));
 			} catch (NullPointerException e) {
 			}
 			try {
-				ordreRealisation.append(cursorA.getString(cursorA
+				ordreRealisation.append(": "+cursorA.getString(cursorA
 						.getColumnIndex(Cheminement.ORDRE_REALISATION)));
 			} catch (NullPointerException e) {
 			}
 			try {
-				numeroCheminement.append(Integer.toString(numeroCh));
+				numeroCheminement.append(": "+Integer.toString(numeroCh));
 			} catch (NullPointerException e) {
 			}
 		} else {

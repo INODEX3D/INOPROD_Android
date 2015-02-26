@@ -26,10 +26,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.inodex.inoprod.R;
+import com.inodex.inoprod.activities.InfoProduit;
+import com.inodex.inoprod.activities.magasiniers.KittingCablesComposants;
 import com.inodex.inoprod.business.CheminementProvider;
+import com.inodex.inoprod.business.ProductionProvider;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
+import com.inodex.inoprod.business.Production.Fil;
 import com.inodex.inoprod.business.TableCheminement.Cheminement;
+import com.inodex.inoprod.business.TableKittingCable.Kitting;
 import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
 
@@ -75,15 +80,15 @@ public class CheminementTa extends Activity {
 	private ContentValues contact;
 
 	private String clause, numeroOperation, numeroCo, clauseTotal,
-			oldClauseTotal, numeroCable, description;
-	private boolean prodAchevee;
+			oldClauseTotal, numeroCable, description,ordre;
+	private boolean prodAchevee, teteB;
 
 	/** Colonnes utilisés pour les requêtes */
 	private String columnsSeq[] = new String[] { Operation._id,
 			Operation.GAMME, Operation.RANG_1_1, Operation.NUMERO_OPERATION,
 			Operation.NOM_OPERATEUR, Operation.DATE_REALISATION,
 			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION,
-			Operation.DUREE_MESUREE };
+			Operation.DUREE_MESUREE, Operation.RANG_1_1_1 };
 
 	private int layouts[] = new int[] { R.id.numeroRevisionLiaison,
 			R.id.numeroFilCable, R.id.typeCable, R.id.connecteurAboutissant,
@@ -112,6 +117,12 @@ public class CheminementTa extends Activity {
 			Cheminement.TYPE_SUPPORT
 
 	};
+	
+	private String colInfo[] = new String[] { Raccordement._id,
+			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS, Raccordement.STANDARD,
+			Raccordement.NUMERO_HARNAIS_FAISCEAUX, Raccordement.REFERENCE_FICHIER_SOURCE};
+	private Cursor cursorInfo;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -162,11 +173,13 @@ public class CheminementTa extends Activity {
 
 		// Recuperation de la première opération
 		if (description.contains("Tête A")) {
-		clause = new String(Raccordement.NUMERO_COMPOSANT_TENANT + "='"
-				+ numeroCo + "'");
-		} else {
-			clause = new String(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + "='"
+			clause = new String(Raccordement.NUMERO_COMPOSANT_TENANT + "='"
 					+ numeroCo + "'");
+			teteB = false;
+		} else {
+			clause = new String(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+					+ "='" + numeroCo + "'");
+			teteB = true;
 		}
 		cursorA = cr.query(urlRac, colRac, clause, null, Raccordement._id
 				+ " ASC");
@@ -178,9 +191,10 @@ public class CheminementTa extends Activity {
 									.getColumnIndex(Raccordement.NUMERO_POSITION_CHARIOT)));
 			zone.append(" : "
 					+ cursorA.getString(cursorA
-							.getColumnIndex(Raccordement.ZONE_ACTIVITE)) +"-" 
-							+ cursorA.getString(cursorA
-									.getColumnIndex(Raccordement.LOCALISATION1)));
+							.getColumnIndex(Raccordement.ZONE_ACTIVITE))
+					+ "-"
+					+ cursorA.getString(cursorA
+							.getColumnIndex(Raccordement.LOCALISATION1)));
 
 			numeroCheminement.append(" : "
 					+ cursorA.getString(cursorA
@@ -197,6 +211,7 @@ public class CheminementTa extends Activity {
 						+ "='" + 0 + "' AND " + Raccordement.OBTURATEUR + "='"
 						+ 0 + "' AND " + Raccordement.REPRISE_BLINDAGE
 						+ " IS NULL ";
+				ordre ="Cheminement Tête A";
 			} else {
 				titre.setText(R.string.cheminementsCablesTb);
 				repereElectrique
@@ -208,15 +223,33 @@ public class CheminementTa extends Activity {
 						+ "='" + 0 + "' AND " + Raccordement.OBTURATEUR + "='"
 						+ 0 + "' AND " + Raccordement.REPRISE_BLINDAGE
 						+ " IS NULL ";
+				ordre ="Cheminement Tête B";
 			}
 
 		}
 
 		// Initialisation du nombre de ligne à atteindre
-		nbRows = cr.query(urlRac, colRac,
+		/*nbRows = cr.query(urlRac, colRac,
 				clause + " GROUP BY " + Raccordement.NUMERO_FIL_CABLE, null,
-				Raccordement._id).getCount();
-		Log.e("NombreLignes", "" + nbRows);
+				Raccordement._id).getCount(); */
+		nbRows = 0;
+		for (int i : opId) {
+			cursorA = cr.query(urlSeq, columnsSeq, Operation._id + "='" + i
+					+ "'", null, Operation._id);
+			if (cursorA.moveToFirst()) {
+				if (cursorA.getString(
+						cursorA.getColumnIndex(Operation.RANG_1_1)).contains(
+						numeroCo)
+						&& cursorA
+								.getString(
+										cursorA.getColumnIndex(Operation.DESCRIPTION_OPERATION))
+								.contains(ordre)) {
+					nbRows++;
+				}
+
+			}
+		}
+		Log.e("nbRows",""+nbRows);
 
 		// Bouton de validation
 		boutonCheck.setOnClickListener(new View.OnClickListener() {
@@ -226,7 +259,46 @@ public class CheminementTa extends Activity {
 
 				// Vérification de l'état de la production
 				if (prodAchevee) {
+
+					// MAJ du point si tetes B
+					if (teteB) {
 					
+						clause = Operation.RANG_1_1 + " LIKE '%" + numeroCo
+								+ "%' AND " + Operation.NUMERO_OPERATION
+								+ " LIKE '7-%' AND("
+								+ Operation.DESCRIPTION_OPERATION
+								+ " LIKE '%Préparation%' OR "
+								+ Operation.DESCRIPTION_OPERATION
+								+ " LIKE '%Mise%' OR "
+								+ Operation.DESCRIPTION_OPERATION
+								+ " LIKE '%Reprise%' OR "
+								+ Operation.DESCRIPTION_OPERATION
+								+ " LIKE '%Denudage Sertissage%')";
+						cursor = cr.query(urlSeq, columnsSeq, clause, null,
+								Operation._id);
+						if (cursor.moveToFirst()) {
+
+							contact.put(Operation.REALISABLE, 1);
+							int id = cursor.getInt(cursor
+									.getColumnIndex(Operation._id));
+							cr.update(urlSeq, contact, clause, null);
+							contact.clear();
+						}
+					} else {
+						clause = Operation.RANG_1_1 + " LIKE '%" + numeroCo
+								+ "%' AND " + Operation.GAMME +" LIKE '%Fret%'";
+						cursor = cr.query(urlSeq, columnsSeq, clause, null,
+								Operation._id);
+						if (cursor.moveToFirst()) {
+
+							contact.put(Operation.REALISABLE, 1);
+							int id = cursor.getInt(cursor
+									.getColumnIndex(Operation._id));
+							cr.update(urlSeq, contact, clause, null);
+							contact.clear();
+						}
+					}
+
 					String nextOperation = null;
 					// Passage à l'étape suivante en fonction de sa description
 					try {
@@ -268,6 +340,10 @@ public class CheminementTa extends Activity {
 							} else if (nextOperation.startsWith("Frettage")) {
 								toNext = new Intent(CheminementTa.this,
 										Frettage.class);
+							} else if (nextOperation
+									.startsWith("Mise")) {
+								toNext = new Intent(CheminementTa.this,
+										MiseLongueurTb.class);
 							}
 							if (toNext != null) {
 
@@ -307,6 +383,38 @@ public class CheminementTa extends Activity {
 						// entreCable("Impossible de trouver une application pour le scan. Entrez le n° de cable : ");
 					}
 				}
+
+			}
+		});
+		
+		// Info Produit
+		
+		infoProduit.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				cursorInfo = cr.query(urlRac, colInfo, Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+						+ " ='" + numeroCo + "' OR " + Raccordement.NUMERO_COMPOSANT_TENANT + "='" + numeroCo+"'" , null, null);
+				Intent toInfo = new Intent(CheminementTa.this, InfoProduit.class);
+				labels = new String[7];
+
+				if (cursorInfo.moveToFirst()) {
+					labels[0] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.DESIGNATION));
+					labels[1] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_HARNAIS_FAISCEAUX));
+					labels[2] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.STANDARD));
+					labels[3] = "";
+					labels[4] = "";
+					labels[5] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_REVISION_HARNAIS));
+					labels[6] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.REFERENCE_FICHIER_SOURCE));
+					toInfo.putExtra("Labels", labels);
+				}
+
+				startActivity(toInfo);
 
 			}
 		});
@@ -424,8 +532,10 @@ public class CheminementTa extends Activity {
 		contact.put(Operation.HEURE_REALISATION, heureRealisation.toString());
 		dureeMesuree += dateRealisation.getTime() - dateDebut.getTime();
 		contact.put(Operation.DUREE_MESUREE, dureeMesuree / 1000);
-		cr.update(urlSeq, contact, Operation._id + " = ?",
-				new String[] { Integer.toString(opId[indiceCourant]) });
+		cr.update(urlSeq, contact, Operation.RANG_1_1_1 + "='" + numeroCable
+				+ "' AND " + Operation.DESCRIPTION_OPERATION
+				+ " LIKE '%Cheminement%' AND " + Operation.RANG_1_1 + " LIKE '%"
+				+ numeroCo + "%'", null);
 		contact.clear();
 
 		// MAJ de la durée
@@ -613,37 +723,42 @@ public class CheminementTa extends Activity {
 											+ cursorA.getString(cursorA
 													.getColumnIndex(Raccordement.NUMERO_REVISION_FIL)));
 							element.put(colRac[1], numeroCable);
-							element.put(colRac[2], cursorA.getString(cursorA
-									.getColumnIndex(Raccordement.TYPE_FIL_CABLE)));
+							element.put(
+									colRac[2],
+									cursorA.getString(cursorA
+											.getColumnIndex(Raccordement.TYPE_FIL_CABLE)));
 							/*
 							 * element.put(colRac[3], cursorA.getString(cursorA
 							 * .getColumnIndex(colRac[3])));
 							 */
 							cursorB = cr.query(urlRac, colRac,
-									Raccordement.NUMERO_FIL_CABLE + "='" + numeroCable
-											+ "' AND " + Raccordement.ORDRE_REALISATION
-											+ " LIKE '%B%'", null, Raccordement._id);
+									Raccordement.NUMERO_FIL_CABLE + "='"
+											+ numeroCable + "' AND "
+											+ Raccordement.ORDRE_REALISATION
+											+ " LIKE '%B%'", null,
+									Raccordement._id);
 							if (cursorB.moveToFirst()) {
-								String rep = cursorB
-										.getString(cursorB
-												.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
+								String rep = cursorB.getString(cursorB
+										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
 								element.put(colRac[3], rep);
-								
+
 								// Signalement du point de controle
-								clause = Operation.DESCRIPTION_OPERATION + " LIKE '%" + rep + "%' AND ("
+								clause = Operation.DESCRIPTION_OPERATION
+										+ " LIKE '%" + rep + "%' AND ("
 										+ Operation.GAMME
-										+ " LIKE 'Cheminement%' OR " + Operation.GAMME + " LIKE 'Frett%')";
-								cursor = cr.query(urlSeq, columnsSeq, clause, null,
-										Operation._id);
+										+ " LIKE 'Cheminement%' OR "
+										+ Operation.GAMME + " LIKE 'Frett%')";
+								cursor = cr.query(urlSeq, columnsSeq, clause,
+										null, Operation._id);
 								if (cursor.moveToFirst()) {
-									
+
 									contact.put(Operation.REALISABLE, 1);
-									int id = cursor.getInt(cursor.getColumnIndex(Operation._id));
-									cr.update(urlSeq, contact,clause , null);
+									int id = cursor.getInt(cursor
+											.getColumnIndex(Operation._id));
+									cr.update(urlSeq, contact, clause, null);
 									contact.clear();
 								}
-								
-								
+
 								element.put(
 										colRac[4],
 										cursorB.getString(cursorB
@@ -663,25 +778,29 @@ public class CheminementTa extends Activity {
 														+ numeroCable
 														+ "' AND "
 														+ Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT
-														+ "='" + rep + "' GROUP BY "
+														+ "='"
+														+ rep
+														+ "' GROUP BY "
 														+ Raccordement.NUMERO_FIL_CABLE,
 												null, Raccordement._id);
 								if (cursor.moveToFirst()) {
 									String zonePose = "";
 									do {
-										int numeroSection = cursor
-												.getInt(cursor
-														.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
+										int numeroSection = cursor.getInt(cursor
+												.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
 										Log.e("Cheminement", "" + numeroSection);
-										cursorC = cr.query(urlChe, colChe,
-												Cheminement.NUMERO_SECTION_CHEMINEMENT
-														+ "='" + numeroSection + "'",
-												null, Cheminement._id);
+										cursorC = cr
+												.query(urlChe,
+														colChe,
+														Cheminement.NUMERO_SECTION_CHEMINEMENT
+																+ "='"
+																+ numeroSection
+																+ "'", null,
+														Cheminement._id);
 										if (cursorC.moveToFirst()) {
 											do {
-												zonePose += cursorC
-														.getString(cursorC
-																.getColumnIndex(Cheminement.ZONE_ACTIVITE))
+												zonePose += cursorC.getString(cursorC
+														.getColumnIndex(Cheminement.ZONE_ACTIVITE))
 														+ "-"
 														+ cursorC
 																.getString(cursorC
@@ -697,7 +816,8 @@ public class CheminementTa extends Activity {
 									} while (cursor.moveToNext());
 									element.put(colRac[6], zonePose);
 
-									element.put(colRac[7], "" + cursor.getCount());
+									element.put(colRac[7],
+											"" + cursor.getCount());
 
 								}
 							}
@@ -707,6 +827,11 @@ public class CheminementTa extends Activity {
 							 * .getColumnIndex(colRac[6])));
 							 */// AVOIR
 
+							if (liste.contains(element)) {
+								Toast.makeText(CheminementTa.this,
+										"Ce cable a dèja été utilisé",
+										Toast.LENGTH_SHORT).show();
+							} else {
 							liste.add(element);
 
 							// Ajout du cable à la liste des
@@ -715,6 +840,7 @@ public class CheminementTa extends Activity {
 							indiceLimite++;
 							displayContentProvider();
 							indiceCourant++;
+							}
 						} else {
 							// Le cable n'est pas utilisé pour
 							// ce connecteur

@@ -163,7 +163,10 @@ public class MainMenuControleur extends Activity {
 				+ Operation.GAMME + " LIKE 'Cont%' AND "
 				+ Operation.NOM_OPERATEUR + " IS NULL AND " + "("
 				+ Operation.RANG_1_1 + " LIKE '%P06%' OR " + Operation.RANG_1_1
-				+ " LIKE '%P04%' )");
+				+ " LIKE '%J08%' OR " + Operation.RANG_1_1
+				+ " LIKE '%P14%' OR " + Operation.RANG_1_1
+				+ " LIKE '%P09%'  OR " + Operation.RANG_1_1
+				+ " LIKE '%J12%')");
 		cursor = cr.query(url, columns, clause + " GROUP BY "
 				+ Operation.DESCRIPTION_OPERATION, null, Operation._id + " ASC"
 		/* + " LIMIT 30" */);

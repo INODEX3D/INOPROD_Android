@@ -3,14 +3,17 @@ package com.inodex.inoprod.activities.magasiniers;
 import java.util.Date;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageButton;
@@ -20,8 +23,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.inodex.inoprod.R;
+import com.inodex.inoprod.activities.InfoProduit;
 import com.inodex.inoprod.business.BOMProvider;
+import com.inodex.inoprod.business.ProductionProvider;
 import com.inodex.inoprod.business.SequencementProvider;
+import com.inodex.inoprod.business.Production.Fil;
 import com.inodex.inoprod.business.TableBOM.BOM;
 import com.inodex.inoprod.business.TableSequencement.Operation;
 
@@ -58,10 +64,15 @@ public class ServitudeComposants extends Activity {
 	/** Heure et dates à ajouter à la table de séquencment */
 	private Date dateRealisation = new Date();
 	private Time heureRealisation = new Time();
+	private Date dateDebut;
+	private long dureeMesuree = 0;
 
 	/** Nom de l'opérateur */
 	private String nomPrenomOperateur[] = null;
-	private String clause, numeroOperation;
+	private String clause, numeroOperation, numeroCom, descriptionOperation;
+	
+	/** Tableau des infos produit */
+	private String labels[];
 
 	/** Elements à récuperer de la vue */
 	private TextView designation, referenceImposee, fournisseur,
@@ -74,7 +85,7 @@ public class ServitudeComposants extends Activity {
 	private String columnsSeq[] = new String[] { Operation._id,
 			Operation.GAMME, Operation.RANG_1_1, Operation.NUMERO_OPERATION,
 			Operation.NOM_OPERATEUR, Operation.DATE_REALISATION,
-			Operation.HEURE_REALISATION };
+			Operation.HEURE_REALISATION , Operation.DESCRIPTION_OPERATION};
 
 	private String columnsBOM[] = new String[] { BOM.REPERE_ELECTRIQUE_TENANT,
 			BOM.NUMERO_COMPOSANT, BOM.NUMERO_POSITION_CHARIOT,
@@ -85,6 +96,13 @@ public class ServitudeComposants extends Activity {
 	private int[] layouts = new int[] { R.id.repereElectrique,
 			R.id.numeroConnecteur, R.id.positionChariot, R.id.ordreRealisation,
 			R.id.quantite, R.id.uniteMesure, R.id.numeroLot };
+	
+	private String columnsProd[] = new String[] { Fil._id,
+			Fil.DESIGNATION_PRODUIT, Fil.NUMERO_REVISION_HARNAIS, Fil.STANDARD,
+			Fil.NUMERO_HARNAIS_FAISCEAUX, Fil.REFERENCE_FICHIER_SOURCE,
+			Fil.NUMERO_COMPOSANT_ABOUTISSANT, Fil.NUMERO_COMPOSANT_TENANT };
+	private Cursor cursorInfo;
+	private Uri urlProd = ProductionProvider.CONTENT_URI;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +128,8 @@ public class ServitudeComposants extends Activity {
 		referenceInterne = (TextView) findViewById(R.id.textView6);
 		referenceImposee = (TextView) findViewById(R.id.textView7);
 		layoutServi = (LinearLayout) findViewById(R.id.layout_servi);
+		petitePause = (ImageButton) findViewById(R.id.imageButton1);
+		grandePause = (ImageButton) findViewById(R.id.exitButton1);
 
 		// Récuperation du numéro d'opération courant
 		clause = new String(Operation._id + "='" + opId[indiceCourant] + "'");
@@ -118,6 +138,10 @@ public class ServitudeComposants extends Activity {
 
 			numeroOperation = cursor.getString(cursor
 					.getColumnIndex(Operation.NUMERO_OPERATION));
+			descriptionOperation = cursor.getString(cursor
+					.getColumnIndex(Operation.DESCRIPTION_OPERATION));
+			numeroCom = descriptionOperation.substring(21, 24);
+			Log.e("N", numeroCom);
 		}
 
 		// Récupération du numéro de débit
@@ -130,6 +154,7 @@ public class ServitudeComposants extends Activity {
 			idFirst = cursorA.getInt(cursorA.getColumnIndex(BOM._id));
 			nbRows = cr.query(urlBOM, columnsBOM, clause, null, null)
 					.getCount();
+			
 
 		}
 
@@ -138,27 +163,27 @@ public class ServitudeComposants extends Activity {
 
 			// Affichage des éléments du débit en cours
 			try {
-				designation.append(cursor.getString(cursor
+				designation.append(": "+cursor.getString(cursor
 						.getColumnIndex(BOM.DESIGNATION_COMPOSANT)));
 			} catch (NullPointerException e) {
 			}
 			try {
-				fournisseur.append(cursor.getString(cursor
+				fournisseur.append(": "+cursor.getString(cursor
 						.getColumnIndex(BOM.FOURNISSEUR_FABRICANT)));
 			} catch (NullPointerException e) {
 			}
 			try {
-				referenceFabricant.append(cursor.getString(cursor
+				referenceFabricant.append(": "+cursor.getString(cursor
 						.getColumnIndex(BOM.REFERENCE_FABRICANT2)));
 			} catch (NullPointerException e) {
 			}
 			try {
-				referenceInterne.append(cursor.getString(cursor
+				referenceInterne.append(": "+cursor.getString(cursor
 						.getColumnIndex(BOM.REFERENCE_INTERNE)));
 			} catch (NullPointerException e) {
 			}
 			try {
-				referenceImposee.append(Integer.toString(cursor.getInt(cursor
+				referenceImposee.append(": "+Integer.toString(cursor.getInt(cursor
 						.getColumnIndex(BOM.REFERENCE_IMPOSEE))));
 			} catch (NullPointerException e) {
 			}
@@ -222,6 +247,106 @@ public class ServitudeComposants extends Activity {
 				}
 			}
 		});
+		
+		// Grande pause
+				grandePause.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						AlertDialog.Builder builder = new AlertDialog.Builder(
+								ServitudeComposants.this);
+						builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
+						builder.setCancelable(false);
+						builder.setPositiveButton("Oui",
+								new DialogInterface.OnClickListener() {
+
+									public void onClick(DialogInterface dialog,
+											int which) {
+										/*
+										 * Intent toMain = new Intent(
+										 * CheminementTa.this, MainActivity.class);
+										 * startActivity(toMain);
+										 */
+										finish();
+
+									}
+
+								});
+
+						builder.setNegativeButton("Non",
+								new DialogInterface.OnClickListener() {
+									public void onClick(final DialogInterface dialog,
+											final int id) {
+
+										dialog.cancel();
+
+									}
+								});
+						builder.show();
+
+					}
+				});
+
+				// Petite Pause
+				petitePause.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						dureeMesuree += new Date().getTime() - dateDebut.getTime();
+						AlertDialog.Builder builder = new AlertDialog.Builder(
+								ServitudeComposants.this);
+						builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
+						builder.setCancelable(false);
+
+						builder.setNegativeButton("Retour",
+								new DialogInterface.OnClickListener() {
+									public void onClick(final DialogInterface dialog,
+											final int id) {
+
+										dateDebut = new Date();
+										dialog.cancel();
+
+									}
+								});
+						builder.show();
+
+					}
+				});
+		
+		// Info Produit
+				ImageButton infoProduit = (ImageButton) findViewById(R.id.infoButton1);
+				infoProduit.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						cursorInfo = cr.query(urlProd, columnsProd,
+								Fil.NUMERO_COMPOSANT_ABOUTISSANT + " ='" + numeroCom
+										+ "' OR " + Fil.NUMERO_COMPOSANT_TENANT + "='"
+										+ numeroCom + "'", null, null);
+						Intent toInfo = new Intent(ServitudeComposants.this,
+								InfoProduit.class);
+						labels = new String[7];
+
+						if (cursorInfo.moveToFirst()) {
+							labels[0] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Fil.DESIGNATION_PRODUIT));
+							labels[1] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Fil.NUMERO_HARNAIS_FAISCEAUX));
+							labels[2] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Fil.STANDARD));
+							labels[3] = "";
+							labels[4] = "";
+							labels[5] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Fil.NUMERO_REVISION_HARNAIS));
+							labels[6] = cursorInfo.getString(cursorInfo
+									.getColumnIndex(Fil.REFERENCE_FICHIER_SOURCE));
+							toInfo.putExtra("Labels", labels);
+						}
+
+						startActivity(toInfo);
+
+					}
+				});
 
 	}
 
