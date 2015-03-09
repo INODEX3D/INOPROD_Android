@@ -95,6 +95,7 @@ public class RaccordementProvider extends ContentProvider {
 					+ Raccordement.NUMERO_HARNAIS_FAISCEAUX + " STRING,"
 					+ Raccordement.NUMERO_REVISION_HARNAIS + " STRING,"
 					+ Raccordement.STANDARD + " STRING,"
+					+ Raccordement.VALEUR_POUSSEE + " STRING,"
 					+ Raccordement.REFERENCE_FICHIER_SOURCE + " STRING"
 
 					+ ");");

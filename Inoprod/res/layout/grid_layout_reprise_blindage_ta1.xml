@@ -6,91 +6,91 @@
 
     <TextView
         android:id="@+id/statutLiaison"
-        android:layout_width="30dp"
+        android:layout_width="75dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/b5" />
+        android:textSize="@dimen/forTMin" />
 
     <TextView
         android:id="@+id/numeroRevisionLiaison"
-        android:layout_width="30dp"
+        android:layout_width="75dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/b5" />
+        android:textSize="@dimen/forTMin" />
 
     <TextView
         android:id="@+id/numeroCable"
-        android:layout_width="30dp"
+        android:layout_width="75dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/b5" />
+        android:textSize="@dimen/forTMin" />
 
     <TextView
         android:id="@+id/typeCable"
-        android:layout_width="30dp"
+        android:layout_width="75dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/b5" />
+        android:textSize="@dimen/forTMin" />
     
     <TextView
         android:id="@+id/numeroFilReprise"
-        android:layout_width="30dp"
+        android:layout_width="75dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/b5" />
+        android:textSize="@dimen/forTMin" />
 
     <TextView
         android:id="@+id/typeFilReprise"
-        android:layout_width="30dp"
+        android:layout_width="75dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/b5" />
+        android:textSize="@dimen/forTMin" />
 
     <TextView
         android:id="@+id/referenceFabricantManchon"
-        android:layout_width="30dp"
+        android:layout_width="75dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/b5" />
+        android:textSize="@dimen/forTMin" />
 
     <TextView
         android:id="@+id/referenceInterneManchon"
-        android:layout_width="30dp"
+        android:layout_width="75dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/b5" />
+        android:textSize="@dimen/forTMin" />
 
     <TextView
         android:id="@+id/referenceOutillage"
-        android:layout_width="30dp"
+        android:layout_width="75dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/b5" />
+        android:textSize="@dimen/forTMin" />
 
     <TextView
         android:id="@+id/numeroSerieOutillage"
-        android:layout_width="30dp"
+        android:layout_width="75dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/b5" />
+        android:textSize="@dimen/forTMin" />
 
     <TextView
         android:id="@+id/reglageTemperature"
-        android:layout_width="30dp"
+        android:layout_width="75dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/b5" />
+        android:textSize="@dimen/forTMin" />
     
 
 </LinearLayout>

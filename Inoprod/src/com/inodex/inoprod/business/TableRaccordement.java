@@ -60,6 +60,7 @@ public class TableRaccordement {
 		public static final String STANDARD = "STANDARD";
 		public static final String REFERENCE_FICHIER_SOURCE = "REFERENCE_FICHIER_SOURCE";
 		public static final String NUMERO_HARNAIS_FAISCEAUX = "NUMERO_HARNAIS_FAISCEAUX";
+		public static final String VALEUR_POUSSEE = "VALEUR_POUSSEE";
 	}
 
 }

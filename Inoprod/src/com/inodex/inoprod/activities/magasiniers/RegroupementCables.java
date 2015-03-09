@@ -7,6 +7,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.Time;
@@ -20,9 +21,12 @@ import android.widget.TextView;
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.activities.InfoProduit;
 import com.inodex.inoprod.business.CheminementProvider;
+import com.inodex.inoprod.business.DureesProvider;
 import com.inodex.inoprod.business.KittingProvider;
 import com.inodex.inoprod.business.ProductionProvider;
 import com.inodex.inoprod.business.SequencementProvider;
+import com.inodex.inoprod.business.TimeConverter;
+import com.inodex.inoprod.business.Durees.Duree;
 import com.inodex.inoprod.business.Production.Fil;
 import com.inodex.inoprod.business.TableCheminement.Cheminement;
 import com.inodex.inoprod.business.TableKittingCable.Kitting;
@@ -45,7 +49,7 @@ public class RegroupementCables extends Activity {
 
 	/** Tableau des opérations à réaliser */
 	private int opId[] = null;
-	
+
 	/** Tableau des infos produit */
 	private String labels[];
 
@@ -95,12 +99,24 @@ public class RegroupementCables extends Activity {
 
 	private String columnsChem[] = new String[] { Cheminement._id,
 			Cheminement.NUMERO_SECTION_CHEMINEMENT,
-			Cheminement.NUMERO_COMPOSANT, Cheminement.REPERE_ELECTRIQUE,
-			Cheminement.ORDRE_REALISATION };
-	
+			Cheminement.NUMERO_COMPOSANT_TENANT,
+			Cheminement.REPERE_ELECTRIQUE_TENANT,
+			Cheminement.ORDRE_REALISATION,
+			Cheminement.NUMERO_COMPOSANT_ABOUTISSANT,
+			Cheminement.REPERE_ELECTRIQUE_ABOUTISSANT};
+
 	private String columnsProd[] = new String[] { Fil._id,
 			Fil.DESIGNATION_PRODUIT, Fil.NUMERO_REVISION_HARNAIS, Fil.STANDARD,
 			Fil.NUMERO_HARNAIS_FAISCEAUX, Fil.REFERENCE_FICHIER_SOURCE };
+
+	private TextView timer;
+	private Cursor cursorTime;
+	private Uri urlTim = DureesProvider.CONTENT_URI;
+	private String colTim[] = new String[] { Duree._id,
+			Duree.DESIGNATION_OPERATION, Duree.DUREE_THEORIQUE
+
+	};
+	private long dureeTotal;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -137,36 +153,55 @@ public class RegroupementCables extends Activity {
 
 		// Récupération du numéro de cheminement
 		numeroCom = descriptionOperation.substring(42, 45);
-		clause = new String(Cheminement.NUMERO_COMPOSANT + "='" + numeroCom
+		clause = new String(Cheminement.NUMERO_COMPOSANT_ABOUTISSANT + "='" + numeroCom
+				+ "' OR " + Cheminement.NUMERO_COMPOSANT_TENANT + "='" + numeroCom
 				+ "'");
 		cursorA = cr.query(urlChem, columnsChem, clause, null, null);
 		if (cursorA.moveToFirst()) {
 			numeroCh = cursorA.getInt(cursorA
 					.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
-			cursorB = cr.query(urlProd, columnsProd,Fil.NUMERO_FIL_CABLE + " = " +Kitting.NUMERO_FIL_CABLE , null,null );
+			cursorB = cr.query(urlProd, columnsProd, Fil.NUMERO_FIL_CABLE
+					+ " = " + Kitting.NUMERO_FIL_CABLE, null, null);
 
 			// Affichage des éléments du regroupement en cours
-		/*	try {
-			 numeroChariot.append(cursorA.getString(cursorA.getColumnIndex(Cheminement.NUMERO_POSITION_CHARIOT)));
-			} catch (NullPointerException e) {
-			} */
+			/*
+			 * try {
+			 * numeroChariot.append(cursorA.getString(cursorA.getColumnIndex
+			 * (Cheminement.NUMERO_POSITION_CHARIOT))); } catch
+			 * (NullPointerException e) { }
+			 */
 			try {
-				numeroComposant.append(": "+cursorA.getString(cursorA
-						.getColumnIndex(Cheminement.NUMERO_COMPOSANT)));
-			} catch (NullPointerException e) {
-			}
-			try {
-				repereElectrique.append(": "+cursorA.getString(cursorA
-						.getColumnIndex(Cheminement.REPERE_ELECTRIQUE)));
-			} catch (NullPointerException e) {
-			}
-			try {
-				ordreRealisation.append(": "+cursorA.getString(cursorA
-						.getColumnIndex(Cheminement.ORDRE_REALISATION)));
+				String numeroCo = cursorA.getString(cursorA
+						.getColumnIndex(Cheminement.NUMERO_COMPOSANT_TENANT));
+				if (numeroCo.equals(null)) {
+					numeroCo = cursorA.getString(cursorA
+							.getColumnIndex(Cheminement.NUMERO_COMPOSANT_ABOUTISSANT));
+				}
+				numeroComposant.append(": "
+						+ numeroCo );
 			} catch (NullPointerException e) {
 			}
 			try {
-				numeroCheminement.append(": "+Integer.toString(numeroCh));
+				String rep = cursorA.getString(cursorA
+						.getColumnIndex(Cheminement.REPERE_ELECTRIQUE_TENANT));
+				if (rep.equals(null)) {
+					rep = cursorA.getString(cursorA
+							.getColumnIndex(Cheminement.REPERE_ELECTRIQUE_ABOUTISSANT));
+				}
+				repereElectrique
+						.append(": "
+								+ rep);
+			} catch (NullPointerException e) {
+			}
+			try {
+				ordreRealisation
+						.append(": "
+								+ cursorA.getString(cursorA
+										.getColumnIndex(Cheminement.ORDRE_REALISATION)));
+			} catch (NullPointerException e) {
+			}
+			try {
+				numeroCheminement.append(": " + Integer.toString(numeroCh));
 			} catch (NullPointerException e) {
 			}
 		} else {
@@ -178,6 +213,19 @@ public class RegroupementCables extends Activity {
 		// Affichage des cables à regouper
 		displayContentProvider();
 
+		// Affichage du temps nécessaire
+		timer = (TextView) findViewById(R.id.timeDisp);
+		dureeTotal = 0;
+		cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
+				+ " LIKE '%kit%' ", null, Duree._id);
+		if (cursorTime.moveToFirst()) {
+			dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
+					.getColumnIndex(Duree.DUREE_THEORIQUE)));
+
+		}
+		timer.setTextColor(Color.GREEN);
+		timer.setText(TimeConverter.display(dureeTotal));
+
 		// Etape suivante
 		boutonCheck = (ImageButton) findViewById(R.id.exitButton1);
 		boutonCheck.setOnClickListener(new View.OnClickListener() {
@@ -185,11 +233,13 @@ public class RegroupementCables extends Activity {
 			@Override
 			public void onClick(View v) {
 				// MAJ Table de sequencement
-				contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0] + " "
-						+ nomPrenomOperateur[1]);
-				contact.put(Operation.DATE_REALISATION, dateRealisation.toGMTString());
+				contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0]
+						+ " " + nomPrenomOperateur[1]);
+				contact.put(Operation.DATE_REALISATION,
+						dateRealisation.toGMTString());
 				heureRealisation.setToNow();
-				contact.put(Operation.HEURE_REALISATION, heureRealisation.toString());
+				contact.put(Operation.HEURE_REALISATION,
+						heureRealisation.toString());
 				cr.update(urlSeq, contact, Operation._id + " = ?",
 						new String[] { Integer.toString(opId[indiceCourant]) });
 				contact.clear();
@@ -239,7 +289,7 @@ public class RegroupementCables extends Activity {
 			}
 
 		});
-		
+
 		// Info Produit
 		infoProduit = (ImageButton) findViewById(R.id.infoButton1);
 		infoProduit.setOnClickListener(new View.OnClickListener() {
@@ -248,23 +298,26 @@ public class RegroupementCables extends Activity {
 			public void onClick(View v) {
 				Intent toInfo = new Intent(RegroupementCables.this,
 						InfoProduit.class);
-				labels= new String[7];
-				
+				labels = new String[7];
+
 				if (cursorB.moveToFirst()) {
-				labels[0] = cursorB.getString(cursorB.getColumnIndex(Fil.DESIGNATION_PRODUIT));
-				labels[1] = cursorB.getString(cursorB.getColumnIndex(Fil.NUMERO_HARNAIS_FAISCEAUX));
-				labels[2] = cursorB.getString(cursorB.getColumnIndex(Fil.STANDARD));
-				labels[3] = "";
-				labels[4] = "";
-				labels[5] = cursorB.getString(cursorB.getColumnIndex(Fil.NUMERO_REVISION_HARNAIS));
-				labels[6] = cursorB.getString(cursorB.getColumnIndex(Fil.REFERENCE_FICHIER_SOURCE));
-				toInfo.putExtra("Labels", labels);
+					labels[0] = cursorB.getString(cursorB
+							.getColumnIndex(Fil.DESIGNATION_PRODUIT));
+					labels[1] = cursorB.getString(cursorB
+							.getColumnIndex(Fil.NUMERO_HARNAIS_FAISCEAUX));
+					labels[2] = cursorB.getString(cursorB
+							.getColumnIndex(Fil.STANDARD));
+					labels[3] = "";
+					labels[4] = "";
+					labels[5] = cursorB.getString(cursorB
+							.getColumnIndex(Fil.NUMERO_REVISION_HARNAIS));
+					labels[6] = cursorB.getString(cursorB
+							.getColumnIndex(Fil.REFERENCE_FICHIER_SOURCE));
+					toInfo.putExtra("Labels", labels);
 				}
-				
-				
-				
+
 				startActivity(toInfo);
-				
+
 			}
 		});
 

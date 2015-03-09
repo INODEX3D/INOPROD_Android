@@ -120,14 +120,20 @@ public class MainMenuPreparateur extends Activity {
 	private String colNom1[] = new String[] { Cable.DESIGNATION_COMPOSANT,
 			Cable.UNITE, Cable.REFERENCE_FABRICANT1,
 			Cable.REFERENCE_FABRICANT2, Cable.REFERENCE_INTERNE,
-			Cable.FOURNISSEUR_FABRICANT, Cable.NORME_CABLE, Cable._id };
+			Cable.FOURNISSEUR_FABRICANT, Cable.NORME_CABLE, Cable._id,
+			Cable.FAMILLE_PRODUIT, Cable.NUMERO_COMPOSANT };
 
 	private String ColChem1[] = new String[] { Cheminement._id,
-			Cheminement.NUMERO_COMPOSANT,
+			Cheminement.NUMERO_COMPOSANT_TENANT,
 			Cheminement.NUMERO_SECTION_CHEMINEMENT,
 			Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT,
-			Cheminement.REPERE_ELECTRIQUE, Cheminement.ZONE_ACTIVITE,
-			Cheminement.LOCALISATION1 };
+			Cheminement.REPERE_ELECTRIQUE_TENANT, Cheminement.ZONE_ACTIVITE,
+			Cheminement.LOCALISATION1,
+			Cheminement.NUMERO_COMPOSANT_ABOUTISSANT,
+			Cheminement.REPERE_ELECTRIQUE_ABOUTISSANT,
+			Cheminement.NUMERO_FIL_CABLE, Cheminement.TYPE_FIL_CABLE,
+			Cheminement.ORDRE_REALISATION, Cheminement.UNITE,
+			Cheminement.LONGUEUR_FIL_CABLE };
 
 	private String ColProd2[] = new String[] { Fil.ETAT_LIAISON_FIL,
 			Fil.NUMERO_REVISION_FIL, Fil.FIL_SENSIBLE, Fil.NUMERO_FIL_CABLE,
@@ -150,7 +156,8 @@ public class MainMenuPreparateur extends Activity {
 			Fil.ZONE_ACTIVITE, Fil._id, Fil.DESIGNATION_PRODUIT,
 			Fil.ACCESSOIRE_COMPOSANT1, Fil.ACCESSOIRE_COMPOSANT2,
 			Fil.DESIGNATION_PRODUIT, Fil.NUMERO_REVISION_HARNAIS, Fil.STANDARD,
-			Fil.NUMERO_HARNAIS_FAISCEAUX, Fil.REFERENCE_FICHIER_SOURCE };
+			Fil.NUMERO_HARNAIS_FAISCEAUX, Fil.REFERENCE_FICHIER_SOURCE,
+			Fil.LOCALISATION2, Fil.ZONE_ACTIVITE, Fil.LOCALISATION1 };
 
 	private String colNom3[] = new String[] { Cable.NORME_CABLE,
 			Cable.EQUIPEMENT, Cable._id, Cable.NUMERO_COMPOSANT,
@@ -204,7 +211,7 @@ public class MainMenuPreparateur extends Activity {
 			Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT,
 			Raccordement.REPERE_ELECTRIQUE_TENANT, Raccordement.FIL_SENSIBLE,
 			Raccordement.REFERENCE_FABRICANT2, Raccordement.NUMERO_FIL_CABLE,
-			Raccordement.LOCALISATION1 };
+			Raccordement.LOCALISATION1, Raccordement.TYPE_ELEMENT_RACCORDE };
 
 	private String clause, rep, norme, numeroOperation, num, gamme, rang,
 			rang_1, descriptionOperation, num1, referenceCourante,
@@ -269,7 +276,7 @@ public class MainMenuPreparateur extends Activity {
 
 			@Override
 			public void onClick(View v) {
-		
+
 				boolean importReussi = importSources();
 				if (importReussi) {
 					try {
@@ -279,9 +286,8 @@ public class MainMenuPreparateur extends Activity {
 						e.printStackTrace();
 					}
 					generationTableSequencement();
-					finImport= true;
+					finImport = true;
 				}
-	
 
 			}
 
@@ -340,149 +346,177 @@ public class MainMenuPreparateur extends Activity {
 
 		indiceChariotA = 1;
 		indiceChariotB = 1;
-
-		// Création d'un InputStream vers le fichier Excel
-		String nomFichier = null;
-		File data = new File(Environment.getDataDirectory().getAbsolutePath()
-				+ "/data/com.inodex.inoprod/");
-
-		for (String file : data.list()) {
-			Log.d("Nom Fichier", file);
-			if (file.contains("cheminement")) {
-				nomFichier = file;
-				Log.e("Nom Fichier", nomFichier);
-			}
-		}
-
-		InputStream input = new FileInputStream(Environment.getDataDirectory()
-				.getAbsolutePath() + "/data/com.inodex.inoprod/" + nomFichier);
-		// Interpretation du fichier a l'aide de Apache POI
-		POIFSFileSystem fs = new POIFSFileSystem(input);
-		HSSFWorkbook wb = new HSSFWorkbook(fs);
-
-		// Feuille outillages
-		HSSFSheet sheet = wb.getSheetAt(0);
-
-		// Iteration sur chacune des lignes du fichier
-		Iterator rows = sheet.rowIterator();
-		rows.next();
-		HSSFRow row = (HSSFRow) rows.next();
-		HashMap<String, Integer> colonnes = new HashMap<String, Integer>();
-		// Stockage des indices des colonnes
-		for (int i = 0; i < row.getLastCellNum(); i++) {
-			colonnes.put(row.getCell(i).toString(), i);
-
-		}
-
-		while (rows.hasNext()) {
-			row = (HSSFRow) rows.next();
-			try {
-				contact.put(
-						Cheminement.NUMERO_SECTION_CHEMINEMENT,
-						row.getCell(
-								colonnes.get("Numéro de section de cheminement"))
-								.toString());
-			} catch (NullPointerException e) {
-			}
-			try {
-				contact.put(Cheminement.LOCALISATION1,
-						row.getCell(colonnes.get("Localisation_1 (68)"))
-								.toString());
-			} catch (NullPointerException e) {
-			}
-			try {
-				contact.put(
-						Cheminement.NUMERO_COMPOSANT,
-						row.getCell(
-								colonnes.get("Numéro de composant (9 & 12)"))
-								.toString());
-			} catch (NullPointerException e) {
-			}
-			try {
-				contact.put(Cheminement.ORDRE_REALISATION,
-						row.getCell(colonnes.get("Ordre de réalisation (24)"))
-								.toString());
-			} catch (NullPointerException e) {
-			}
-			try {
-				contact.put(Cheminement.ZONE_ACTIVITE,
-						row.getCell(colonnes.get("Zone-activité (67)"))
-								.toString());
-			} catch (NullPointerException e) {
-			}
-			try {
-				contact.put(
-						Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT,
-						row.getCell(
-								colonnes.get("N° de repère de la table de cheminement"))
-								.toString());
-			} catch (NullPointerException e) {
-			}
-			try {
-				contact.put(Cheminement.TYPE_SUPPORT,
-						row.getCell(colonnes.get("Type de support")).toString());
-			} catch (NullPointerException e) {
-			}
-			try {
-				contact.put(Cheminement.REPERE_ELECTRIQUE,
-						row.getCell(colonnes.get("Repère electrique (8 & 11)"))
-								.toString());
-			} catch (NullPointerException e) {
-			}
-
-			// Ajout de l'entité
-			getContentResolver().insert(urlCheminement, contact);
-			// Ecrasement de ses données pour passer à la suivante
-			contact.clear();
-
-		}
+		int numeroSection = 1;
 
 		// Création de la table de cheminement
+		// Tenant
+		clause = Fil.NUMERO_COMPOSANT_TENANT + "!='null' GROUP BY "
+				+ Fil.NUMERO_COMPOSANT_TENANT;
+		cursor = cr.query(urlProduction, ColProd2, clause, null, Fil._id);
+		if (cursor.moveToFirst()) {
+			do {
+				String numeroCo = cursor.getString(cursor
+						.getColumnIndex(Fil.NUMERO_COMPOSANT_TENANT));
+				clause = Fil.NUMERO_COMPOSANT_TENANT + " LIKE '" + numeroCo
+						+ "' GROUP BY " + Fil.NUMERO_FIL_CABLE;
+				cursorA = cr.query(urlProduction, ColProd2, clause, null,
+						Fil._id);
+				if (cursorA.moveToFirst()) {
+					do {
+						contact.put(Cheminement.LOCALISATION1, cursorA
+								.getString(cursorA
+										.getColumnIndex(Fil.LOCALISATION1)));
+						contact.put(
+								Cheminement.LONGUEUR_FIL_CABLE,
+								cursorA.getString(cursorA
+										.getColumnIndex(Fil.LONGUEUR_FIL_CABLE)));
+						contact.put(Cheminement.NUMERO_COMPOSANT_TENANT,
+								numeroCo);
+						contact.put(Cheminement.NUMERO_FIL_CABLE, cursorA
+								.getString(cursorA
+										.getColumnIndex(Fil.NUMERO_FIL_CABLE)));
+						contact.put(
+								Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT,
+								cursorA.getString(cursorA
+										.getColumnIndex(Fil.LOCALISATION2)));
+						contact.put(Cheminement.NUMERO_SECTION_CHEMINEMENT,
+								numeroSection);
+						contact.put(Cheminement.ORDRE_REALISATION, cursorA
+								.getString(cursorA
+										.getColumnIndex(Fil.ORDRE_REALISATION)));
+						contact.put(
+								Cheminement.REPERE_ELECTRIQUE_TENANT,
+								cursorA.getString(cursorA
+										.getColumnIndex(Fil.REPERE_ELECTRIQUE_TENANT)));
+						contact.put(Cheminement.TYPE_FIL_CABLE, cursorA
+								.getString(cursorA
+										.getColumnIndex(Fil.TYPE_FIL_CABLE)));
+						contact.put(Cheminement.ZONE_ACTIVITE, cursorA
+								.getString(cursorA
+										.getColumnIndex(Fil.ZONE_ACTIVITE)));
+						// Ajout de l'entité
+						getContentResolver().insert(urlCheminement, contact);
+						// Ecrasement de ses données pour passer à la suivante
+						contact.clear();
+
+					} while (cursorA.moveToNext());
+				}
+				numeroSection++;
+			} while (cursor.moveToNext());
+		}
+
+		// Aboutissant
+		clause = Fil.NUMERO_COMPOSANT_ABOUTISSANT + "!='null' GROUP BY "
+				+ Fil.NUMERO_COMPOSANT_ABOUTISSANT;
+		cursor = cr.query(urlProduction, ColProd2, clause, null, Fil._id);
+		if (cursor.moveToFirst()) {
+			do {
+				String numeroCo = cursor.getString(cursor
+						.getColumnIndex(Fil.NUMERO_COMPOSANT_ABOUTISSANT));
+				clause = Fil.NUMERO_COMPOSANT_ABOUTISSANT + " LIKE '"
+						+ numeroCo + "' GROUP BY " + Fil.NUMERO_FIL_CABLE;
+				cursorA = cr.query(urlProduction, ColProd2, clause, null,
+						Fil._id);
+				if (cursorA.moveToFirst()) {
+					do {
+						contact.put(Cheminement.LOCALISATION1, cursorA
+								.getString(cursorA
+										.getColumnIndex(Fil.LOCALISATION1)));
+						contact.put(
+								Cheminement.LONGUEUR_FIL_CABLE,
+								cursorA.getString(cursorA
+										.getColumnIndex(Fil.LONGUEUR_FIL_CABLE)));
+						contact.put(Cheminement.NUMERO_COMPOSANT_ABOUTISSANT,
+								numeroCo);
+						contact.put(Cheminement.NUMERO_FIL_CABLE, cursorA
+								.getString(cursorA
+										.getColumnIndex(Fil.NUMERO_FIL_CABLE)));
+						contact.put(
+								Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT,
+								cursorA.getString(cursorA
+										.getColumnIndex(Fil.LOCALISATION2)));
+						contact.put(Cheminement.NUMERO_SECTION_CHEMINEMENT,
+								numeroSection);
+						contact.put(Cheminement.ORDRE_REALISATION, cursorA
+								.getString(cursorA
+										.getColumnIndex(Fil.ORDRE_REALISATION)));
+						contact.put(
+								Cheminement.REPERE_ELECTRIQUE_ABOUTISSANT,
+								cursorA.getString(cursorA
+										.getColumnIndex(Fil.REPERE_ELECTRIQUE_ABOUTISSANT)));
+						contact.put(Cheminement.TYPE_FIL_CABLE, cursorA
+								.getString(cursorA
+										.getColumnIndex(Fil.TYPE_FIL_CABLE)));
+						contact.put(Cheminement.ZONE_ACTIVITE, cursorA
+								.getString(cursorA
+										.getColumnIndex(Fil.ZONE_ACTIVITE)));
+						// Ajout de l'entité
+						getContentResolver().insert(urlCheminement, contact);
+						// Ecrasement de ses données pour passer à la suivante
+						contact.clear();
+
+					} while (cursorA.moveToNext());
+				}
+				numeroSection++;
+			} while (cursor.moveToNext());
+		}
+
 		/*
-		 * chemin = 1; // Aboutissant cursor = cr.query(urlProduction, ColProd2,
-		 * Fil.NUMERO_COMPOSANT_ABOUTISSANT + "!='" + "null" + "' GROUP BY " +
-		 * Fil.NUMERO_COMPOSANT_ABOUTISSANT, null, null); if
-		 * (cursor.moveToFirst()) {
+		 * String nomFichier = null; File data = new
+		 * File(Environment.getDataDirectory().getAbsolutePath() +
+		 * "/data/com.inodex.inoprod/");
 		 * 
-		 * do { contact.put( Cheminement.REPERE_ELECTRIQUE,
-		 * cursor.getString(cursor
-		 * .getColumnIndex(Fil.REPERE_ELECTRIQUE_ABOUTISSANT)));
+		 * for (String file : data.list()) { Log.d("Nom Fichier", file); if
+		 * (file.contains("cheminement")) { nomFichier = file;
+		 * Log.e("Nom Fichier", nomFichier); } }
 		 * 
-		 * contact.put( Cheminement.NUMERO_COMPOSANT, cursor.getString(cursor
-		 * .getColumnIndex(Fil.NUMERO_COMPOSANT_ABOUTISSANT)));
-		 * contact.put(Cheminement.ORDRE_REALISATION, cursor.getString(cursor
-		 * .getColumnIndex(Fil.ORDRE_REALISATION)));
-		 * contact.put(Cheminement.ZONE_ACTIVITE, cursor.getString(cursor
-		 * .getColumnIndex(Fil.ZONE_ACTIVITE)));
-		 * contact.put(Cheminement.NUMERO_SECTION_CHEMINEMENT, chemin++); //
-		 * Ajout de l'entité getContentResolver().insert(urlCheminement,
-		 * contact); // Ecrasement de ses données pour passer à la suivante
-		 * contact.clear();
+		 * InputStream input = new
+		 * FileInputStream(Environment.getDataDirectory() .getAbsolutePath() +
+		 * "/data/com.inodex.inoprod/" + nomFichier); // Interpretation du
+		 * fichier a l'aide de Apache POI POIFSFileSystem fs = new
+		 * POIFSFileSystem(input); HSSFWorkbook wb = new HSSFWorkbook(fs);
 		 * 
-		 * } while (cursor.moveToNext());
+		 * // Feuille outillages HSSFSheet sheet = wb.getSheetAt(0);
+		 * 
+		 * // Iteration sur chacune des lignes du fichier Iterator rows =
+		 * sheet.rowIterator(); rows.next(); HSSFRow row = (HSSFRow)
+		 * rows.next(); HashMap<String, Integer> colonnes = new HashMap<String,
+		 * Integer>(); // Stockage des indices des colonnes for (int i = 0; i <
+		 * row.getLastCellNum(); i++) { colonnes.put(row.getCell(i).toString(),
+		 * i);
 		 * 
 		 * }
 		 * 
-		 * // Tenant cursor = cr.query(urlProduction, ColProd2,
-		 * Fil.NUMERO_COMPOSANT_TENANT + "!='" + "null" + "' GROUP BY " +
-		 * Fil.NUMERO_COMPOSANT_TENANT, null, null); if (cursor.moveToFirst()) {
+		 * while (rows.hasNext()) {
 		 * 
-		 * do { contact.put(Cheminement.REPERE_ELECTRIQUE, cursor
-		 * .getString(cursor .getColumnIndex(Fil.REPERE_ELECTRIQUE_TENANT)));
+		 * try { contact.put( Cheminement.NUMERO_SECTION_CHEMINEMENT,
+		 * row.getCell( colonnes.get("Numéro de section de cheminement"))
+		 * .toString()); } catch (NullPointerException e) { } try {
+		 * contact.put(Cheminement.LOCALISATION1,
+		 * row.getCell(colonnes.get("Localisation_1 (68)")) .toString()); }
+		 * catch (NullPointerException e) { } try { contact.put(
+		 * Cheminement.NUMERO_COMPOSANT, row.getCell(
+		 * colonnes.get("Numéro de composant (9 & 12)")) .toString()); } catch
+		 * (NullPointerException e) { } try {
+		 * contact.put(Cheminement.ORDRE_REALISATION,
+		 * row.getCell(colonnes.get("Ordre de réalisation (24)")) .toString());
+		 * } catch (NullPointerException e) { } try {
+		 * contact.put(Cheminement.ZONE_ACTIVITE,
+		 * row.getCell(colonnes.get("Zone-activité (67)")) .toString()); } catch
+		 * (NullPointerException e) { } try { contact.put(
+		 * Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT, row.getCell(
+		 * colonnes.get("N° de repère de la table de cheminement"))
+		 * .toString()); } catch (NullPointerException e) { } try {
+		 * contact.put(Cheminement.TYPE_SUPPORT,
+		 * row.getCell(colonnes.get("Type de support")).toString()); } catch
+		 * (NullPointerException e) { } try {
+		 * contact.put(Cheminement.REPERE_ELECTRIQUE,
+		 * row.getCell(colonnes.get("Repère electrique (8 & 11)")) .toString());
+		 * } catch (NullPointerException e) { }
 		 * 
-		 * contact.put(Cheminement.NUMERO_COMPOSANT, cursor .getString(cursor
-		 * .getColumnIndex(Fil.NUMERO_COMPOSANT_TENANT)));
-		 * contact.put(Cheminement.ORDRE_REALISATION, cursor.getString(cursor
-		 * .getColumnIndex(Fil.ORDRE_REALISATION)));
-		 * contact.put(Cheminement.ZONE_ACTIVITE, cursor.getString(cursor
-		 * .getColumnIndex(Fil.ZONE_ACTIVITE)));
-		 * contact.put(Cheminement.NUMERO_SECTION_CHEMINEMENT, chemin++); //
-		 * Ajout de l'entité getContentResolver().insert(urlCheminement,
+		 * // Ajout de l'entité getContentResolver().insert(urlCheminement,
 		 * contact); // Ecrasement de ses données pour passer à la suivante
-		 * contact.clear();
-		 * 
-		 * } while (cursor.moveToNext()); Toast.makeText(this,
-		 * "Table cheminement créée", Toast.LENGTH_SHORT) .show();
+		 * contact.clear(); row = (HSSFRow) rows.next();
 		 * 
 		 * }
 		 */
@@ -598,7 +632,12 @@ public class MainMenuPreparateur extends Activity {
 						contact.put(Kitting.NUMERO_OPERATION, num);
 
 						// Numéro cheminement
-						clause = new String(Cheminement.NUMERO_COMPOSANT + "='"
+						clause = new String(Cheminement.NUMERO_COMPOSANT_TENANT
+								+ "='"
+								+ contact.getAsString(Kitting.NUMERO_COMPOSANT)
+								+ "' OR "
+								+ Cheminement.NUMERO_COMPOSANT_ABOUTISSANT
+								+ "='"
 								+ contact.getAsString(Kitting.NUMERO_COMPOSANT)
 								+ "'");
 						cursorB = cr.query(urlCheminement, ColChem1, clause,
@@ -733,9 +772,11 @@ public class MainMenuPreparateur extends Activity {
 								.getColumnIndex(Fil.NUMERO_COMPOSANT_TENANT)));
 				contact.put(Raccordement.NUMERO_FIL_CABLE, cursor
 						.getString(cursor.getColumnIndex(Fil.NUMERO_FIL_CABLE)));
-				contact.put(Raccordement.NUMERO_FIL_DANS_CABLE, cursor
-						.getFloat(cursor
-								.getColumnIndex(Fil.NUMERO_FIL_DANS_CABLE)));
+				float nfc = cursor.getFloat(cursor
+						.getColumnIndex(Fil.NUMERO_FIL_DANS_CABLE));
+				if (nfc != 0) {
+					contact.put(Raccordement.NUMERO_FIL_DANS_CABLE, nfc);
+				}
 				contact.put(Raccordement.NUMERO_REVISION_FIL, cursor
 						.getFloat(cursor
 								.getColumnIndex(Fil.NUMERO_REVISION_FIL)));
@@ -826,6 +867,13 @@ public class MainMenuPreparateur extends Activity {
 				contact.put(Raccordement.ACCESSOIRE_COMPOSANT2, cursor
 						.getString(cursor
 								.getColumnIndex(Fil.ACCESSOIRE_COMPOSANT2)));
+				contact.put(Raccordement.ZONE_ACTIVITE, cursor.getString(cursor
+						.getColumnIndex(Fil.ZONE_ACTIVITE)));
+				contact.put(Raccordement.LOCALISATION1, cursor.getString(cursor
+						.getColumnIndex(Fil.LOCALISATION1)));
+				contact.put(Raccordement.NUMERO_REPERE_TABLE_CHEMINEMENT,
+						cursor.getString(cursor
+								.getColumnIndex(Fil.LOCALISATION2)));
 
 				// Numéro Position Chariot
 				clause = new String(Kitting.NUMERO_FIL_CABLE + "='"
@@ -851,7 +899,9 @@ public class MainMenuPreparateur extends Activity {
 
 				}
 
-				clause = new String(Cheminement.NUMERO_COMPOSANT + " LIKE '%"
+				clause = new String(Cheminement.NUMERO_COMPOSANT_TENANT
+						+ " LIKE '%" + numeroComposant + "%' OR "
+						+ Cheminement.NUMERO_COMPOSANT_ABOUTISSANT + " LIKE '%"
 						+ numeroComposant + "%'");
 				cursorB = cr
 						.query(urlCheminement, ColChem1, clause, null, null);
@@ -860,20 +910,13 @@ public class MainMenuPreparateur extends Activity {
 					numeroCheminement = cursorB
 							.getInt(cursorB
 									.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
-					contact.put(Raccordement.NUMERO_CHEMINEMENT,
-							numeroCheminement);
+					/*
+					 * contact.put(Raccordement.NUMERO_CHEMINEMENT,
+					 * numeroCheminement);
+					 */
 					contact.put(Raccordement.NUMERO_SECTION_CHEMINEMENT,
 							numeroCheminement);
-					contact.put(Raccordement.ZONE_ACTIVITE, cursorB
-							.getString(cursorB
-									.getColumnIndex(Cheminement.ZONE_ACTIVITE)));
-					contact.put(Raccordement.LOCALISATION1, cursorB
-							.getString(cursorB
-									.getColumnIndex(Cheminement.LOCALISATION1)));
-					contact.put(
-							Raccordement.NUMERO_REPERE_TABLE_CHEMINEMENT,
-							cursorB.getString(cursorB
-									.getColumnIndex(Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT)));
+
 				}
 
 				// Ajout de l'entité
@@ -945,7 +988,9 @@ public class MainMenuPreparateur extends Activity {
 				contact.put(BOM.NUMERO_DEBIT, debit);
 				contact.put(BOM.NUMERO_OPERATION, num);
 
-				clause = new String(Cheminement.NUMERO_COMPOSANT + "='"
+				clause = new String(Cheminement.NUMERO_COMPOSANT_TENANT + "='"
+						+ contact.getAsString(BOM.NUMERO_COMPOSANT) + "' OR "
+						+ Cheminement.NUMERO_COMPOSANT_ABOUTISSANT + "='"
 						+ contact.getAsString(BOM.NUMERO_COMPOSANT) + "'");
 				cursorB = cr
 						.query(urlCheminement, ColChem1, clause, null, null);
@@ -1913,7 +1958,7 @@ public class MainMenuPreparateur extends Activity {
 
 	private boolean genererDebitCable() throws IOException {
 
-		String colKitGen1[] = new String[] { Kitting._id,
+		String colKitGen1[] = new String[] { Kitting._id, Kitting.NUMERO_DEBIT,
 				Kitting.NUMERO_POSITION_CHARIOT, Kitting.NUMERO_COMPOSANT,
 				Kitting.REPERE_ELECTRIQUE, Kitting.ORDRE_REALISATION,
 				Kitting.ETAT_LIAISON_FIL, Kitting.NUMERO_FIL_CABLE,
@@ -1921,7 +1966,8 @@ public class MainMenuPreparateur extends Activity {
 				Kitting.TYPE_FIL_CABLE, Kitting.LONGUEUR_FIL_CABLE,
 				Kitting.UNITE, Kitting.REFERENCE_FABRICANT1,
 				Kitting.REFERENCE_FABRICANT2, Kitting.REFERENCE_INTERNE,
-				Kitting.FOURNISSEUR_FABRICANT };
+				Kitting.FOURNISSEUR_FABRICANT, Kitting.NUMERO_LOT_SCANNE,
+				Kitting.REFERENCE_FABRICANT_SCANNE };
 
 		String colKitGen2[] = new String[] { Kitting._id,
 				Kitting.NUMERO_POSITION_CHARIOT, Kitting.NUMERO_COMPOSANT,
@@ -2125,8 +2171,8 @@ public class MainMenuPreparateur extends Activity {
 		/* TETES A */
 
 		// Filtre par connecteur et N° cheminement
-		clause = Raccordement.ORDRE_REALISATION + "='" + "Tête A"
-				+ "' GROUP BY " + Raccordement.NUMERO_COMPOSANT_TENANT;
+		clause = Raccordement.ORDRE_REALISATION + " LIKE '%A%'  GROUP BY "
+				+ Raccordement.NUMERO_COMPOSANT_TENANT;
 		cursor = cr.query(urlRaccordement, colRac, clause, null,
 				Raccordement.NUMERO_CHEMINEMENT);
 		if (cursor.moveToFirst()) {
@@ -2134,12 +2180,48 @@ public class MainMenuPreparateur extends Activity {
 				numeroComposant = cursor.getString(cursor
 						.getColumnIndex(Raccordement.NUMERO_COMPOSANT_TENANT));
 
-				gamme = "Raccordement tête A";
-				numeroOperation = "4-000";
 				rang = cursor.getString(cursor
 						.getColumnIndex(Raccordement.ZONE_ACTIVITE));
 
 				rang_1 = "Connecteur " + numeroComposant;
+
+				gamme = "Frettage";
+				numeroOperation = "6-000";
+
+				clause = Cable.FAMILLE_PRODUIT + " LIKE '%Frette%' AND "
+						+ Cable.NUMERO_COMPOSANT + "='" + numeroComposant + "'";
+				cursorA = cr.query(urlNomenclature, colNom1, clause, null,
+						Cable._id);
+
+				if (cursorA.moveToFirst()) {
+					// Frettage
+					descriptionOperation = "Frettage Zone  "
+							+ cursor.getString(cursor
+									.getColumnIndex(Raccordement.ZONE_ACTIVITE))
+							+ "-"
+							+ cursor.getString(cursor
+									.getColumnIndex(Raccordement.LOCALISATION1));
+
+					// Ajout des opérations à la table de séquencement
+					num1 = numeroOperation + Integer.toString(indiceFrettage++);
+					contact.put(Operation.GAMME, gamme);
+					contact.put(Operation.RANG_1, rang);
+					contact.put(Operation.RANG_1_1, rang_1);
+					contact.put(Operation.DESCRIPTION_OPERATION,
+							descriptionOperation);
+					contact.put(Operation.NUMERO_OPERATION, num1);
+					contact.put(Operation.REALISABLE, 0);
+					contact.put(Operation.DUREE_THEORIQUE, FRETTAGE);
+
+					// Ajout de l'entité
+					getContentResolver().insert(urlSequencement, contact);
+					// Ecrasement de ses données pour passer à la
+					// suivante
+					contact.clear();
+				}
+
+				gamme = "Raccordement tête A";
+				numeroOperation = "4-000";
 
 				// Recherche des obturateurs
 				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
@@ -2291,8 +2373,9 @@ public class MainMenuPreparateur extends Activity {
 				// Ajout des autres cables
 				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
 						+ numeroComposant + "' AND "
-						+ Raccordement.NUMERO_OPERATION + " IS NULL GROUP BY "
-						+ Raccordement.NUMERO_FIL_CABLE;
+						+ Raccordement.TYPE_ELEMENT_RACCORDE
+						+ " LIKE 'CNT' AND " + Raccordement.NUMERO_OPERATION
+						+ " IS NULL GROUP BY " + Raccordement.NUMERO_FIL_CABLE;
 				cursorA = cr.query(urlRaccordement, colRac, clause, null,
 						Raccordement.NUMERO_BORNE_TENANT);
 
@@ -2492,6 +2575,50 @@ public class MainMenuPreparateur extends Activity {
 
 				}
 
+				// Ajout des cosses manchons
+				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
+						+ numeroComposant + "' AND ("
+						+ Raccordement.TYPE_ELEMENT_RACCORDE
+						+ " LIKE 'SPL' OR "
+						+ Raccordement.TYPE_ELEMENT_RACCORDE
+						+ " LIKE 'TER' ) GROUP BY " + Raccordement.NUMERO_FIL_CABLE;
+				cursorA = cr.query(urlRaccordement, colRac, clause, null,
+						Raccordement._id);
+				if (cursorA.moveToFirst()) {
+					do {
+
+						descriptionOperation = "Denudage Sertissage Cosse et Manchons "
+
+								+ " sur  Tête B  "
+								+ cursorA
+										.getString(cursorA
+												.getColumnIndex(Raccordement.NUMERO_COMPOSANT_TENANT));
+
+						// Ajout des opérations à la table de séquencement
+						num1 = numeroOperation + Integer.toString(indice++);
+						contact.put(Operation.GAMME, gamme);
+						contact.put(Operation.RANG_1, rang);
+						contact.put(Operation.RANG_1_1, rang_1);
+						contact.put(Operation.DESCRIPTION_OPERATION,
+								descriptionOperation);
+						contact.put(Operation.NUMERO_OPERATION, num1);
+						contact.put(Operation.REALISABLE, 0);
+						contact.put(Operation.DUREE_THEORIQUE,
+								SERTISSAGE_CONTACTS);
+						contact.put(
+								Operation.RANG_1_1_1,
+								cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
+
+						// Ajout de l'entité
+						getContentResolver().insert(urlSequencement, contact);
+						// Ecrasement de ses données pour passer à la
+						// suivante
+						contact.clear();
+
+					} while (cursorA.moveToNext());
+				}
+
 				// Finalisation têtes
 				descriptionOperation = "Finalisation Tête A  "
 						+ cursor.getString(cursor
@@ -2536,7 +2663,7 @@ public class MainMenuPreparateur extends Activity {
 				// suivante
 				contact.clear();
 
-				gamme = "Cheminement tête A";
+				gamme = "Cheminement";
 				numeroOperation = "5-000";
 
 				// Position sur la table de cheminement
@@ -2561,9 +2688,10 @@ public class MainMenuPreparateur extends Activity {
 				// suivante
 				contact.clear();
 
-				// Cheminement des têtes
+				// Cheminement des têtes A
 				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
 						+ numeroComposant + "'AND  "
+						+ Raccordement.ORDRE_REALISATION + " LIKE '%A%' AND "
 						+ Raccordement.FAUX_CONTACT + "='" + 0 + "' AND "
 						+ Raccordement.OBTURATEUR + "='" + 0 + "' AND "
 						+ Raccordement.REPRISE_BLINDAGE + " IS NULL ";
@@ -2602,41 +2730,13 @@ public class MainMenuPreparateur extends Activity {
 					} while (cursorA.moveToNext());
 				}
 
-				gamme = "Frettage";
-				numeroOperation = "6-000";
-
-				// Frettage
-				descriptionOperation = "Frettage Zone  "
-						+ cursor.getString(cursor
-								.getColumnIndex(Raccordement.ZONE_ACTIVITE))
-						+ "-"
-						+ cursor.getString(cursor
-								.getColumnIndex(Raccordement.LOCALISATION1));
-
-				// Ajout des opérations à la table de séquencement
-				num1 = numeroOperation + Integer.toString(indiceFrettage++);
-				contact.put(Operation.GAMME, gamme);
-				contact.put(Operation.RANG_1, rang);
-				contact.put(Operation.RANG_1_1, rang_1);
-				contact.put(Operation.DESCRIPTION_OPERATION,
-						descriptionOperation);
-				contact.put(Operation.NUMERO_OPERATION, num1);
-				contact.put(Operation.REALISABLE, 0);
-				contact.put(Operation.DUREE_THEORIQUE, FRETTAGE);
-
-				// Ajout de l'entité
-				getContentResolver().insert(urlSequencement, contact);
-				// Ecrasement de ses données pour passer à la
-				// suivante
-				contact.clear();
-
 				gamme = "Contrôle final";
 				numeroOperation = "11-000";
 
 				// Controle finalisation
 				descriptionOperation = "Contrôle final tête A "
 						+ cursor.getString(cursor
-								.getColumnIndex(Raccordement.NUMERO_COMPOSANT_TENANT));
+								.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT));
 
 				// Ajout des opérations à la table de séquencement
 				num1 = numeroOperation
@@ -2665,8 +2765,8 @@ public class MainMenuPreparateur extends Activity {
 		FIL_SENSIBLE = 1;
 
 		// Filtre par connecteur et N° cheminement
-		clause = Raccordement.ORDRE_REALISATION + "='" + "Tête B"
-				+ "' GROUP BY " + Raccordement.NUMERO_COMPOSANT_ABOUTISSANT;
+		clause = Raccordement.ORDRE_REALISATION + " LIKE '%B%'  GROUP BY "
+				+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT;
 		cursor = cr.query(urlRaccordement, colRac, clause, null,
 				Raccordement.NUMERO_CHEMINEMENT);
 		if (cursor.moveToFirst()) {
@@ -2782,7 +2882,8 @@ public class MainMenuPreparateur extends Activity {
 
 				// Mise à longueur
 				descriptionOperation = "Mise à longueur Tête B  "
-						+ numeroComposant;
+						+ cursor.getString(cursor
+								.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
 
 				// Ajout des opérations à la table de séquencement
 				num1 = numeroOperation + indice++;
@@ -2853,8 +2954,9 @@ public class MainMenuPreparateur extends Activity {
 				// Ajout des autres cables
 				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
 						+ numeroComposant + "' AND "
-						+ Raccordement.NUMERO_OPERATION + " IS NULL GROUP BY "
-						+ Raccordement.NUMERO_FIL_CABLE;
+						+ Raccordement.TYPE_ELEMENT_RACCORDE
+						+ " LIKE 'CNT' AND " + Raccordement.NUMERO_OPERATION
+						+ " IS NULL GROUP BY " + Raccordement.NUMERO_FIL_CABLE;
 				cursorA = cr.query(urlRaccordement, colRac, clause, null,
 						Raccordement.NUMERO_BORNE_ABOUTISSANT);
 
@@ -3045,6 +3147,50 @@ public class MainMenuPreparateur extends Activity {
 
 				}
 
+				// Ajout des cosses manchons
+				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
+						+ numeroComposant + "' AND ("
+						+ Raccordement.TYPE_ELEMENT_RACCORDE
+						+ " LIKE 'SPL' OR "
+						+ Raccordement.TYPE_ELEMENT_RACCORDE
+						+ " LIKE 'TER' ) GROUP BY " + Raccordement.NUMERO_FIL_CABLE;
+				cursorA = cr.query(urlRaccordement, colRac, clause, null,
+						Raccordement._id);
+				if (cursorA.moveToFirst()) {
+					do {
+
+						descriptionOperation = "Denudage Sertissage Cosse et Manchons "
+
+								+ " sur  Tête B  "
+								+ cursorA
+										.getString(cursorA
+												.getColumnIndex(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT));
+
+						// Ajout des opérations à la table de séquencement
+						num1 = numeroOperation + Integer.toString(indice++);
+						contact.put(Operation.GAMME, gamme);
+						contact.put(Operation.RANG_1, rang);
+						contact.put(Operation.RANG_1_1, rang_1);
+						contact.put(Operation.DESCRIPTION_OPERATION,
+								descriptionOperation);
+						contact.put(Operation.NUMERO_OPERATION, num1);
+						contact.put(Operation.REALISABLE, 0);
+						contact.put(Operation.DUREE_THEORIQUE,
+								SERTISSAGE_CONTACTS);
+						contact.put(
+								Operation.RANG_1_1_1,
+								cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
+
+						// Ajout de l'entité
+						getContentResolver().insert(urlSequencement, contact);
+						// Ecrasement de ses données pour passer à la
+						// suivante
+						contact.clear();
+
+					} while (cursorA.moveToNext());
+				}
+
 				// Finalisation têtes
 				descriptionOperation = "Finalisation Tête B  "
 						+ cursor.getString(cursor
@@ -3070,9 +3216,10 @@ public class MainMenuPreparateur extends Activity {
 				gamme = "Cheminement";
 				numeroOperation = "5-000";
 
-				// Cheminement Fil à fil
-				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
-						+ numeroComposant + "'AND  "
+				// Cheminement des têtes B
+				clause = Raccordement.NUMERO_COMPOSANT_TENANT + "='"
+						+ numeroComposant + "' AND  "
+						+ Raccordement.ORDRE_REALISATION + " LIKE '%B%' AND "
 						+ Raccordement.FAUX_CONTACT + "='" + 0 + "' AND "
 						+ Raccordement.OBTURATEUR + "='" + 0 + "' AND "
 						+ Raccordement.REPRISE_BLINDAGE + " IS NULL ";
@@ -3081,10 +3228,10 @@ public class MainMenuPreparateur extends Activity {
 						Raccordement._id);
 				if (cursorA.moveToFirst()) {
 					do {
-						descriptionOperation = "Cheminement Tête B  "
+						descriptionOperation = "Cheminement Tête B/ Tête B  "
 								+ cursorA
 										.getString(cursorA
-												.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
+												.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT));
 
 						// Ajout des opérations à la table de séquencement
 						num1 = numeroOperation
@@ -3117,7 +3264,7 @@ public class MainMenuPreparateur extends Activity {
 				// Controle finalisation
 				descriptionOperation = "Contrôle final tête B "
 						+ cursor.getString(cursor
-								.getColumnIndex(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT));
+								.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
 
 				// Ajout des opérations à la table de séquencement
 				num1 = numeroOperation
@@ -3138,6 +3285,28 @@ public class MainMenuPreparateur extends Activity {
 				contact.clear();
 
 			} while (cursor.moveToNext());
+
+			gamme = "Contrôle final";
+			numeroOperation = "11-000";
+
+			// Controle finalisation
+			descriptionOperation = "Contrôle final harnais";
+
+			// Ajout des opérations à la table de séquencement
+			num1 = numeroOperation + Integer.toString(indiceControleFinal++);
+			contact.put(Operation.GAMME, gamme);
+			contact.put(Operation.RANG_1, rang);
+			contact.put(Operation.RANG_1_1, rang_1);
+			contact.put(Operation.DESCRIPTION_OPERATION, descriptionOperation);
+			contact.put(Operation.NUMERO_OPERATION, num1);
+			contact.put(Operation.REALISABLE, 0);
+			contact.put(Operation.DUREE_THEORIQUE, SERTISSAGE_CONTACTS);
+
+			// Ajout de l'entité
+			getContentResolver().insert(urlSequencement, contact);
+			// Ecrasement de ses données pour passer à la
+			// suivante
+			contact.clear();
 		}
 
 	}

@@ -93,7 +93,7 @@
                 android:layout_marginRight="30dip"
                 android:text="@string/numeroConnecteur"
                 android:textColor="#0000ff"
-                android:textSize="@dimen/b9" />
+                android:textSize="@dimen/forT" />
 
             <TextView
                 android:id="@+id/textView4"
@@ -102,7 +102,7 @@
                 android:layout_marginLeft="15dip"
                 android:text="@string/numeroPositionChariot"
                 android:textColor="#0000ff"
-                android:textSize="@dimen/b9" />
+                android:textSize="@dimen/forT" />
         </LinearLayout>
 
         <LinearLayout
@@ -117,7 +117,7 @@
                 android:layout_marginRight="30dip"
                 android:text="@string/repereElectrique"
                 android:textColor="#0000ff"
-                android:textSize="@dimen/b9" />
+                android:textSize="@dimen/forT" />
 
             <TextView
                 android:id="@+id/textView6"
@@ -127,7 +127,7 @@
                 android:layout_marginRight="30dip"
                 android:text="@string/zoneLocalisation"
                 android:textColor="#0000ff"
-                android:textSize="@dimen/b9" />
+                android:textSize="@dimen/forT" />
 
             <TextView
                 android:id="@+id/textView7"
@@ -136,7 +136,7 @@
                 android:layout_marginLeft="15dip"
                 android:text="@string/numeroCheminement"
                 android:textColor="#0000ff"
-                android:textSize="@dimen/b9" />
+                android:textSize="@dimen/forT" />
         </LinearLayout>
     </LinearLayout>
 
@@ -151,73 +151,73 @@
 
         <TextView
             android:id="@+id/textView9"
-            android:layout_width="40dp"
+            android:layout_width="85dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/numeroRevisionLiaison"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/b7" />
+            android:textSize="@dimen/forTMin" />
 
         <TextView
             android:id="@+id/textView10"
-            android:layout_width="40dp"
+            android:layout_width="85dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/numeroFilCable"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/b7" />
+            android:textSize="@dimen/forTMin" />
 
         <TextView
             android:id="@+id/textView12"
-            android:layout_width="40dp"
+            android:layout_width="85dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/typeCable"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/b7" />
+            android:textSize="@dimen/forTMin" />
 
         <TextView
             android:id="@+id/textView11"
-            android:layout_width="40dp"
+            android:layout_width="85dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/numeroSegregation"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/b7" />
+            android:textSize="@dimen/forTMin" />
 
         <TextView
             android:id="@+id/temps"
-            android:layout_width="40dp"
+            android:layout_width="85dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/connecteurAboutissant"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/b7" />
+            android:textSize="@dimen/forTMin" />
 
         <TextView
             android:id="@+id/textView14"
-            android:layout_width="40dp"
+            android:layout_width="85dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/zoneLocalisation"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/b7" />
+            android:textSize="@dimen/forTMin" />
 
         <TextView
             android:id="@+id/textView16a"
-            android:layout_width="40dp"
+            android:layout_width="85dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/nombreSectionGaine"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/b7" />
+            android:textSize="@dimen/forTMin" />
 
         <TextView
             android:id="@+id/textView16"
@@ -227,17 +227,17 @@
             android:text="@string/localisationZonePose"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/b7" />
+            android:textSize="@dimen/forTMin" />
 
         <TextView
             android:id="@+id/textView17"
-            android:layout_width="40dp"
+            android:layout_width="85dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/nombreFilArrivantTb"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/b7" />
+            android:textSize="@dimen/forTMin" />
     </LinearLayout>
 
     <TextView
@@ -247,7 +247,7 @@
         android:layout_below="@+id/textView2"
         android:layout_centerHorizontal="true"
         android:text="@string/indicationCheminement"
-        android:textSize="@dimen/b9" />
+        android:textSize="@dimen/forT" />
 
     <GridView
         android:id="@+id/gridview"
@@ -261,5 +261,13 @@
         android:numColumns="1"
         android:stretchMode="columnWidth" >
     </GridView>
+    
+        <TextView
+        android:id="@+id/timeDisp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/imageView1"
+        android:layout_alignRight="@id/imageView1"
+        android:layout_below="@id/imageView1" />
 
 </RelativeLayout>

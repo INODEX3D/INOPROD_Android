@@ -25,8 +25,11 @@ import android.widget.Toast;
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.activities.InfoProduit;
 import com.inodex.inoprod.business.BOMProvider;
+import com.inodex.inoprod.business.DureesProvider;
 import com.inodex.inoprod.business.ProductionProvider;
 import com.inodex.inoprod.business.SequencementProvider;
+import com.inodex.inoprod.business.TimeConverter;
+import com.inodex.inoprod.business.Durees.Duree;
 import com.inodex.inoprod.business.Production.Fil;
 import com.inodex.inoprod.business.TableBOM.BOM;
 import com.inodex.inoprod.business.TableSequencement.Operation;
@@ -103,6 +106,15 @@ public class ServitudeComposants extends Activity {
 			Fil.NUMERO_COMPOSANT_ABOUTISSANT, Fil.NUMERO_COMPOSANT_TENANT };
 	private Cursor cursorInfo;
 	private Uri urlProd = ProductionProvider.CONTENT_URI;
+	
+	private TextView timer;
+	private Cursor cursorTime;
+	private Uri urlTim = DureesProvider.CONTENT_URI;
+	private String colTim[] = new String[] { Duree._id,
+			Duree.DESIGNATION_OPERATION, Duree.DUREE_THEORIQUE
+
+	};
+	private long dureeTotal;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -192,6 +204,20 @@ public class ServitudeComposants extends Activity {
 
 		// Affichage de la prémiere ligne du contenut
 		displayContentProvider();
+		
+		// Affichage du temps nécessaire
+				timer = (TextView) findViewById(R.id.timeDisp);
+				dureeTotal = 0;
+				cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
+						+ " LIKE '%kit%' ", null, Duree._id);
+				if (cursorTime.moveToFirst()) {
+					dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
+							.getColumnIndex(Duree.DUREE_THEORIQUE)));
+
+				}
+				dureeTotal = dureeTotal * nbRows;
+				timer.setTextColor(Color.GREEN);
+				timer.setText(TimeConverter.display(dureeTotal));
 
 		// Etape suivante
 		boutonCheck = (ImageButton) findViewById(R.id.imageButton2);

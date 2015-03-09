@@ -10,5 +10,8 @@
     <dimen name="b9">9dip</dimen>
     <dimen name="b5">5dip</dimen>
     <dimen name="b7">7dp</dimen>
+    <dimen name="forT">18dp</dimen>
+    <dimen name="forTPlus">28dp</dimen>
+    <dimen name="forTMin">15dp</dimen>
 
 </resources>

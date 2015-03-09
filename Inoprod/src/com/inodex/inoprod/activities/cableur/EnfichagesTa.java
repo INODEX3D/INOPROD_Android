@@ -10,6 +10,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.Time;
@@ -25,8 +26,13 @@ import android.widget.Toast;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.activities.InfoProduit;
+import com.inodex.inoprod.business.DureesProvider;
+import com.inodex.inoprod.business.NomenclatureProvider;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
+import com.inodex.inoprod.business.TimeConverter;
+import com.inodex.inoprod.business.Durees.Duree;
+import com.inodex.inoprod.business.Nomenclature.Cable;
 import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
 
@@ -43,6 +49,7 @@ public class EnfichagesTa extends Activity {
 	/** Uri à manipuler */
 	private Uri urlSeq = SequencementProvider.CONTENT_URI;
 	private Uri urlRac = RaccordementProvider.CONTENT_URI;
+	private Uri urlNom = NomenclatureProvider.CONTENT_URI;
 
 	/** Tableau des opérations à réaliser */
 	private int opId[] = null;
@@ -65,12 +72,12 @@ public class EnfichagesTa extends Activity {
 	private String nomPrenomOperateur[] = null;
 
 	/** Curseur et Content Resolver à utiliser lors des requêtes */
-	private Cursor cursor, cursorA;
+	private Cursor cursor, cursorA, cursorB;
 	private ContentResolver cr;
 	private ContentValues contact;
 
 	private String clause, numeroOperation, numeroCo, clauseTotal,
-			oldClauseTotal, numeroCable, description;
+			oldClauseTotal, numeroCable, description, b;
 	private boolean prodAchevee;
 
 	/** Colonnes utilisés pour les requêtes */
@@ -97,11 +104,26 @@ public class EnfichagesTa extends Activity {
 			Raccordement.LONGUEUR_FIL_CABLE, Raccordement.REFERENCE_FABRICANT2,
 			Raccordement.REFERENCE_INTERNE };
 
+	private String colNom[] = new String[] { Cable._id,
+			Cable.DESIGNATION_COMPOSANT, Cable.NUMERO_COMPOSANT,
+			Cable.FAMILLE_PRODUIT, Cable.REFERENCE_FABRICANT1,
+			Cable.REFERENCE_FABRICANT2, Cable.REFERENCE_INTERNE,
+			Cable.REPERE_ELECTRIQUE, Cable.QUANTITE, Cable.UNITE };
+
 	private String colInfo[] = new String[] { Raccordement._id,
 			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS,
 			Raccordement.STANDARD, Raccordement.NUMERO_HARNAIS_FAISCEAUX,
 			Raccordement.REFERENCE_FICHIER_SOURCE };
 	private Cursor cursorInfo;
+
+	private TextView timer;
+	private Cursor cursorTime;
+	private Uri urlTim = DureesProvider.CONTENT_URI;
+	private String colTim[] = new String[] { Duree._id,
+			Duree.DESIGNATION_OPERATION, Duree.DUREE_THEORIQUE
+
+	};
+	private long dureeTotal;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -132,7 +154,7 @@ public class EnfichagesTa extends Activity {
 		gainage = (TextView) findViewById(R.id.textView5a);
 		positionChariot = (TextView) findViewById(R.id.textView5b);
 		referenceFabricant = (TextView) findViewById(R.id.textView5d);
-		longueur = (TextView) findViewById(R.id.textView5d);
+		longueur = (TextView) findViewById(R.id.textView5c);
 		boutonAide = (ImageButton) findViewById(R.id.imageButton4);
 		retour = (ImageButton) findViewById(R.id.imageButton2);
 		boutonCheck = (ImageButton) findViewById(R.id.imageButton3);
@@ -154,15 +176,30 @@ public class EnfichagesTa extends Activity {
 			numeroConnecteur.append(" : " + numeroCo);
 		}
 
+		cursorA = cr.query(urlNom, colNom, Cable.NUMERO_COMPOSANT + "='"
+				+ numeroCo + "' AND " + Cable.FAMILLE_PRODUIT
+				+ " LIKE '%Gaine%'", null, null);
+		if (cursorA.moveToFirst()) {
+			gainage.append(" : "
+					+ cursorA.getString(cursorA
+							.getColumnIndex(Cable.FAMILLE_PRODUIT)));
+			longueur.append(" : "
+					+ cursorA.getString(cursorA.getColumnIndex(Cable.QUANTITE))
+					+ cursorA.getString(cursorA.getColumnIndex(Cable.UNITE)));
+		}
+
 		// Affichage du contenu
 		// Recuperation de la première opération
 
 		if (description.contains("Tête A")) {
 			clause = new String(Raccordement.NUMERO_COMPOSANT_TENANT + "='"
-					+ numeroCo + "'");
+					+ numeroCo + "'AND " + Raccordement.REPRISE_BLINDAGE
+					+ " IS NULL ");
+
 		} else {
 			clause = new String(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-					+ "='" + numeroCo + "'");
+					+ "='" + numeroCo + "'AND " + Raccordement.REPRISE_BLINDAGE
+					+ " IS NULL ");
 		}
 		cursorA = cr.query(urlRac, colRac, clause, null, Raccordement._id
 				+ " ASC");
@@ -176,37 +213,45 @@ public class EnfichagesTa extends Activity {
 			 * longueur.append(" : " + cursorA.getString(cursorA
 			 * .getColumnIndex(Raccordement.LONGUEUR_FIL_CABLE)));
 			 */
-			referenceFabricant
-					.append(" : "
-							+ cursorA.getString(cursorA
-									.getColumnIndex(Raccordement.REFERENCE_FABRICANT2)));
-			referenceInterne.append(" : "
-					+ cursorA.getString(cursorA
-							.getColumnIndex(Raccordement.REFERENCE_INTERNE)));
+
+			Cursor cursorB = cr.query(urlNom, colNom, Cable.NUMERO_COMPOSANT
+					+ "='" + numeroCo + "' AND " + Cable.FAMILLE_PRODUIT
+					+ " LIKE '%onnector%'", null, Cable._id);
+			if (cursorB.moveToFirst()) {
+
+				designation.append(" : "
+						+ cursorB.getString(cursorB
+								.getColumnIndex(Cable.DESIGNATION_COMPOSANT)));
+				referenceFabricant.append(" : "
+						+ cursorB.getString(cursorB
+								.getColumnIndex(Cable.REFERENCE_FABRICANT2)));
+				referenceInterne.append(" : "
+						+ cursorB.getString(cursorB
+								.getColumnIndex(Cable.REFERENCE_INTERNE)));
+				repereElectrique.append(" : "
+						+ cursorB.getString(cursorB
+								.getColumnIndex(Cable.REPERE_ELECTRIQUE)));
+			}
 
 			if (numeroOperation.startsWith("4")) {
 				titre.setText(R.string.enfichageTa);
-				repereElectrique
-						.append(" : "
-								+ cursorA.getString(cursorA
-										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
+
 				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
 						+ numeroCo + "' AND  " + Raccordement.FAUX_CONTACT
 						+ "='" + 0 + "' AND " + Raccordement.OBTURATEUR + "='"
 						+ 0 + "' AND " + Raccordement.REPRISE_BLINDAGE
 						+ " IS NULL ";
+				b = Raccordement.NUMERO_BORNE_TENANT;
 			} else {
 				titre.setText(R.string.enfichageTb);
-				repereElectrique
-						.append(" : "
-								+ cursorA.getString(cursorA
-										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT)));
+
 				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
 						+ numeroCo + "' AND  " + Raccordement.FAUX_CONTACT
 						+ "='" + 0 + "' AND " + Raccordement.OBTURATEUR + "='"
 						+ 0 + "' AND " + Raccordement.REPRISE_BLINDAGE
 						+ " IS NULL ";
 				colRac[6] = Raccordement.NUMERO_BORNE_ABOUTISSANT;
+				b = Raccordement.NUMERO_BORNE_ABOUTISSANT;
 			}
 
 		}
@@ -216,6 +261,20 @@ public class EnfichagesTa extends Activity {
 				clause + " GROUP BY " + Raccordement.NUMERO_FIL_CABLE, null,
 				Raccordement._id).getCount();
 		Log.e("NombreLignes", "" + nbRows);
+
+		// Affichage du temps nécessaire
+		timer = (TextView) findViewById(R.id.timeDisp);
+		dureeTotal = 0;
+		cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
+				+ " LIKE '%fichage%' ", null, Duree._id);
+		if (cursorTime.moveToFirst()) {
+			dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
+					.getColumnIndex(Duree.DUREE_THEORIQUE)));
+
+		}
+		dureeTotal = dureeTotal * nbRows;
+		timer.setTextColor(Color.GREEN);
+		timer.setText(TimeConverter.display(dureeTotal));
 
 		// Bouton de validation
 		boutonCheck.setOnClickListener(new View.OnClickListener() {
@@ -354,8 +413,6 @@ public class EnfichagesTa extends Activity {
 				if (indiceLimite > 0) {
 					indiceLimite--;
 					Log.e("Indice", "" + indiceLimite);
-				}
-				if (indiceCourant > 0) {
 					indiceCourant--;
 					Log.e("Indice", "" + indiceLimite);
 				}
@@ -443,10 +500,24 @@ public class EnfichagesTa extends Activity {
 	 */
 	private void displayContentProvider() {
 		// Création du SimpleCursorAdapter affilié au GridView
-		cursor = cr.query(urlRac, colRac, Raccordement.NUMERO_COMPOSANT_TENANT
-				+ "='" + numeroCo + "' AND (" + clauseTotal + ") AND "
-				+ Raccordement.REPRISE_BLINDAGE + " IS NULL ", null,
-				Raccordement._id);
+		/*if (description.contains("Tête A")) { */
+			cursor = cr.query(urlRac, colRac,
+					Raccordement.NUMERO_COMPOSANT_TENANT + "='" + numeroCo
+							+ "' AND (" + clauseTotal + ") AND "
+							+ Raccordement.REPRISE_BLINDAGE
+							+ " IS NULL ", null,
+					Raccordement._id);
+		/*} else {
+			cursor = cr.query(urlRac, colRac,
+					Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + "='" + numeroCo
+							+ "' AND (" + clauseTotal + ") AND "
+							+ Raccordement.REPRISE_BLINDAGE
+							+ " IS NULL GROUP BY "
+							+ Raccordement.NUMERO_BORNE_ABOUTISSANT, null,
+					Raccordement._id);
+		}*/
+		Log.e("Curseur", ""+cursor.getCount());
+		Log.e("Clause total", clauseTotal);
 		SimpleCursorAdapter sca = new SimpleCursorAdapter(this,
 				R.layout.grid_layout_enfichage_ta, cursor, colRac, layouts);
 
@@ -493,8 +564,9 @@ public class EnfichagesTa extends Activity {
 				numeroCable = contents;
 				String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 				if (clauseTotal.contains(numeroCable)) {
-					Toast.makeText(EnfichagesTa.this, "Ce cable a dèja été utilisé",
-							Toast.LENGTH_SHORT).show();
+					Toast.makeText(EnfichagesTa.this,
+							"Ce cable a dèja été utilisé", Toast.LENGTH_SHORT)
+							.show();
 
 				} else {
 					clause = Raccordement.NUMERO_FIL_CABLE + "='" + numeroCable
@@ -505,20 +577,41 @@ public class EnfichagesTa extends Activity {
 					cursorA = cr.query(urlRac, colRac, clause, null,
 							Raccordement._id);
 					if (cursorA.moveToFirst()) {
-						if (clauseTotal.equals("")) {
-							clauseTotal = Raccordement.NUMERO_FIL_CABLE + "='"
-									+ numeroCable + "'";
-						} else {
-							oldClauseTotal = clauseTotal;
-							clauseTotal += " OR "
-									+ Raccordement.NUMERO_FIL_CABLE + "='"
-									+ numeroCable + "'";
+						int borne = cursorA.getInt(cursorA
+								.getColumnIndex(b));
+						Log.e("Borne", "" + borne);
+						Log.e(" OU", b);
+						clause =  b + "='"
+								+ borne + ".0' AND ("
+								+ Raccordement.NUMERO_COMPOSANT_TENANT
+								+ "='" + numeroCo + "' OR "
+								+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+								+ "='" + numeroCo + "' )";
+						cursorB = cr.query(urlRac, colRac,clause, null, Raccordement._id);
+				
+						if (cursorB.moveToFirst()) {
+							
+							do {
+								numeroCable = cursorB.getString(cursorB
+										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE));
+								Log.e("N° Cable", numeroCable);
+								if (clauseTotal.equals("")) {
+									clauseTotal = Raccordement.NUMERO_FIL_CABLE
+											+ "='" + numeroCable + "'";
+								} else {
+									
+									oldClauseTotal = clauseTotal;
+									clauseTotal += " OR "
+											+ Raccordement.NUMERO_FIL_CABLE
+											+ "='" + numeroCable + "'";
+								}
+								// Ajout du cable à la liste des
+								// éléments à afficher
+								indiceLimite++;
+								displayContentProvider();
+								indiceCourant++;
+							} while (cursorB.moveToNext());
 						}
-						// Ajout du cable à la liste des
-						// éléments à afficher
-						indiceLimite++;
-						displayContentProvider();
-						indiceCourant++;
 					} else {
 						// Le cable n'est pas utilisé pour
 						// ce connecteur
@@ -556,8 +649,8 @@ public class EnfichagesTa extends Activity {
 						numeroCable = cable.getText().toString();
 						if (clauseTotal.contains(numeroCable)) {
 							Toast.makeText(EnfichagesTa.this,
-									"Ce cable a dèja été utilisé", Toast.LENGTH_SHORT)
-									.show();
+									"Ce cable a dèja été utilisé",
+									Toast.LENGTH_SHORT).show();
 
 						} else {
 
@@ -570,20 +663,41 @@ public class EnfichagesTa extends Activity {
 							cursorA = cr.query(urlRac, colRac, clause, null,
 									Raccordement._id);
 							if (cursorA.moveToFirst()) {
-								if (clauseTotal.equals("")) {
-									clauseTotal = Raccordement.NUMERO_FIL_CABLE
-											+ "='" + numeroCable + "'";
-								} else {
-									oldClauseTotal = clauseTotal;
-									clauseTotal += " OR "
-											+ Raccordement.NUMERO_FIL_CABLE
-											+ "='" + numeroCable + "'";
+								int borne = cursorA.getInt(cursorA
+										.getColumnIndex(b));
+								Log.e("Borne", "" + borne);
+								Log.e(" OU", b);
+								clause =  b + "='"
+										+ borne + ".0' AND ("
+										+ Raccordement.NUMERO_COMPOSANT_TENANT
+										+ "='" + numeroCo + "' OR "
+										+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+										+ "='" + numeroCo + "' )";
+								cursorB = cr.query(urlRac, colRac,clause, null, Raccordement._id);
+						
+								if (cursorB.moveToFirst()) {
+									
+									do {
+										numeroCable = cursorB.getString(cursorB
+												.getColumnIndex(Raccordement.NUMERO_FIL_CABLE));
+										Log.e("N° Cable", numeroCable);
+										if (clauseTotal.equals("")) {
+											clauseTotal = Raccordement.NUMERO_FIL_CABLE
+													+ "='" + numeroCable + "'";
+										} else {
+											
+											oldClauseTotal = clauseTotal;
+											clauseTotal += " OR "
+													+ Raccordement.NUMERO_FIL_CABLE
+													+ "='" + numeroCable + "'";
+										}
+										// Ajout du cable à la liste des
+										// éléments à afficher
+										indiceLimite++;
+										displayContentProvider();
+										indiceCourant++;
+									} while (cursorB.moveToNext());
 								}
-								// Ajout du cable à la liste des
-								// éléments à afficher
-								indiceLimite++;
-								displayContentProvider();
-								indiceCourant++;
 							} else {
 								// Le cable n'est pas utilisé pour
 								// ce connecteur

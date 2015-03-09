@@ -8,8 +8,11 @@ import java.util.List;
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.R.layout;
 import com.inodex.inoprod.activities.InfoProduit;
+import com.inodex.inoprod.business.DureesProvider;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
+import com.inodex.inoprod.business.TimeConverter;
+import com.inodex.inoprod.business.Durees.Duree;
 import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
 
@@ -18,6 +21,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.Time;
@@ -93,9 +97,20 @@ public class TriAboutissantsTa extends Activity {
 			Raccordement.LOCALISATION1 };
 
 	private String colInfo[] = new String[] { Raccordement._id,
-			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS, Raccordement.STANDARD,
-			Raccordement.NUMERO_HARNAIS_FAISCEAUX, Raccordement.REFERENCE_FICHIER_SOURCE};
+			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS,
+			Raccordement.STANDARD, Raccordement.NUMERO_HARNAIS_FAISCEAUX,
+			Raccordement.REFERENCE_FICHIER_SOURCE };
 	private Cursor cursorInfo;
+	
+	private TextView timer;
+	private Cursor cursorTime;
+	private Uri urlTim = DureesProvider.CONTENT_URI;
+	private String colTim[] = new String[] { Duree._id,
+			Duree.DESIGNATION_OPERATION, Duree.DUREE_THEORIQUE
+
+	};
+	private long dureeTotal;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -176,8 +191,9 @@ public class TriAboutissantsTa extends Activity {
 		}
 
 		cursorA = cr.query(urlRac, colRac, " (" + clauseTotal + ") AND "
-				+ Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT + "!='null' GROUP BY " + Raccordement.NUMERO_FIL_CABLE,
-				null, Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT);
+				+ Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT
+				+ "!='null' GROUP BY " + Raccordement.NUMERO_FIL_CABLE, null,
+				Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT);
 
 		if (cursorA.moveToFirst()) {
 
@@ -231,16 +247,20 @@ public class TriAboutissantsTa extends Activity {
 				liste.add(element);
 			} while (cursorA.moveToNext());
 		}
-		
+
 		nombreGroupe.append(": " + numeroGroupe);
-		
+
 		infoProduit.setOnClickListener(new View.OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				cursorInfo = cr.query(urlRac, colInfo, Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-						+ " ='" + numeroCo + "' OR " + Raccordement.NUMERO_COMPOSANT_TENANT + "='" + numeroCo+"'" , null, null);
-				Intent toInfo = new Intent(TriAboutissantsTa.this, InfoProduit.class);
+				cursorInfo = cr.query(urlRac, colInfo,
+						Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
+								+ numeroCo + "' OR "
+								+ Raccordement.NUMERO_COMPOSANT_TENANT + "='"
+								+ numeroCo + "'", null, null);
+				Intent toInfo = new Intent(TriAboutissantsTa.this,
+						InfoProduit.class);
 				labels = new String[7];
 
 				if (cursorInfo.moveToFirst()) {
@@ -384,6 +404,20 @@ public class TriAboutissantsTa extends Activity {
 				R.layout.grid_layout_tri_aboutissants_ta, colRac, layouts);
 
 		gridView.setAdapter(sca);
+		
+		// Affichage du temps nécessaire
+				timer = (TextView) findViewById(R.id.timeDisp);
+				dureeTotal = 0;
+				cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
+						+ " LIKE '%hemine%' ", null, Duree._id);
+				if (cursorTime.moveToFirst()) {
+					dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
+							.getColumnIndex(Duree.DUREE_THEORIQUE)));
+
+				}
+				dureeTotal = dureeTotal * liste.size();
+				timer.setTextColor(Color.GREEN);
+				timer.setText(TimeConverter.display(dureeTotal));
 
 	}
 

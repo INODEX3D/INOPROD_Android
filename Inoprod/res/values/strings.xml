@@ -39,7 +39,7 @@
     <string name="numeroFilCable">Numéro de fil ou cable</string>
     <string name="positionChariot">Position Chariot</string>
     <string name="repereElectrique">Repère éléctrique</string>
-    <string name="numeroConnecteur">Numéro de connecteur</string>
+    <string name="numeroConnecteur">Numéro de composant</string>
     <string name="ordreRealisation">Ordre de réalisation</string>
     <string name="longueurCoupe">Longueur des coupes</string>
     <string name="unite">Unité</string>
@@ -148,7 +148,7 @@
     <string name="numeroSection">Numero de section</string>
     <string name="typeSupportAboutissant">Type Support Aboutissant</string>
     <string name="title_activity_cheminement_fil_afil">CheminementFilAFil</string>
-    <string name="cheminementsCablesTb">Cheminement des câbles Têtes B</string>
+    <string name="cheminementsCablesTb">Cheminement des câbles têtes B / têtes B</string>
     <string name="title_activity_frettage">Frettage</string>
     <string name="frettages">Frettages</string>
     <string name="typeFrette">Type de frette</string>
@@ -197,5 +197,8 @@
     <string name="controleSertissageTb">Contôle des sertissages têtes B</string>
     <string name="inoprod">Inoprod</string>
     <string name="controleRetentionTb">Contrôle rétention des têtes B</string>
+    <string name="title_activity_data_pack">DataPack</string>
+    <string name="editionDatapack">Edition du Data Pack</string>
+    <string name="editer">Editer</string>
 
 </resources>

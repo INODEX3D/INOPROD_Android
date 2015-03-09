@@ -6,7 +6,7 @@
     
     <TextView
         android:id="@+id/idEmp"
-        android:layout_width="100dp"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:layout_weight="50"
@@ -14,7 +14,7 @@
 
     <TextView
     android:id="@+id/nom"
-    android:layout_width="100dp"
+    android:layout_width="150dp"
     android:layout_height="wrap_content"
     android:layout_weight="50"
     android:layout_margin="5dp" 
@@ -22,7 +22,7 @@
     
     <TextView
     android:id="@+id/prenom"
-    android:layout_width="100dp"
+    android:layout_width="150dp"
     android:layout_height="wrap_content"
     android:layout_weight="50"
     android:layout_margin="5dp"
@@ -30,7 +30,7 @@
     
     <TextView
     android:id="@+id/metier"
-    android:layout_width="100dp"
+    android:layout_width="150dp"
     android:layout_height="wrap_content"
     android:layout_weight="50"
     android:layout_margin="5dp"

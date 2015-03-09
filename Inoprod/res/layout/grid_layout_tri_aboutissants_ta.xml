@@ -6,59 +6,52 @@
 
     <TextView
         android:id="@+id/groupe"
-        android:layout_width="30dp"
+        android:layout_width="75dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/b1" />
+        android:textSize="@dimen/forTMin" />
     
        <TextView
         android:id="@+id/numeroFilCable"
-        android:layout_width="45dp"
+        android:layout_width="90dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/b1" />
+        android:textSize="@dimen/forTMin" />
     
           <TextView
         android:id="@+id/typeCable"
-        android:layout_width="45dp"
+        android:layout_width="90dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/b1" />
+        android:textSize="@dimen/forTMin" />
        
-             <TextView
-        android:id="@+id/numeroSegregation"
-        android:layout_width="45dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="5dp"
-        android:textColor="#000000"
-        android:textSize="@dimen/b1" />
-          
+    
                 <TextView
         android:id="@+id/connecteurAboutissant"
-        android:layout_width="45dp"
+        android:layout_width="90dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/b1" />
+        android:textSize="@dimen/forTMin" />
                 
                  <TextView
         android:id="@+id/zoneLocalisation"
-        android:layout_width="45dp"
+        android:layout_width="90dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/b1" />
+        android:textSize="@dimen/forTMin" />
                  
                   <TextView
         android:id="@+id/numeroRoute"
-        android:layout_width="45dp"
+        android:layout_width="90dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/b1" />
+        android:textSize="@dimen/forTMin" />
                   
                    <TextView
         android:id="@+id/nombreFilArrivantTb"
@@ -66,7 +59,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/b1" />
+        android:textSize="@dimen/forTMin" />
              
 
 </LinearLayout>

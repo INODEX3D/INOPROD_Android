@@ -1,5 +1,10 @@
 package com.inodex.inoprod.activities.cableur;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+
 import android.R.color;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -14,6 +19,7 @@ import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.SimpleAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
@@ -21,7 +27,9 @@ import com.inodex.inoprod.R;
 import com.inodex.inoprod.activities.Inoprod;
 import com.inodex.inoprod.activities.magasiniers.ImportCoupeCables;
 import com.inodex.inoprod.activities.magasiniers.MainMenuMagasinier;
+import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
+import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
 
 /**
@@ -48,10 +56,13 @@ public class MainMenuCableur extends Activity {
 	/** Nom de l'opérateur */
 	private String nomPrenomOperateur[] = null;
 
+	private List<HashMap<String, String>> liste = new ArrayList<HashMap<String, String>>();
+
 	/** Uri de la table de sequencement */
 	private Uri url = SequencementProvider.CONTENT_URI;
+	private Uri urlRac = RaccordementProvider.CONTENT_URI;
 	/** Curseur et Content Resolver à utiliser lors des requêtes */
-	private Cursor cursor;
+	private Cursor cursor, cursorA;
 	private ContentResolver cr;
 
 	/** Clause à utiliser lors des requêtes */
@@ -61,8 +72,17 @@ public class MainMenuCableur extends Activity {
 	private String columns[] = { Operation.DESCRIPTION_OPERATION,
 			Operation.RANG_1_1, Operation.GAMME, Operation.NOM_OPERATEUR,
 			Operation.NUMERO_OPERATION, Operation._id, Operation.REALISABLE,
-			Operation.DUREE_THEORIQUE, Operation.DESCRIPTION_OPERATION };
-	private int layouts[] = { R.id.operationsRealiser };
+			Operation.DUREE_THEORIQUE, Operation.DESCRIPTION_OPERATION,
+			Operation.DATE_REALISATION };
+
+	private String colRac[] = { Raccordement._id,
+			Raccordement.NUMERO_OPERATION, Raccordement.NUMERO_SERIE_OUTIL,
+			Raccordement.REFERENCE_OUTIL_ABOUTISSANT,
+			Raccordement.REFERENCE_OUTIL_TENANT,
+			Raccordement.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT };
+
+	private int layouts[] = { R.id.numeroOperation, R.id.operationsRealiser,
+			R.id.referenceOutillage, R.id.numeroSerie };
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -157,10 +177,12 @@ public class MainMenuCableur extends Activity {
 					} else if (firstOperation.startsWith("Frettage")) {
 						toNext = new Intent(MainMenuCableur.this,
 								Frettage.class);
-					} 
-					else if (firstOperation.startsWith("Mise")) {
+					} else if (firstOperation.startsWith("Mise")) {
 						toNext = new Intent(MainMenuCableur.this,
 								MiseLongueurTb.class);
+					} else if (firstOperation.startsWith("Denudage Sertissage Coss")) {
+						toNext = new Intent(MainMenuCableur.this,
+								DenudageSertissageManchonsCossesTb.class);
 					}
 					if (toNext != null) {
 
@@ -181,13 +203,74 @@ public class MainMenuCableur extends Activity {
 	 * éléments
 	 */
 	private void displayContentProvider() {
+
+		Log.e("Date", Integer.toString(new Date().getDay()));
+		clause = new String("(" + Operation.NOM_OPERATEUR + " IS NULL OR "
+				+ Operation.NOM_OPERATEUR + " LIKE '' OR "
+				+ Operation.DATE_REALISATION + " LIKE '%"
+				+ (new Date()).toGMTString().substring(0, 10) + "%') AND "
+				+ Operation.REALISABLE + "='" + 1 + "' AND ("
+				+ Operation.RANG_1_1 + " LIKE '%P06%' OR " + Operation.RANG_1_1
+				+ " LIKE '%J08%' OR " + Operation.RANG_1_1
+				+ " LIKE '%P14%' OR " + Operation.RANG_1_1
+				+ " LIKE '%P09%'  OR " + Operation.RANG_1_1
+				+ " LIKE '%J12%') AND " + Operation.GAMME
+				+ "!='Contrôle jalons' AND " + Operation.GAMME
+				+ "!='Contrôle final'  ");
+		//clause = Operation.DESCRIPTION_OPERATION + " LIKE '%Cosse%'" ; 
+		cursor = cr.query(url, columns, clause + " GROUP BY "
+				+ Operation.DESCRIPTION_OPERATION, null, 
+				Operation._id + " ASC LIMIT 30");
+
+		if (cursor.moveToFirst()) {
+			int indice = 1;
+			HashMap<String, String> element;
+			do {
+
+				element = new HashMap<String, String>();
+				element.put(columns[0], "" + indice++);
+
+				if ((cursor.getString(cursor
+						.getColumnIndex(Operation.NOM_OPERATEUR)) != null)
+						&& (!(cursor.getString(cursor
+								.getColumnIndex(Operation.NOM_OPERATEUR)))
+								.equals(""))) {
+					element.put(
+							columns[1],
+							"***"
+									+ cursor.getString(cursor
+											.getColumnIndex(Operation.DESCRIPTION_OPERATION))
+									+ "***");
+
+				} else {
+					element.put(columns[1], cursor.getString(cursor
+							.getColumnIndex(Operation.DESCRIPTION_OPERATION)));
+				}
+				String numeroOp = cursor.getString(cursor
+						.getColumnIndex(Operation.NUMERO_OPERATION));
+				cursorA = cr.query(urlRac, colRac,
+						Raccordement.NUMERO_OPERATION + "='" + numeroOp + "'",
+						null, Operation._id);
+				if (cursorA.moveToFirst()) {
+					element.put(
+							columns[2],
+							cursorA.getString(cursorA
+									.getColumnIndex(Raccordement.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT)));
+					element.put(columns[3], cursorA.getString(cursorA
+							.getColumnIndex(Raccordement.NUMERO_SERIE_OUTIL)));
+
+				}
+				liste.add(element);
+			} while (cursor.moveToNext());
+		}
+
 		// Création du SimpleCursorAdapter affilié au GridView
-		SimpleCursorAdapter sca = new SimpleCursorAdapter(this,
-				R.layout.grid_layout_menu_cableur, null, columns, layouts);
+		SimpleAdapter sca = new SimpleAdapter(this, liste,
+				R.layout.grid_layout_menu_cableur, columns, layouts);
 		GridView gridView = (GridView) findViewById(R.id.gridview);
 		gridView.setAdapter(sca);
-		// Génération de l'ordre du jour
 
+		// Génération de l'ordre du jour
 		clause = new String("(" + Operation.NOM_OPERATEUR + " IS NULL OR "
 				+ Operation.NOM_OPERATEUR + " LIKE '' ) AND "
 				+ Operation.REALISABLE + "='" + 1 + "' AND ("
@@ -198,12 +281,7 @@ public class MainMenuCableur extends Activity {
 				+ " LIKE '%J12%') AND " + Operation.GAMME
 				+ "!='Contrôle jalons' AND " + Operation.GAMME
 				+ "!='Contrôle final'  ");
-		cursor = cr.query(url, columns, clause + " GROUP BY "
-				+ Operation.DESCRIPTION_OPERATION, null, Operation._id + " ASC"
-				+ " LIMIT 30");
-
-		sca.changeCursor(cursor);
-
+		//clause = Operation.DESCRIPTION_OPERATION + " LIKE '%Cosse%'" ; 
 		cursor = cr.query(url, columns, clause, null, Operation._id + " ASC"
 				+ " LIMIT 70");
 

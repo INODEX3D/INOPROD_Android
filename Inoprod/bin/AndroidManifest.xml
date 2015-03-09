@@ -263,10 +263,14 @@
             android:screenOrientation="landscape" >
         </activity>
         <activity
-            android:name="com.inodex.inoprod.activities.cableur.MiseLongueurTb"
+            android:name=".activities.cableur.MiseLongueurTb"
             android:configChanges="orientation"
             android:label="@string/title_activity_mise_longueur_tb"
             android:screenOrientation="landscape" >
+        </activity>
+        <activity
+            android:name="com.inodex.inoprod.activities.controleur.DataPack"
+            android:label="@string/title_activity_data_pack" >
         </activity>
     </application>
 

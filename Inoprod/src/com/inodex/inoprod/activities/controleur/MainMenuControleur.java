@@ -1,5 +1,10 @@
 package com.inodex.inoprod.activities.controleur;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.R.layout;
 import com.inodex.inoprod.activities.Inoprod;
@@ -13,12 +18,15 @@ import com.inodex.inoprod.activities.cableur.PositionnementTaTab;
 import com.inodex.inoprod.activities.cableur.PreparationTa;
 import com.inodex.inoprod.activities.cableur.RepriseBlindageTa;
 import com.inodex.inoprod.activities.cableur.TriAboutissantsTa;
+import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
+import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -29,6 +37,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.SimpleAdapter;
 import android.widget.SimpleCursorAdapter;
 
 public class MainMenuControleur extends Activity {
@@ -45,13 +54,16 @@ public class MainMenuControleur extends Activity {
 	/** Indice de l'opération courante */
 	private int indiceCourant = 0;
 
+	private List<HashMap<String, String>> liste = new ArrayList<HashMap<String, String>>();
+
 	/** Nom de l'opérateur */
 	private String nomPrenomOperateur[] = null;
 
 	/** Uri de la table de sequencement */
 	private Uri url = SequencementProvider.CONTENT_URI;
+	private Uri urlRac = RaccordementProvider.CONTENT_URI;
 	/** Curseur et Content Resolver à utiliser lors des requêtes */
-	private Cursor cursor;
+	private Cursor cursor, cursorA, cursorB;
 	private ContentResolver cr;
 
 	/** Clause à utiliser lors des requêtes */
@@ -60,8 +72,16 @@ public class MainMenuControleur extends Activity {
 	/** Colonnes utilisés pour les requêtes */
 	private String columns[] = { Operation.DESCRIPTION_OPERATION,
 			Operation.RANG_1_1, Operation.GAMME, Operation.NOM_OPERATEUR,
-			Operation.NUMERO_OPERATION, Operation._id, Operation.REALISABLE };
-	private int layouts[] = { R.id.operationsRealiser };
+			Operation.NUMERO_OPERATION, Operation._id, Operation.REALISABLE,
+			Operation.DATE_REALISATION };
+
+	private String colRac[] = { Raccordement._id,
+			Raccordement.NUMERO_OPERATION, Raccordement.NUMERO_SERIE_OUTIL,
+			Raccordement.REFERENCE_OUTIL_ABOUTISSANT,
+			Raccordement.REFERENCE_OUTIL_TENANT,
+			Raccordement.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT };
+	private int layouts[] = { R.id.numeroOperation, R.id.operationsRealiser,
+			R.id.referenceOutillage, R.id.numeroSerie };
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +95,23 @@ public class MainMenuControleur extends Activity {
 
 		// Affichage de lordre du jour
 		displayContentProvider();
+
+		// Verification du controle final harnais
+		cursorA = cr.query(url, columns, Operation.DESCRIPTION_OPERATION
+				+ " LIKE 'Contrôle%'", null, Operation._id);
+		cursorB = cr.query(url, columns, Operation.DESCRIPTION_OPERATION
+				+ " LIKE 'Contrôle%' AND " + Operation.NOM_OPERATEUR
+				+ "!='null' ", null, Operation._id);
+		if (cursorB.getCount() == cursorA.getCount() -1) {
+			cursorB =cr.query(url, columns, Operation.DESCRIPTION_OPERATION
+					+ " LIKE 'Contrôle final harnais'  ", null, Operation._id);
+			if (cursorB.moveToFirst()) {
+				ContentValues contact = new ContentValues();
+				contact.put(Operation.REALISABLE, 1);
+				cr.update(url, contact, Operation.DESCRIPTION_OPERATION
+						+ " LIKE 'Contrôle final harnais'  ", null);
+			}
+		}
 
 		// Retour menu principal
 		boutonExit = (ImageButton) findViewById(R.id.exitButton1);
@@ -124,7 +161,7 @@ public class MainMenuControleur extends Activity {
 					firstOperation = cursor.getString(cursor
 							.getColumnIndex(Operation.DESCRIPTION_OPERATION));
 					Intent toNext = null;
-					if (firstOperation.startsWith("Contrôle final")) {
+					if (firstOperation.startsWith("Contrôle final tête")) {
 						toNext = new Intent(MainMenuControleur.this,
 								ControleFinalisationTa.class);
 					} else if (firstOperation.startsWith("Contrôle rétention")) {
@@ -133,6 +170,10 @@ public class MainMenuControleur extends Activity {
 					} else if (firstOperation.startsWith("Contrôle sertissage")) {
 						toNext = new Intent(MainMenuControleur.this,
 								ControleSertissageTa.class);
+					} else if (firstOperation
+							.startsWith("Contrôle final harnais")) {
+						toNext = new Intent(MainMenuControleur.this,
+								ControleFinalHarnais.class);
 					}
 					if (toNext != null) {
 
@@ -153,26 +194,76 @@ public class MainMenuControleur extends Activity {
 	 * éléments
 	 */
 	private void displayContentProvider() {
+
+		// Requête dans la table sequencement
+		clause = new String("(" + Operation.REALISABLE + "='" + 1 + "' OR "
+				+ Operation.DATE_REALISATION + " LIKE '%"
+				+ (new Date()).toGMTString().substring(0, 10) + "%') AND "
+				+ Operation.GAMME + " LIKE 'Cont%' AND ("
+				+ Operation.NOM_OPERATEUR + " IS NULL OR "
+				+ Operation.DATE_REALISATION + " LIKE '%"
+				+ (new Date()).toGMTString().substring(0, 10) + "%') AND "
+				+ "(" + Operation.RANG_1_1 + " LIKE '%P06%' OR "
+				+ Operation.RANG_1_1 + " LIKE '%J08%' OR " + Operation.RANG_1_1
+				+ " LIKE '%P14%' OR " + Operation.RANG_1_1
+				+ " LIKE '%P09%'  OR " + Operation.RANG_1_1 + " LIKE '%J12%')");
+		
+		cursor = cr.query(url, columns, clause + " GROUP BY "
+				+ Operation.DESCRIPTION_OPERATION, null, Operation._id + " ASC"
+		/* + " LIMIT 30" */);
+
+		if (cursor.moveToFirst()) {
+			int indice = 1;
+			HashMap<String, String> element;
+			do {
+
+				element = new HashMap<String, String>();
+				element.put(columns[0], "" + indice++);
+				if (cursor.getString(cursor
+						.getColumnIndex(Operation.DATE_REALISATION)) != null) {
+					element.put(
+							columns[1],
+							"***"
+									+ cursor.getString(cursor
+											.getColumnIndex(Operation.DESCRIPTION_OPERATION))
+									+ "***");
+
+				} else {
+					element.put(columns[1], cursor.getString(cursor
+							.getColumnIndex(Operation.DESCRIPTION_OPERATION)));
+				}
+				String numeroOp = cursor.getString(cursor
+						.getColumnIndex(Operation.NUMERO_OPERATION));
+				cursorA = cr.query(urlRac, colRac,
+						Raccordement.NUMERO_OPERATION + "='" + numeroOp + "'",
+						null, Operation._id);
+				if (cursorA.moveToFirst()) {
+					element.put(
+							columns[2],
+							cursorA.getString(cursorA
+									.getColumnIndex(Raccordement.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT)));
+					element.put(columns[3], cursorA.getString(cursorA
+							.getColumnIndex(Raccordement.NUMERO_SERIE_OUTIL)));
+
+				}
+				liste.add(element);
+			} while (cursor.moveToNext());
+		}
+
 		// Création du SimpleCursorAdapter affilié au GridView
-		SimpleCursorAdapter sca = new SimpleCursorAdapter(this,
-				R.layout.grid_layout_menu_cableur, null, columns, layouts);
+		SimpleAdapter sca = new SimpleAdapter(this, liste,
+				R.layout.grid_layout_menu_cableur, columns, layouts);
 		GridView gridView = (GridView) findViewById(R.id.gridview);
 		gridView.setAdapter(sca);
-		// Requête dans la table sequencement
-		clause = new String(Operation.REALISABLE + "='" + 1 + "' AND "
+
+		clause = new String(Operation.REALISABLE + "='" + 1 + "'  AND "
 				+ Operation.GAMME + " LIKE 'Cont%' AND "
 				+ Operation.NOM_OPERATEUR + " IS NULL AND " + "("
 				+ Operation.RANG_1_1 + " LIKE '%P06%' OR " + Operation.RANG_1_1
 				+ " LIKE '%J08%' OR " + Operation.RANG_1_1
 				+ " LIKE '%P14%' OR " + Operation.RANG_1_1
-				+ " LIKE '%P09%'  OR " + Operation.RANG_1_1
-				+ " LIKE '%J12%')");
-		cursor = cr.query(url, columns, clause + " GROUP BY "
-				+ Operation.DESCRIPTION_OPERATION, null, Operation._id + " ASC"
-		/* + " LIMIT 30" */);
-
-		sca.changeCursor(cursor);
-
+				+ " LIKE '%P09%'  OR " + Operation.RANG_1_1 + " LIKE '%J12%')");
+		
 		cursor = cr.query(url, columns, clause, null, Operation._id + " ASC");
 
 		// Rempliassage du tableau pour chaque numero de cable

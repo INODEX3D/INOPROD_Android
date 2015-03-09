@@ -5,8 +5,11 @@ import java.util.Date;
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.R.layout;
 import com.inodex.inoprod.activities.InfoProduit;
+import com.inodex.inoprod.business.DureesProvider;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
+import com.inodex.inoprod.business.TimeConverter;
+import com.inodex.inoprod.business.Durees.Duree;
 import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
 
@@ -15,6 +18,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.Time;
@@ -87,6 +91,15 @@ public class MiseLongueurTb extends Activity {
 			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS, Raccordement.STANDARD,
 			Raccordement.NUMERO_HARNAIS_FAISCEAUX, Raccordement.REFERENCE_FICHIER_SOURCE};
 	private Cursor cursorInfo;
+	
+	private TextView timer;
+	private Cursor cursorTime;
+	private Uri urlTim = DureesProvider.CONTENT_URI;
+	private String colTim[] = new String[] { Duree._id,
+			Duree.DESIGNATION_OPERATION, Duree.DUREE_THEORIQUE
+
+	};
+	private long dureeTotal;
 
 
 	@Override
@@ -137,6 +150,20 @@ public class MiseLongueurTb extends Activity {
 									.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT)));
 
 		}
+		
+		// Affichage du temps nécessaire
+				timer = (TextView) findViewById(R.id.timeDisp);
+				dureeTotal = 0;
+				cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
+						+ " LIKE '%Mise%' ", null, Duree._id);
+				if (cursorTime.moveToFirst()) {
+					dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
+							.getColumnIndex(Duree.DUREE_THEORIQUE)));
+
+				}
+				
+				timer.setTextColor(Color.GREEN);
+				timer.setText(TimeConverter.display(dureeTotal));
 		
 		// Etape suivante
 				boutonCheck.setOnClickListener(new View.OnClickListener() {

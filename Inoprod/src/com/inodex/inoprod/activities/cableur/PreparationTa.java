@@ -12,6 +12,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.Time;
@@ -25,11 +26,15 @@ import android.widget.Toast;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.activities.InfoProduit;
+import com.inodex.inoprod.business.Durees.Duree;
+import com.inodex.inoprod.business.DureesProvider;
+import com.inodex.inoprod.business.Nomenclature.Cable;
 import com.inodex.inoprod.business.NomenclatureProvider;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
 import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
+import com.inodex.inoprod.business.TimeConverter;
 
 public class PreparationTa extends Activity {
 
@@ -97,13 +102,26 @@ public class PreparationTa extends Activity {
 			Raccordement.REPERE_ELECTRIQUE_TENANT,
 			Raccordement.NUMERO_COMPOSANT_ABOUTISSANT,
 			Raccordement.NUMERO_COMPOSANT_TENANT,
-			Raccordement.NUMERO_BORNE_ABOUTISSANT, Raccordement.NUMERO_FIL_CABLE };
+			Raccordement.NUMERO_BORNE_ABOUTISSANT,
+			Raccordement.NUMERO_FIL_CABLE };
+	private String colNom[] = new String[] { Cable.DESIGNATION_COMPOSANT,
+			Cable.NUMERO_COMPOSANT, Cable.REFERENCE_INTERNE,
+			Cable.REFERENCE_FABRICANT2, Cable._id };
 
 	private String colInfo[] = new String[] { Raccordement._id,
 			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS,
 			Raccordement.STANDARD, Raccordement.NUMERO_HARNAIS_FAISCEAUX,
 			Raccordement.REFERENCE_FICHIER_SOURCE };
 	private Cursor cursorInfo;
+
+	private TextView timer;
+	private Cursor cursorTime;
+	private Uri urlTim = DureesProvider.CONTENT_URI;
+	private String colTim[] = new String[] { Duree._id,
+			Duree.DESIGNATION_OPERATION, Duree.DUREE_THEORIQUE
+
+	};
+	private long dureeTotal;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -190,6 +208,20 @@ public class PreparationTa extends Activity {
 				.getCount();
 		Log.e("NombreLignes", "" + nbRows);
 
+		// Affichage du temps nécessaire
+		timer = (TextView) findViewById(R.id.timeDisp);
+		dureeTotal = 0;
+		cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
+				+ " LIKE '%hemine%' ", null, Duree._id);
+		if (cursorTime.moveToFirst()) {
+			dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
+					.getColumnIndex(Duree.DUREE_THEORIQUE)));
+
+		}
+		dureeTotal = dureeTotal * nbRows;
+		timer.setTextColor(Color.GREEN);
+		timer.setText(TimeConverter.display(dureeTotal));
+
 		// Etape suivante
 
 		boutonCheck.setOnClickListener(new View.OnClickListener() {
@@ -225,12 +257,15 @@ public class PreparationTa extends Activity {
 									.startsWith("Denudage Sertissage de")) {
 								toNext = new Intent(PreparationTa.this,
 										DenudageSertissageContactTa.class);
-							
-						} else if (nextOperation
-								.startsWith("Mise")) {
-							toNext = new Intent(PreparationTa.this,
-									MiseLongueurTb.class);
-						}
+
+							} else if (nextOperation.startsWith("Mise")) {
+								toNext = new Intent(PreparationTa.this,
+										MiseLongueurTb.class);
+							} else if (nextOperation
+									.startsWith("Denudage Sertissage Coss")) {
+								toNext = new Intent(PreparationTa.this,
+										DenudageSertissageManchonsCossesTb.class);
+							}
 							if (toNext != null) {
 
 								toNext.putExtra("opId", opId);
@@ -261,12 +296,20 @@ public class PreparationTa extends Activity {
 						HashMap<String, String> element;
 
 						element = new HashMap<String, String>();
-						element.put(colRac[0], cursorA.getString(cursorA
-								.getColumnIndex(colRac[0])));
-						element.put(colRac[1], cursorA.getString(cursorA
-								.getColumnIndex(colRac[1])));
-						element.put(colRac[2], cursorA.getString(cursorA
-								.getColumnIndex(colRac[2])));
+						Cursor cursorB = cr
+								.query(urlNom, colNom, Cable.NUMERO_COMPOSANT
+										+ " LIKE '%" + numeroCo + "%' AND "
+										+ Cable.DESIGNATION_COMPOSANT
+										+ " LIKE '%bturateu%'", null, Cable._id);
+						if (cursorB.moveToFirst()) {
+
+							element.put(colRac[0], cursorB.getString(cursorB
+									.getColumnIndex(Cable.DESIGNATION_COMPOSANT)));
+							element.put(colRac[1], cursorB.getString(cursorB
+									.getColumnIndex(Cable.REFERENCE_FABRICANT1)));
+							element.put(colRac[2], cursorB.getString(cursorB
+									.getColumnIndex(Cable.REFERENCE_INTERNE)));
+						}
 						element.put(colRac[3], cursorA.getString(cursorA
 								.getColumnIndex(colRac[3])));
 						element.put(colRac[4], "X");
@@ -327,11 +370,10 @@ public class PreparationTa extends Activity {
 				if (indiceLimite > 0) {
 					indiceLimite--;
 					Log.e("Indice", "" + indiceLimite);
-				}
-				if (indiceCourant > 0) {
 					indiceCourant--;
 					Log.e("Indice", "" + indiceLimite);
 				}
+				
 
 				// liste = oldListe;
 				if (!(liste.isEmpty())) {
@@ -434,10 +476,12 @@ public class PreparationTa extends Activity {
 
 		dureeMesuree += dateRealisation.getTime() - dateDebut.getTime();
 		contact.put(Operation.DUREE_MESUREE, dureeMesuree / 1000);
-		/*cr.update(urlSeq, contact, Operation.RANG_1_1_1 + "='" + numeroCable
-				+ "' AND " + Operation.DESCRIPTION_OPERATION
-				+ " LIKE '%Préparat%' AND " + Operation.RANG_1_1 + " LIKE '%"
-				+ numeroCo + "%'", null); */
+		/*
+		 * cr.update(urlSeq, contact, Operation.RANG_1_1_1 + "='" + numeroCable
+		 * + "' AND " + Operation.DESCRIPTION_OPERATION +
+		 * " LIKE '%Préparat%' AND " + Operation.RANG_1_1 + " LIKE '%" +
+		 * numeroCo + "%'", null);
+		 */
 		cr.update(urlSeq, contact, Operation._id + " = ?",
 				new String[] { Integer.toString(opId[indiceCourant]) });
 		contact.clear();

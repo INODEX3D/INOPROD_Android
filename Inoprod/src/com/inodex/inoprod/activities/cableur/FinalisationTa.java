@@ -9,6 +9,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.Time;
@@ -21,9 +22,13 @@ import android.widget.TextView;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.activities.InfoProduit;
+import com.inodex.inoprod.business.Durees.Duree;
+import com.inodex.inoprod.business.Nomenclature.Cable;
+import com.inodex.inoprod.business.DureesProvider;
 import com.inodex.inoprod.business.NomenclatureProvider;
 import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
+import com.inodex.inoprod.business.TimeConverter;
 import com.inodex.inoprod.business.TableCheminement.Cheminement;
 import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
@@ -64,7 +69,7 @@ public class FinalisationTa extends Activity {
 	private ContentResolver cr;
 	private ContentValues contact;
 
-	private String clause, numeroOperation, numeroCo, description,ordre;
+	private String clause, numeroOperation, numeroCo, description, ordre;
 
 	/** Colonnes utilisés pour les requêtes */
 	private String columnsSeq[] = new String[] { Operation._id,
@@ -89,12 +94,25 @@ public class FinalisationTa extends Activity {
 			Raccordement.REPERE_ELECTRIQUE_TENANT,
 			Raccordement.NUMERO_POSITION_CHARIOT,
 			Raccordement.ETAT_FINALISATION_PRISE };
-	
-	private String colInfo[] = new String[] { Raccordement._id,
-			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS, Raccordement.STANDARD,
-			Raccordement.NUMERO_HARNAIS_FAISCEAUX, Raccordement.REFERENCE_FICHIER_SOURCE};
-	private Cursor cursorInfo;
 
+	private String colNom[] = new String[] { Cable.FAMILLE_PRODUIT,
+			Cable.REFERENCE_FABRICANT2, Cable.REFERENCE_INTERNE,
+			Cable.QUANTITE, Cable.UNITE, Cable._id };
+
+	private String colInfo[] = new String[] { Raccordement._id,
+			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS,
+			Raccordement.STANDARD, Raccordement.NUMERO_HARNAIS_FAISCEAUX,
+			Raccordement.REFERENCE_FICHIER_SOURCE };
+	private Cursor cursorInfo;
+	
+	private TextView timer;
+	private Cursor cursorTime;
+	private Uri urlTim = DureesProvider.CONTENT_URI;
+	private String colTim[] = new String[] { Duree._id,
+			Duree.DESIGNATION_OPERATION, Duree.DUREE_THEORIQUE
+
+	};
+	private long dureeTotal;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -142,49 +160,60 @@ public class FinalisationTa extends Activity {
 
 		if (description.contains("A")) {
 			clause = new String(Raccordement.NUMERO_COMPOSANT_TENANT + "='"
-					+ numeroCo +"'");
+					+ numeroCo + "'");
 			titre.setText(R.string.finalisation_ta);
 			ordre = "A";
 			/*
 			 * repereElectrique .append(" : " + cursorA.getString(cursorA
-			  .getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
+			 * .getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
 			 */
 		} else {
 			clause = new String(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-					+ "='" + numeroCo +"' GROUP BY " + Raccordement.REFERENCE_FABRICANT2);
+					+ "='" + numeroCo + "' GROUP BY "
+					+ Raccordement.REFERENCE_FABRICANT2);
 			titre.setText(R.string.finalisationTb);
 			ordre = "B";
 			/*
 			 * repereElectrique .append(" : " + cursorA.getString(cursorA
 			 * .getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT)));
-			 * 
 			 */
 		}
 		cursorA = cr.query(urlRac, colRac, clause, null, Raccordement._id
-				+ " ASC LIMIT 1");
+				+ " ASC");
 		if (cursorA.moveToFirst()) {
 
 			positionChariot
 					.append(" : "
 							+ cursorA.getString(cursorA
 									.getColumnIndex(Raccordement.NUMERO_POSITION_CHARIOT)));
+			String ora = cursorA.getString(cursorA
+					.getColumnIndex(Raccordement.ORIENTATION_RACCORD_ARRIERE));
+			if (ora==null) {
+				ora = " 0°";
+			}
 			orientation
 					.append(" : "
-							+ cursorA.getString(cursorA
-									.getColumnIndex(Raccordement.ORIENTATION_RACCORD_ARRIERE)));
+							+ ora);
+			
 			etatFinalisation
 					.append(" : "
 							+ cursorA.getString(cursorA
 									.getColumnIndex(Raccordement.ETAT_FINALISATION_PRISE)));
 			if (ordre.equals("A")) {
-				repereElectrique .append(" : " + cursorA.getString(cursorA
-						  .getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
+				repereElectrique
+						.append(" : "
+								+ cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
 			} else {
-				repereElectrique .append(" : " + cursorA.getString(cursorA
-						  .getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT)));
+				repereElectrique
+						.append(" : "
+								+ cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT)));
 			}
 
 		}
+		
+		
 
 		// Affichage du contenu
 		displayContentProvider();
@@ -196,11 +225,11 @@ public class FinalisationTa extends Activity {
 			public void onClick(View v) {
 
 				// Signalement du point de controle
-				clause = Operation.RANG_1_1 + " LIKE '%" + numeroCo + "%' AND ( "
-						+ Operation.DESCRIPTION_OPERATION
-						+ " LIKE 'Contrôle rétention tête "+ordre+"%' OR + "
-						+ Operation.DESCRIPTION_OPERATION
-						+ " LIKE 'Contrôle final tête "+ordre+"%')";
+				clause = Operation.RANG_1_1 + " LIKE '%" + numeroCo
+						+ "%' AND ( " + Operation.DESCRIPTION_OPERATION
+						+ " LIKE 'Contrôle rétention tête " + ordre
+						+ "%' OR + " + Operation.DESCRIPTION_OPERATION
+						+ " LIKE 'Contrôle final tête " + ordre + "%')";
 				cursor = cr.query(urlSeq, columnsSeq, clause, null,
 						Operation._id);
 				if (cursor.moveToFirst()) {
@@ -281,77 +310,81 @@ public class FinalisationTa extends Activity {
 			}
 
 		});
-		
-		//Grande pause
-				grandePause.setOnClickListener(new View.OnClickListener() {
 
-					@Override
-					public void onClick(View v) {
-						AlertDialog.Builder builder = new AlertDialog.Builder(
-								FinalisationTa.this);
-						builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
-						builder.setCancelable(false);
-						builder.setPositiveButton("Oui",
-								new DialogInterface.OnClickListener() {
+		// Grande pause
+		grandePause.setOnClickListener(new View.OnClickListener() {
 
-									public void onClick(DialogInterface dialog,
-											int which) {
-									/*	Intent toMain = new Intent(
-												CheminementTa.this,
-												MainActivity.class);
-										startActivity(toMain); */
-										finish();
+			@Override
+			public void onClick(View v) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						FinalisationTa.this);
+				builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
+				builder.setCancelable(false);
+				builder.setPositiveButton("Oui",
+						new DialogInterface.OnClickListener() {
 
-									}
+							public void onClick(DialogInterface dialog,
+									int which) {
+								/*
+								 * Intent toMain = new Intent(
+								 * CheminementTa.this, MainActivity.class);
+								 * startActivity(toMain);
+								 */
+								finish();
 
-								});
+							}
 
-						builder.setNegativeButton("Non",
-								new DialogInterface.OnClickListener() {
-									public void onClick(final DialogInterface dialog,
-											final int id) {
+						});
 
-										dialog.cancel();
+				builder.setNegativeButton("Non",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
 
-									}
-								});
-						builder.show();
+								dialog.cancel();
 
-					}
-				});
-				
-				// Info Produit
-				
-				infoProduit.setOnClickListener(new View.OnClickListener() {
+							}
+						});
+				builder.show();
 
-					@Override
-					public void onClick(View v) {
-						cursorInfo = cr.query(urlRac, colInfo, Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-								+ " ='" + numeroCo + "' OR " + Raccordement.NUMERO_COMPOSANT_TENANT + "='" + numeroCo+"'" , null, null);
-						Intent toInfo = new Intent(FinalisationTa.this, InfoProduit.class);
-						labels = new String[7];
+			}
+		});
 
-						if (cursorInfo.moveToFirst()) {
-							labels[0] = cursorInfo.getString(cursorInfo
-									.getColumnIndex(Raccordement.DESIGNATION));
-							labels[1] = cursorInfo.getString(cursorInfo
-									.getColumnIndex(Raccordement.NUMERO_HARNAIS_FAISCEAUX));
-							labels[2] = cursorInfo.getString(cursorInfo
-									.getColumnIndex(Raccordement.STANDARD));
-							labels[3] = "";
-							labels[4] = "";
-							labels[5] = cursorInfo.getString(cursorInfo
-									.getColumnIndex(Raccordement.NUMERO_REVISION_HARNAIS));
-							labels[6] = cursorInfo.getString(cursorInfo
-									.getColumnIndex(Raccordement.REFERENCE_FICHIER_SOURCE));
-							toInfo.putExtra("Labels", labels);
-						}
+		// Info Produit
 
-						startActivity(toInfo);
+		infoProduit.setOnClickListener(new View.OnClickListener() {
 
-					}
-				});
+			@Override
+			public void onClick(View v) {
+				cursorInfo = cr.query(urlRac, colInfo,
+						Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
+								+ numeroCo + "' OR "
+								+ Raccordement.NUMERO_COMPOSANT_TENANT + "='"
+								+ numeroCo + "'", null, null);
+				Intent toInfo = new Intent(FinalisationTa.this,
+						InfoProduit.class);
+				labels = new String[7];
 
+				if (cursorInfo.moveToFirst()) {
+					labels[0] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.DESIGNATION));
+					labels[1] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_HARNAIS_FAISCEAUX));
+					labels[2] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.STANDARD));
+					labels[3] = "";
+					labels[4] = "";
+					labels[5] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_REVISION_HARNAIS));
+					labels[6] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.REFERENCE_FICHIER_SOURCE));
+					toInfo.putExtra("Labels", labels);
+				}
+
+				startActivity(toInfo);
+
+			}
+		});
 
 		// Petite Pause
 		petitePause.setOnClickListener(new View.OnClickListener() {
@@ -383,10 +416,29 @@ public class FinalisationTa extends Activity {
 
 	private void displayContentProvider() {
 		// Création du SimpleCursorAdapter affilié au GridView
+
+		clause = Cable.NUMERO_COMPOSANT + "='" + numeroCo + "' AND "
+				+ Cable.FAMILLE_PRODUIT + " LIKE '%Contacts%'";
+		cursorA = cr.query(urlNom, colNom, clause, null, Cable._id);
 		SimpleCursorAdapter sca = new SimpleCursorAdapter(this,
-				R.layout.grid_layout_finalisation_ta, cursorA, colRac, layouts);
+				R.layout.grid_layout_finalisation_ta, cursorA, colNom, layouts);
 
 		gridView.setAdapter(sca);
+		
+		// Affichage du temps nécessaire
+		timer = (TextView) findViewById(R.id.timeDisp);
+		dureeTotal = 0;
+		cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
+				+ " LIKE '%hemine%' ", null, Duree._id);
+		if (cursorTime.moveToFirst()) {
+			dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
+					.getColumnIndex(Duree.DUREE_THEORIQUE)));
+
+		}
+		dureeTotal = dureeTotal * cursorA.getCount();
+		timer.setTextColor(Color.GREEN);
+		timer.setText(TimeConverter.display(dureeTotal));
+		
 		// MAJ Table de sequencement
 		dateRealisation = new Date();
 		contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0] + " "

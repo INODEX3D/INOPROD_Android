@@ -20,6 +20,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -38,6 +39,7 @@ import com.inodex.inoprod.activities.InfoProduit;
 import com.inodex.inoprod.business.Durees.Duree;
 import com.inodex.inoprod.business.DureesProvider;
 import com.inodex.inoprod.business.KittingProvider;
+import com.inodex.inoprod.business.TimeConverter;
 import com.inodex.inoprod.business.Production.Fil;
 import com.inodex.inoprod.business.ProductionProvider;
 import com.inodex.inoprod.business.SequencementProvider;
@@ -111,6 +113,15 @@ public class DebitCables extends Activity {
 	private String columnsProd[] = new String[] { Fil._id,
 			Fil.DESIGNATION_PRODUIT, Fil.NUMERO_REVISION_HARNAIS, Fil.STANDARD,
 			Fil.NUMERO_HARNAIS_FAISCEAUX, Fil.REFERENCE_FICHIER_SOURCE };
+	
+	private TextView timer;
+	private Cursor cursorTime;
+	private Uri urlTim = DureesProvider.CONTENT_URI;
+	private String colTim[] = new String[] { Duree._id,
+			Duree.DESIGNATION_OPERATION, Duree.DUREE_THEORIQUE
+
+	};
+	private long dureeTotal;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -163,6 +174,20 @@ public class DebitCables extends Activity {
 		clause = new String(Kitting.NUMERO_DEBIT + "='" + numeroDebit + "'");
 		nbRows = cr.query(urlKitting, columnsKitting, clause, null, null)
 				.getCount();
+		
+		// Affichage du temps nécessaire
+				timer = (TextView) findViewById(R.id.timeDisp);
+				dureeTotal = 0;
+				cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
+						+ " LIKE '%Débit%' ", null, Duree._id);
+				if (cursorTime.moveToFirst()) {
+					dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
+							.getColumnIndex(Duree.DUREE_THEORIQUE)));
+
+				}
+				dureeTotal = dureeTotal * nbRows;
+				timer.setTextColor(Color.GREEN);
+				timer.setText(TimeConverter.display(dureeTotal));
 
 		contact = new ContentValues();
 		affichage = false;

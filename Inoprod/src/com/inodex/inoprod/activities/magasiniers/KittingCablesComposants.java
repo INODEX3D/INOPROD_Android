@@ -9,6 +9,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.Time;
@@ -24,9 +25,12 @@ import com.inodex.inoprod.activities.InfoProduit;
 import com.inodex.inoprod.activities.cableur.PreparationTa;
 import com.inodex.inoprod.business.BOMProvider;
 import com.inodex.inoprod.business.CheminementProvider;
+import com.inodex.inoprod.business.DureesProvider;
 import com.inodex.inoprod.business.KittingProvider;
 import com.inodex.inoprod.business.ProductionProvider;
 import com.inodex.inoprod.business.SequencementProvider;
+import com.inodex.inoprod.business.TimeConverter;
+import com.inodex.inoprod.business.Durees.Duree;
 import com.inodex.inoprod.business.Production.Fil;
 import com.inodex.inoprod.business.TableBOM.BOM;
 import com.inodex.inoprod.business.TableCheminement.Cheminement;
@@ -111,7 +115,8 @@ public class KittingCablesComposants extends Activity {
 
 	private String columnsChem[] = new String[] { Cheminement._id,
 			Cheminement.NUMERO_SECTION_CHEMINEMENT,
-			Cheminement.NUMERO_COMPOSANT, Cheminement.REPERE_ELECTRIQUE,
+			Cheminement.NUMERO_COMPOSANT_TENANT, Cheminement.REPERE_ELECTRIQUE_TENANT,
+			Cheminement.NUMERO_COMPOSANT_ABOUTISSANT, Cheminement.REPERE_ELECTRIQUE_ABOUTISSANT,
 			Cheminement.ORDRE_REALISATION };
 
 	private String columnsProd[] = new String[] { Fil._id,
@@ -120,6 +125,15 @@ public class KittingCablesComposants extends Activity {
 			Fil.NUMERO_COMPOSANT_ABOUTISSANT, Fil.NUMERO_COMPOSANT_TENANT };
 	private Cursor cursorInfo;
 	private Uri urlProd = ProductionProvider.CONTENT_URI;
+	
+	private TextView timer;
+	private Cursor cursorTime;
+	private Uri urlTim = DureesProvider.CONTENT_URI;
+	private String colTim[] = new String[] { Duree._id,
+			Duree.DESIGNATION_OPERATION, Duree.DUREE_THEORIQUE
+
+	};
+	private long dureeTotal;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -160,7 +174,8 @@ public class KittingCablesComposants extends Activity {
 
 		// Récupération du numéro de cheminement
 		numeroCom = descriptionOperation.substring(37, 40);
-		clause = new String(Cheminement.NUMERO_COMPOSANT + "='" + numeroCom
+		clause = new String(Cheminement.NUMERO_COMPOSANT_ABOUTISSANT + "='" + numeroCom
+				+ "' OR " + Cheminement.NUMERO_COMPOSANT_TENANT + "='" + numeroCom
 				+ "'");
 		cursorA = cr.query(urlChem, columnsChem, clause, null, null);
 		if (cursorA.moveToFirst()) {
@@ -174,16 +189,27 @@ public class KittingCablesComposants extends Activity {
 			 * { }
 			 */
 			try {
+				String numeroCo = cursorA.getString(cursorA
+						.getColumnIndex(Cheminement.NUMERO_COMPOSANT_TENANT));
+				if (numeroCo.equals(null)) {
+					numeroCo = cursorA.getString(cursorA
+							.getColumnIndex(Cheminement.NUMERO_COMPOSANT_ABOUTISSANT));
+				}
 				numeroComposant.append(": "
-						+ cursorA.getString(cursorA
-								.getColumnIndex(Cheminement.NUMERO_COMPOSANT)));
+						+ numeroCo );
+				
 			} catch (NullPointerException e) {
 			}
 			try {
+				String rep = cursorA.getString(cursorA
+						.getColumnIndex(Cheminement.REPERE_ELECTRIQUE_TENANT));
+				if (rep.equals(null)) {
+					rep = cursorA.getString(cursorA
+							.getColumnIndex(Cheminement.REPERE_ELECTRIQUE_ABOUTISSANT));
+				}
 				repereElectrique
 						.append(": "
-								+ cursorA.getString(cursorA
-										.getColumnIndex(Cheminement.REPERE_ELECTRIQUE)));
+								+ rep);
 			} catch (NullPointerException e) {
 			}
 			try {
@@ -257,6 +283,19 @@ public class KittingCablesComposants extends Activity {
 			}
 
 		});
+		// Affichage du temps nécessaire
+				timer = (TextView) findViewById(R.id.timeDisp);
+				dureeTotal = 0;
+				cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
+						+ " LIKE '%kit%' ", null, Duree._id);
+				if (cursorTime.moveToFirst()) {
+					dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
+							.getColumnIndex(Duree.DUREE_THEORIQUE)));
+
+				}
+
+				timer.setTextColor(Color.GREEN);
+				timer.setText(TimeConverter.display(dureeTotal));
 
 		// Grande pause
 		grandePause.setOnClickListener(new View.OnClickListener() {
