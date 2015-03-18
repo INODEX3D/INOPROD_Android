@@ -41,6 +41,7 @@ public class Nomenclature {
 		public static final String REFERENCE_IMPOSEE = "REFERENCE_IMPOSEE";
 		public static final String QUANTITE = "QUANTITE";
 		public static final String UNITE = "UNITE";
+		public static final String DESIGNATION_ACCESSOIRE = "DESIGNATION_ACCESSOIRE";
 		
 		
 		private Cable() {}

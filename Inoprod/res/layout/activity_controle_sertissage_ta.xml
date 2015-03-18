@@ -44,7 +44,7 @@
         android:layout_height="50dip"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:layout_margin="@dimen/b12"
+        android:layout_margin="@dimen/forT"
         android:src="@drawable/chrono2" />
 
     <TextView
@@ -55,7 +55,7 @@
         android:layout_centerHorizontal="true"
         android:layout_margin="7dp"
         android:text="@string/instructionControleSertissageTa"
-        android:textSize="@dimen/b12" />
+        android:textSize="@dimen/forT" />
 
     <LinearLayout
         android:id="@+id/linear1"

@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -14,6 +15,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -24,18 +26,25 @@ import android.os.Environment;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.inodex.inoprod.R;
+import com.inodex.inoprod.activities.InfoProduit;
+import com.inodex.inoprod.activities.cableur.EnfichagesTa;
+import com.inodex.inoprod.activities.cableur.RepriseBlindageTa;
 import com.inodex.inoprod.business.BOMProvider;
 import com.inodex.inoprod.business.CheminementProvider;
 import com.inodex.inoprod.business.KittingProvider;
+import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
+import com.inodex.inoprod.business.Production.Fil;
 import com.inodex.inoprod.business.TableBOM.BOM;
 import com.inodex.inoprod.business.TableKittingCable.Kitting;
+import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
 
 /**
@@ -52,12 +61,15 @@ public class SaisieTracabiliteComposant extends Activity {
 	private Uri urlSeq = SequencementProvider.CONTENT_URI;
 	private Uri urlChem = CheminementProvider.CONTENT_URI;
 	private Uri urlKitting = KittingProvider.CONTENT_URI;
+	private Uri urlRac = RaccordementProvider.CONTENT_URI;
 
 	/** Tableau des opérations à réaliser */
 	private int opId[] = null;
+	private Iterator<Integer> rowIt;
 
 	/** Indice de l'opération courante */
 	private int indiceCourant = 0;
+	private HashSet<Integer> rowId = new HashSet<Integer>();
 
 	/** Numero de débit courant */
 	private int numeroDebit;
@@ -86,16 +98,26 @@ public class SaisieTracabiliteComposant extends Activity {
 			Kitting.REFERENCE_FABRICANT_SCANNE };
 
 	/** Curseur et Content Resolver à utiliser lors des requêtes */
-	private Cursor cursor, cursorA;
+	private Cursor cursor, cursorA, cursorB;
 	private ContentResolver cr;
 	private ContentValues contact;
 
 	private String clause, numeroOperation;
 
+	/** Tableau des infos produit */
+	private String labels[];
+
+	private String colInfo[] = new String[] { Raccordement._id,
+			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS,
+			Raccordement.STANDARD, Raccordement.NUMERO_HARNAIS_FAISCEAUX,
+			Raccordement.REFERENCE_FICHIER_SOURCE };
+	private Cursor cursorInfo;
+
 	/** Elements à récuperer de la vue */
-	private ImageButton infoButton, exitButton, boutonCheck;
+	private ImageButton infoProduit, exitButton, boutonCheck;
 	private EditText referenceArticle, numeroLot;
 	private TextView operation;
+	private Button scan, scan1;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -162,138 +184,126 @@ public class SaisieTracabiliteComposant extends Activity {
 					// MAJ du fichier
 					// Création de la feuille et du Workbook
 					try {
-						
 
 						String nomFichier = null;
-						File data = new File(Environment.getDataDirectory().getAbsolutePath()
-								+ "/data/com.inodex.inoprod/");
+						File data = new File(Environment
+								.getExternalStorageDirectory()
+								.getAbsolutePath()
+								+ "/Android/data/com.inodex.inoprod/"
+								+ "kittingTetes.xls");
 
-						for (String file : data.list()) {
-							Log.d("Nom Fichier", file);
-							if (file.contains("Cables")) {
-								nomFichier = file;
-								Log.e("Nom Fichier", nomFichier);
-							}
-						}
-
-						InputStream input = new FileInputStream(Environment.getDataDirectory()
-								.getAbsolutePath() + "/data/com.inodex.inoprod/" + nomFichier);
+						InputStream input = new FileInputStream(data);
 
 						// Interpretation du fichier a l'aide de Apache POI
 						POIFSFileSystem fs = new POIFSFileSystem(input);
 						HSSFWorkbook wb = new HSSFWorkbook(fs);
 						HSSFSheet sheet = wb.getSheetAt(0);
-						
+
 						ContentValues contact = new ContentValues();
 						Iterator rows = sheet.rowIterator();
 
 						HSSFRow row = (HSSFRow) rows.next();
 						HashMap<String, Integer> colonnes = new HashMap<String, Integer>();
-						Log.e("Num colon", ""+row.getLastCellNum());
+						Log.e("Num colon", "" + row.getLastCellNum());
 						for (int k = 0; k < row.getLastCellNum(); k++) {
 							try {
-							colonnes.put(row.getCell(k).toString(), k);
+								colonnes.put(row.getCell(k).toString(), k);
 							} catch (NullPointerException e) {
 								Log.e("err0", " " + e);
 							}
 
 						}
-						Log.e("Num colon", "Colonnes finis");
-						do {
-							
-							if (row.getCell(colonnes.get(Kitting.NUMERO_DEBIT)).toString()
-									.equals(Integer.toString(numeroDebit))) {
-								try {
-									row.getCell(colonnes.get(Kitting.NUMERO_LOT_SCANNE))
-											.setCellValue(
-													numeroLot.getText().toString());
-									row.getCell(colonnes.get(Kitting.REFERENCE_FABRICANT_SCANNE))
-									.setCellValue(
-											referenceArticle.getText().toString());
 
-									
-								} catch (Exception e) {
-									Log.e("err1", " " + e);
-								}
+						while (rows.hasNext()) {
+							row = (HSSFRow) rows.next();
+							if (Integer.parseInt(row.getCell(
+									colonnes.get(Kitting.NUMERO_DEBIT))
+									.toString()) == numeroDebit) {
+								rowId.add(row.getRowNum());
+							}
+						}
+						rowIt = rowId.iterator();
+						Log.d("Nombre ligne", rowId.size() + "");
+
+						Log.e("Num colon", "Colonnes finis");
+						while (rowIt.hasNext()) {
+							row = (HSSFRow) sheet.getRow(rowIt.next());
+
+							try {
+								row.getCell(colonnes.get(BOM.NUMERO_LOT_SCANNE))
+										.setCellValue(
+												numeroLot.getText().toString());
+								row.getCell(
+										colonnes.get(BOM.REFERENCE_FABRICANT_SCANNE))
+										.setCellValue(
+												referenceArticle.getText()
+														.toString());
+
+							} catch (Exception e) {
+								Log.e("err1", " " + e);
 							}
 
-						} while (rows.hasNext());
+						}
 						Log.e("Num colon", "Début écriture");
 						FileOutputStream fileOut;
 						File debit = new File(Environment
-								.getDataDirectory()
+								.getExternalStorageDirectory()
 								.getAbsolutePath()
-								+ "/data/com.inodex.inoprod/",
-								nomFichier);
+								+ "/Android/data/com.inodex.inoprod/"
+								+ "kittingTetes.xls");
 
 						fileOut = new FileOutputStream(debit);
 
 						wb.write(fileOut);
 
 						fileOut.close();
+						input.close();
 					} catch (Exception e) {
 						Log.e("err2", " " + e);
 					}
-					
+
 					// Mise à jour des tables depuis les fichiers
-					try {
-						String nomFichier = null;
-						File data = new File(Environment.getDataDirectory().getAbsolutePath()
-								+ "/data/com.inodex.inoprod/");
-
-						for (String file : data.list()) {
-							Log.d("Nom Fichier", file);
-							if (file.contains("Cables")) {
-								nomFichier = file;
-								Log.e("Nom Fichier", nomFichier);
-							}
-						}
-
-						InputStream input = new FileInputStream(Environment.getDataDirectory()
-								.getAbsolutePath() + "/data/com.inodex.inoprod/" + nomFichier);
-						// Interpretation du fichier a l'aide de Apache POI
-						POIFSFileSystem fs = new POIFSFileSystem(input);
-						HSSFWorkbook wb = new HSSFWorkbook(fs);
-						HSSFSheet sheet = wb.getSheet("Débit");
-						ContentValues contact = new ContentValues();
-						Iterator rows = sheet.rowIterator();
-
-						HSSFRow row = (HSSFRow) rows.next();
-						HashMap<String, Integer> colonnes = new HashMap<String, Integer>();
-						for (int k = 0; k < row.getLastCellNum(); k++) {
-							colonnes.put(row.getCell(k).toString(), k);
-
-						}
-						// Stockage des indices des colonnes
-						int indice = 1;
-						while (rows.hasNext()) {
-							row = (HSSFRow) rows.next();
-							try {
-								contact.put(
-										Kitting.NUMERO_LOT_SCANNE,
-										row.getCell(colonnes.get(Kitting.NUMERO_LOT_SCANNE))
-												.toString());
-							} catch (NullPointerException e) {
-							}
-							try {
-								contact.put(
-										Kitting.REFERENCE_FABRICANT_SCANNE,
-										row.getCell(
-												colonnes.get(Kitting.REFERENCE_FABRICANT_SCANNE))
-												.toString());
-							} catch (NullPointerException e) {
-							}
-
-							// Ajout de l'entité
-							getContentResolver().update(urlKitting, contact,
-									Kitting._id + "='" + indice + "'", null);
-							// Ecrasement de ses données pour passer à la suivante
-							contact.clear();
-							indice++;
-						}
-					} catch (Exception e) {
-						Log.e("err3", " " + e);
-					}
+					/*
+					 * try { String nomFichier = null; File data = new
+					 * File(Environment.getDataDirectory().getAbsolutePath() +
+					 * "/data/com.inodex.inoprod/");
+					 * 
+					 * for (String file : data.list()) { Log.d("Nom Fichier",
+					 * file); if (file.contains("Cables")) { nomFichier = file;
+					 * Log.e("Nom Fichier", nomFichier); } }
+					 * 
+					 * InputStream input = new
+					 * FileInputStream(Environment.getDataDirectory()
+					 * .getAbsolutePath() + "/data/com.inodex.inoprod/" +
+					 * nomFichier); // Interpretation du fichier a l'aide de
+					 * Apache POI POIFSFileSystem fs = new
+					 * POIFSFileSystem(input); HSSFWorkbook wb = new
+					 * HSSFWorkbook(fs); HSSFSheet sheet = wb.getSheet("Débit");
+					 * ContentValues contact = new ContentValues(); Iterator
+					 * rows = sheet.rowIterator();
+					 * 
+					 * HSSFRow row = (HSSFRow) rows.next(); HashMap<String,
+					 * Integer> colonnes = new HashMap<String, Integer>(); for
+					 * (int k = 0; k < row.getLastCellNum(); k++) {
+					 * colonnes.put(row.getCell(k).toString(), k);
+					 * 
+					 * } // Stockage des indices des colonnes int indice = 1;
+					 * while (rows.hasNext()) { row = (HSSFRow) rows.next(); try
+					 * { contact.put( Kitting.NUMERO_LOT_SCANNE,
+					 * row.getCell(colonnes.get(Kitting.NUMERO_LOT_SCANNE))
+					 * .toString()); } catch (NullPointerException e) { } try {
+					 * contact.put( Kitting.REFERENCE_FABRICANT_SCANNE,
+					 * row.getCell(
+					 * colonnes.get(Kitting.REFERENCE_FABRICANT_SCANNE))
+					 * .toString()); } catch (NullPointerException e) { }
+					 * 
+					 * // Ajout de l'entité
+					 * getContentResolver().update(urlKitting, contact,
+					 * Kitting._id + "='" + indice + "'", null); // Ecrasement
+					 * de ses données pour passer à la suivante contact.clear();
+					 * indice++; } } catch (Exception e) { Log.e("err3", " " +
+					 * e); }
+					 */
 
 					// Ecran suivant
 					Intent toNext = new Intent(SaisieTracabiliteComposant.this,
@@ -320,10 +330,113 @@ public class SaisieTracabiliteComposant extends Activity {
 			}
 		});
 
+		scan = (Button) findViewById(R.id.scan);
+		scan1 = (Button) findViewById(R.id.scan1);
+
+		scan.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				try {
+					Intent intent = new Intent(
+							"com.google.zxing.client.android.SCAN");
+					intent.setPackage("com.google.zxing.client.android");
+					intent.putExtra(
+							"com.google.zxing.client.android.SCAN.SCAN_MODE",
+							"QR_CODE_MODE");
+					startActivityForResult(intent, 0);
+				} catch (ActivityNotFoundException e) {
+					Toast.makeText(
+							SaisieTracabiliteComposant.this,
+							"Impossible de trouver une application pour le scan ",
+							Toast.LENGTH_LONG).show();
+				}
+
+			}
+		});
+
+		scan1.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				try {
+					Intent intent = new Intent(
+							"com.google.zxing.client.android.SCAN");
+					intent.setPackage("com.google.zxing.client.android");
+					intent.putExtra(
+							"com.google.zxing.client.android.SCAN.SCAN_MODE",
+							"QR_CODE_MODE");
+					startActivityForResult(intent, 0);
+				} catch (ActivityNotFoundException e) {
+					Toast.makeText(
+							SaisieTracabiliteComposant.this,
+							"Impossible de trouver une application pour le scan ",
+							Toast.LENGTH_LONG).show();
+				}
+
+			}
+		});
+
+		// Info Produit
+		infoProduit = (ImageButton) findViewById(R.id.infoButton1);
+		infoProduit.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				cursorInfo = cr.query(urlRac, colInfo, null, null, null);
+				Intent toInfo = new Intent(SaisieTracabiliteComposant.this,
+						InfoProduit.class);
+				labels = new String[7];
+
+				if (cursorInfo.moveToFirst()) {
+					labels[0] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.DESIGNATION));
+					labels[1] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_HARNAIS_FAISCEAUX));
+					labels[2] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.STANDARD));
+					labels[3] = "";
+					labels[4] = "";
+					labels[5] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_REVISION_HARNAIS));
+					labels[6] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.REFERENCE_FICHIER_SOURCE));
+					toInfo.putExtra("Labels", labels);
+				}
+
+				startActivity(toInfo);
+
+			}
+		});
+
 	}
 
 	/** Bloquage du bouton retour */
 	public void onBackPressed() {
+
+	}
+
+	/**
+	 * Récupération du code barre scanné
+	 * 
+	 */
+	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		if (requestCode == 0) {
+			if (resultCode == RESULT_OK) {
+				String contents = intent.getStringExtra("SCAN_RESULT");
+				if (numeroLot.getText().equals("")) {
+					numeroLot.setText(contents);
+				} else {
+					referenceArticle.setText(contents);
+				}
+
+			} else if (resultCode == RESULT_CANCELED) {
+				Toast.makeText(SaisieTracabiliteComposant.this,
+						"Impossible de trouver une application pour le scan ",
+						Toast.LENGTH_LONG).show();
+			}
+
+		}
 
 	}
 }

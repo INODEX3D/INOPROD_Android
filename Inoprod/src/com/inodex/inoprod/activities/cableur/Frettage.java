@@ -187,8 +187,7 @@ public class Frettage extends Activity {
 			numeroCo = (cursor.getString(cursor
 					.getColumnIndex(Operation.RANG_1_1))).substring(11, 14);
 			Log.e("N° Connecteur", "" + numeroCo);
-
-			cursorA = cr.query(urlNom, colNom, Cable.NUMERO_COMPOSANT + "='"
+cursorA = cr.query(urlNom, colNom, Cable.NUMERO_COMPOSANT + "='"
 					+ numeroCo + "' AND " + Cable.FAMILLE_PRODUIT
 					+ " LIKE '%Frette%'", null, null);
 			if (cursorA.moveToFirst()) {
@@ -201,6 +200,7 @@ public class Frettage extends Activity {
 				nombrePoints.append((" : " + cursorA.getString(cursorA
 						.getColumnIndex(Cable.QUANTITE))));
 			}
+			
 
 			cursorA = cr.query(urlRac, colRac,
 					Raccordement.NUMERO_COMPOSANT_TENANT + "='" + numeroCo
@@ -245,7 +245,7 @@ public class Frettage extends Activity {
 									+ cursorB.getString(cursorB
 											.getColumnIndex(Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT)));
 
-					do {
+				/*	do {
 						zonePose += cursorB.getString(cursorB
 								.getColumnIndex(Cheminement.ZONE_ACTIVITE))
 								+ "-"
@@ -258,7 +258,7 @@ public class Frettage extends Activity {
 												.getColumnIndex(Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT))
 								+ ", ";
 
-					} while (cursorB.moveToNext());
+					} while (cursorB.moveToNext()); */
 
 				}
 				element.put(colRac[6], zonePose);

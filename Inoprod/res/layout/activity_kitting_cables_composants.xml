@@ -45,25 +45,25 @@
             android:layout_height="50dip"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
-            android:layout_margin="@dimen/b12"
+            android:layout_margin="@dimen/forT"
             android:src="@drawable/chrono2" />
 
         <TextView
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/imageView1"
+            android:layout_below="@id/ll1"
             android:layout_centerHorizontal="true"
             android:layout_margin="7dp"
             android:text="Regroupez les câbles &amp; composants par numéro de position de chariot"
-            android:textSize="@dimen/b12" />
+            android:textSize="@dimen/forT" />
 
         <LinearLayout
+            android:id="@+id/ll1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-     		
             android:layout_alignTop="@+id/textView1"
-            android:layout_margin="@dimen/b12"
+            android:layout_margin="@dimen/forT"
             android:orientation="vertical" >
 
             <LinearLayout

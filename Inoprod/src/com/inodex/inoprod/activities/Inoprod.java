@@ -1,5 +1,8 @@
 package com.inodex.inoprod.activities;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
@@ -16,8 +19,11 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.inodex.inoprod.R;
@@ -47,6 +53,9 @@ public class Inoprod extends Activity {
 	/** Curseur et Content Resolver à utiliser lors des requêtes */
 	private Cursor cursor;
 	private ContentResolver cr;
+	
+	
+	
 
 	/** Chaine de caractéres pour les reqûetes tests */
 	private String columnsAnnuaire[] = new String[] { Employe._id };
@@ -55,7 +64,15 @@ public class Inoprod extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
+		TextView t = (TextView) findViewById(R.id.textView1);
+		
+		File data = new File(Environment.getExternalStorageDirectory().getAbsolutePath() +
+		          File.separator + "Android" + File.separator + "data" +
+		          File.separator + getPackageName());
+		if (!data.exists()) {
+			data.mkdirs();
+		}
+		
 		// Accés à l'annuaire
 		boutonAnnuaire = (ImageButton) findViewById(R.id.imageButton2);
 		boutonAnnuaire.setOnClickListener(new View.OnClickListener() {
@@ -143,6 +160,7 @@ public class Inoprod extends Activity {
 		// Création d'un InputStream vers le fichier Excel
 		InputStream input = this.getResources().openRawResource(
 				R.raw.annuaire_personel);
+		
 		// Interpretation du fichier a l'aide de Apache POI
 		POIFSFileSystem fs = new POIFSFileSystem(input);
 		HSSFWorkbook wb = new HSSFWorkbook(fs);

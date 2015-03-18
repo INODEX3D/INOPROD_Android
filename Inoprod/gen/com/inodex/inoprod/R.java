@@ -284,8 +284,8 @@ public final class R {
         public static final int table_outillage=0x7f040005;
     }
     public static final class string {
-        public static final int action_sign_in=0x7f0600ca;
-        public static final int action_sign_in_short=0x7f0600cb;
+        public static final int action_sign_in=0x7f0600cc;
+        public static final int action_sign_in_short=0x7f0600cd;
         public static final int annuairePersonnel=0x7f06001f;
         public static final int app_name=0x7f060000;
         public static final int articleMonte=0x7f06007f;
@@ -320,10 +320,10 @@ public final class R {
         public static final int empreinte=0x7f06009f;
         public static final int enfichageTa=0x7f060086;
         public static final int enfichageTb=0x7f0600b9;
-        public static final int error_field_required=0x7f0600cf;
-        public static final int error_incorrect_password=0x7f0600ce;
-        public static final int error_invalid_email=0x7f0600cc;
-        public static final int error_invalid_password=0x7f0600cd;
+        public static final int error_field_required=0x7f0600d1;
+        public static final int error_incorrect_password=0x7f0600d0;
+        public static final int error_invalid_email=0x7f0600ce;
+        public static final int error_invalid_password=0x7f0600cf;
         public static final int etatCable=0x7f060021;
         public static final int etatControles=0x7f0600a3;
         public static final int etatDebits=0x7f060068;
@@ -333,6 +333,7 @@ public final class R {
         public static final int finalisation_ta=0x7f06006a;
         public static final int frettages=0x7f060095;
         public static final int gainage=0x7f06002a;
+        public static final int gainageComposant=0x7f0600c8;
         public static final int genererDebit=0x7f060050;
         public static final int genererKitting=0x7f060051;
         public static final int groupe=0x7f060074;
@@ -418,8 +419,8 @@ public final class R {
         public static final int profilMetier=0x7f06001e;
         /**  Strings related to login 
          */
-        public static final int prompt_email=0x7f0600c8;
-        public static final int prompt_password=0x7f0600c9;
+        public static final int prompt_email=0x7f0600ca;
+        public static final int prompt_password=0x7f0600cb;
         public static final int quantite=0x7f060067;
         public static final int reference=0x7f060060;
         public static final int referenceFabricant=0x7f060055;
@@ -445,6 +446,7 @@ public final class R {
         public static final int scan=0x7f060062;
         public static final int scanbadge=0x7f060007;
         public static final int sensReprise=0x7f06002d;
+        public static final int sertissageCosseTa=0x7f0600c7;
         public static final int standard=0x7f06003d;
         public static final int statutLiaison=0x7f06002e;
         public static final int title_activity_aide=0x7f060004;
@@ -466,7 +468,7 @@ public final class R {
         public static final int title_activity_import_coupe_cables=0x7f06000a;
         public static final int title_activity_info_produit=0x7f06001a;
         public static final int title_activity_kitting_cables_composants=0x7f060013;
-        public static final int title_activity_login_compte=0x7f0600c7;
+        public static final int title_activity_login_compte=0x7f0600c9;
         public static final int title_activity_login_profil=0x7f060006;
         public static final int title_activity_main=0x7f060001;
         public static final int title_activity_main_menu_cableur=0x7f060015;

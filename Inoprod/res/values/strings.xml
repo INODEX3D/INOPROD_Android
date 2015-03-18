@@ -200,5 +200,7 @@
     <string name="title_activity_data_pack">DataPack</string>
     <string name="editionDatapack">Edition du Data Pack</string>
     <string name="editer">Editer</string>
+    <string name="sertissageCosseTa">Sertissage cosses et manchons tête A</string>
+    <string name="gainageComposant">Gainage Composant</string>
 
 </resources>

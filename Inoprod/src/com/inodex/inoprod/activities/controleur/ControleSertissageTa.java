@@ -138,6 +138,8 @@ public class ControleSertissageTa extends Activity {
 
 	};
 	private long dureeTotal;
+	
+	private String Rac;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -181,7 +183,7 @@ public class ControleSertissageTa extends Activity {
 					.getColumnIndex(Operation.RANG_1_1))).substring(11, 14);
 			numeroConnecteur.append(" : " + numeroCo);
 		}
-
+		
 		if (description.contains("tête A")) {
 			clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='" + numeroCo
 					+ "' AND " + Raccordement.FAUX_CONTACT + "='" + 0
@@ -189,6 +191,7 @@ public class ControleSertissageTa extends Activity {
 					+ Raccordement.REPRISE_BLINDAGE + " IS NULL ";
 			titre.setText(R.string.controleSertissageTa);
 			ordre = "A";
+			Rac = Raccordement.NUMERO_COMPOSANT_TENANT;
 
 		} else {
 			clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
@@ -197,6 +200,7 @@ public class ControleSertissageTa extends Activity {
 					+ "' AND " + Raccordement.REPRISE_BLINDAGE + " IS NULL ";
 			titre.setText(R.string.controleSertissageTb);
 			ordre = "B";
+			Rac = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT;
 
 		}
 		cursorA = cr.query(urlRac, colRac, clause, null, Raccordement._id
@@ -503,7 +507,6 @@ public class ControleSertissageTa extends Activity {
 										liste.get(liste.size() - compteurCables)
 												.put(controle[7], "X");
 
-										
 										compteurCables--;
 										if (compteurCables == 0) {
 											indiceLimite++;
@@ -534,7 +537,6 @@ public class ControleSertissageTa extends Activity {
 										liste.get(liste.size() - compteurCables)
 												.put(controle[9], "X");
 
-										
 										compteurCables--;
 										if (compteurCables == 0) {
 											indiceLimite++;
@@ -559,7 +561,6 @@ public class ControleSertissageTa extends Activity {
 										liste.get(liste.size() - compteurCables)
 												.put(controle[8], "X");
 
-										
 										compteurCables--;
 										if (compteurCables == 0) {
 											indiceLimite++;
@@ -714,10 +715,8 @@ public class ControleSertissageTa extends Activity {
 				String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 				numeroCable = contents;
 				clause = Raccordement.NUMERO_FIL_CABLE + "='" + numeroCable
-						+ "' AND (" + Raccordement.NUMERO_COMPOSANT_TENANT
-						+ "='" + numeroCo + "' OR "
-						+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + "='"
-						+ numeroCo + "' ) AND " + Raccordement.REPRISE_BLINDAGE
+						+ "' AND " + Rac
+						+ "='" + numeroCo +  "'  AND " + Raccordement.REPRISE_BLINDAGE
 						+ " IS NULL ";
 				cursorA = cr.query(urlRac, colRac, clause, null,
 						Raccordement._id);
@@ -772,17 +771,9 @@ public class ControleSertissageTa extends Activity {
 										int which) {
 									numeroCable = cable.getText().toString();
 
-									clause = Raccordement.NUMERO_FIL_CABLE
-											+ "='"
-											+ numeroCable
-											+ "' AND ("
-											+ Raccordement.NUMERO_COMPOSANT_TENANT
-											+ "='"
-											+ numeroCo
-											+ "' OR "
-											+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-											+ "='" + numeroCo + "' ) AND "
-											+ Raccordement.REPRISE_BLINDAGE
+									clause = Raccordement.NUMERO_FIL_CABLE + "='" + numeroCable
+											+ "' AND " + Rac
+											+ "='" + numeroCo +  "'  AND " + Raccordement.REPRISE_BLINDAGE
 											+ " IS NULL ";
 									cursorA = cr.query(urlRac, colRac, clause,
 											null, Raccordement._id);

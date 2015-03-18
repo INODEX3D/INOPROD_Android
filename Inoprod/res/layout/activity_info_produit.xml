@@ -49,7 +49,7 @@
                            android:layout_marginRight="@dimen/b30"
                            android:text="@string/designationProduit"
                            android:textColor="#0000ff"
-                           android:textSize="@dimen/b12" />
+                           android:textSize="@dimen/forT" />
 
                        <TextView
                            android:id="@+id/textView5"
@@ -58,7 +58,7 @@
                            android:layout_marginRight="@dimen/b30"
                            android:text="@string/numeroHarnais"
                            android:textColor="#0000ff"
-                           android:textSize="@dimen/b12" />
+                           android:textSize="@dimen/forT" />
 
                        <TextView
                            android:id="@+id/textView6"
@@ -66,7 +66,7 @@
                            android:layout_height="wrap_content"
                            android:text="@string/standard"
                            android:textColor="#0000ff"
-                           android:textSize="@dimen/b12" />
+                           android:textSize="@dimen/forT" />
  
 
                    </LinearLayout>
@@ -83,7 +83,7 @@
                            android:layout_marginRight="@dimen/b30"
                            android:text="@string/numeroSerie"
                            android:textColor="#0000ff"
-                           android:textSize="@dimen/b12" />
+                           android:textSize="@dimen/forT" />
 
                        <TextView
                            android:id="@+id/textView5a"
@@ -92,7 +92,7 @@
                            android:layout_marginRight="@dimen/b30"
                            android:text="@string/numeroTraitement"
                            android:textColor="#0000ff"
-                           android:textSize="@dimen/b12" />
+                           android:textSize="@dimen/forT" />
 
                        <TextView
                            android:id="@+id/textView6a"
@@ -100,7 +100,7 @@
                            android:layout_height="wrap_content"
                            android:text="@string/numeroRevisionHarnais"
                            android:textColor="#0000ff"
-                           android:textSize="@dimen/b12" />
+                           android:textSize="@dimen/forT" />
  
 
                    </LinearLayout>
@@ -112,7 +112,7 @@
                        android:layout_margin="@dimen/forTMin"
                        android:text="@string/referenceFichierSource"
                        android:textColor="#0000ff"
-                       android:textSize="@dimen/b12" />
+                       android:textSize="@dimen/forT" />
                    
                    <LinearLayout
                        android:layout_width="match_parent"
@@ -126,7 +126,7 @@
                            android:layout_marginRight="@dimen/b30"
                            android:text="Durée de réference:"
                            android:textColor="#0000ff"
-                           android:textSize="@dimen/b12" />
+                           android:textSize="@dimen/forT" />
 
                        <TextView
                            android:id="@+id/textView5b"
@@ -134,7 +134,7 @@
                            android:layout_height="wrap_content"
                            android:text="Date de début de cycle:"
                            android:textColor="#0000ff"
-                           android:textSize="@dimen/b12" />
+                           android:textSize="@dimen/forT" />
 
 
 
@@ -152,7 +152,7 @@
                            android:layout_marginRight="@dimen/b30"
                            android:text="Durée mesurée:"
                            android:textColor="#0000ff"
-                           android:textSize="@dimen/b12" />
+                           android:textSize="@dimen/forT" />
 
                        <TextView
                            android:id="@+id/textView5c"
@@ -160,7 +160,7 @@
                            android:layout_height="wrap_content"
                            android:text="Date de fin de cycle prévu:"
                            android:textColor="#0000ff"
-                           android:textSize="@dimen/b12" />
+                           android:textSize="@dimen/forT" />
 
 
 
@@ -173,7 +173,7 @@
                        android:layout_margin="@dimen/forTMin"
                        android:text="Taux de progression:"
                        android:textColor="#0000ff"
-                       android:textSize="@dimen/b12" />
+                       android:textSize="@dimen/forT" />
 
 
                </LinearLayout>

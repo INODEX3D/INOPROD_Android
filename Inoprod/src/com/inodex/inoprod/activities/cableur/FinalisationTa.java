@@ -95,7 +95,7 @@ public class FinalisationTa extends Activity {
 			Raccordement.NUMERO_POSITION_CHARIOT,
 			Raccordement.ETAT_FINALISATION_PRISE };
 
-	private String colNom[] = new String[] { Cable.FAMILLE_PRODUIT,
+	private String colNom[] = new String[] { Cable.DESIGNATION_ACCESSOIRE,
 			Cable.REFERENCE_FABRICANT2, Cable.REFERENCE_INTERNE,
 			Cable.QUANTITE, Cable.UNITE, Cable._id };
 
@@ -418,7 +418,7 @@ public class FinalisationTa extends Activity {
 		// Création du SimpleCursorAdapter affilié au GridView
 
 		clause = Cable.NUMERO_COMPOSANT + "='" + numeroCo + "' AND "
-				+ Cable.FAMILLE_PRODUIT + " LIKE '%Contacts%'";
+				+ Cable.DESIGNATION_ACCESSOIRE + " LIKE '%connector%'";
 		cursorA = cr.query(urlNom, colNom, clause, null, Cable._id);
 		SimpleCursorAdapter sca = new SimpleCursorAdapter(this,
 				R.layout.grid_layout_finalisation_ta, cursorA, colNom, layouts);

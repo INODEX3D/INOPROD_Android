@@ -113,12 +113,13 @@ public class RepriseBlindageTa extends Activity {
 			Raccordement.NUMERO_POSITION_CHARIOT,
 			Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT,
 			Raccordement.REPERE_ELECTRIQUE_TENANT };
-	
+
 	private String colInfo[] = new String[] { Raccordement._id,
-			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS, Raccordement.STANDARD,
-			Raccordement.NUMERO_HARNAIS_FAISCEAUX, Raccordement.REFERENCE_FICHIER_SOURCE};
+			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS,
+			Raccordement.STANDARD, Raccordement.NUMERO_HARNAIS_FAISCEAUX,
+			Raccordement.REFERENCE_FICHIER_SOURCE };
 	private Cursor cursorInfo;
-	
+
 	private TextView timer;
 	private Cursor cursorTime;
 	private Uri urlTim = DureesProvider.CONTENT_URI;
@@ -193,7 +194,7 @@ public class RepriseBlindageTa extends Activity {
 						+ numeroCo + "' AND " + Raccordement.REPRISE_BLINDAGE
 						+ "!='" + "null" + "' GROUP BY "
 						+ Raccordement.REPRISE_BLINDAGE;
-				
+
 			} else {
 				titre.setText(R.string.repriseBlindageTb);
 				repereElectrique
@@ -204,9 +205,9 @@ public class RepriseBlindageTa extends Activity {
 						+ numeroCo + "' AND " + Raccordement.REPRISE_BLINDAGE
 						+ "!='" + "null" + "' GROUP BY "
 						+ Raccordement.REPRISE_BLINDAGE;
-				colRac1[6]= Raccordement.REFERENCE_OUTIL_ABOUTISSANT;
-				colRac1[7]= Raccordement.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT;
-				colRac1[8]= Raccordement.REGLAGE_OUTIL_ABOUTISSANT;
+				colRac1[6] = Raccordement.REFERENCE_OUTIL_ABOUTISSANT;
+				colRac1[7] = Raccordement.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT;
+				colRac1[8] = Raccordement.REGLAGE_OUTIL_ABOUTISSANT;
 			}
 
 		}
@@ -214,22 +215,26 @@ public class RepriseBlindageTa extends Activity {
 		nbRows = cr.query(urlRac, colRac1, clause, null, Raccordement._id)
 				.getCount();
 		Log.e("NombreLignes", "" + nbRows);
-		
+
 		// Affichage du temps nécessaire
-				timer = (TextView) findViewById(R.id.timeDisp);
-				dureeTotal = 0;
-				cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
-						+ " LIKE '%Reprise%' ", null, Duree._id);
-				if (cursorTime.moveToFirst()) {
-					dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
-							.getColumnIndex(Duree.DUREE_THEORIQUE)));
+		timer = (TextView) findViewById(R.id.timeDisp);
+		dureeTotal = 0;
+		cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
+				+ " LIKE '%Reprise%' ", null, Duree._id);
+		if (cursorTime.moveToFirst()) {
+			dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
+					.getColumnIndex(Duree.DUREE_THEORIQUE)));
+			Log.d("Duree", cursorTime.getString(cursorTime
+					.getColumnIndex(Duree.DUREE_THEORIQUE)));
+			Log.d("Duree",
+					""
+							+ TimeConverter.convert(cursorTime.getString(cursorTime
+									.getColumnIndex(Duree.DUREE_THEORIQUE))));
 
-				}
-				dureeTotal = dureeTotal * nbRows;
-				timer.setTextColor(Color.GREEN);
-				timer.setText(TimeConverter.display(dureeTotal));
-
-
+		}
+		dureeTotal = dureeTotal * nbRows;
+		timer.setTextColor(Color.GREEN);
+		timer.setText(TimeConverter.display(dureeTotal));
 
 		// Scan
 		boutonCheck.setOnClickListener(new View.OnClickListener() {
@@ -238,7 +243,7 @@ public class RepriseBlindageTa extends Activity {
 			public void onClick(View v) {
 
 				if (prodAchevee) {
-					//indiceCourant++;
+					// indiceCourant++;
 					String nextOperation = null;
 					try {
 						int test = opId[indiceCourant];
@@ -266,13 +271,13 @@ public class RepriseBlindageTa extends Activity {
 							} else if (nextOperation.startsWith("Enfichage")) {
 								toNext = new Intent(RepriseBlindageTa.this,
 										EnfichagesTa.class);
-							} else if (nextOperation
-									.startsWith("Mise")) {
+							} else if (nextOperation.startsWith("Mise")) {
 								toNext = new Intent(RepriseBlindageTa.this,
 										MiseLongueurTb.class);
 							} else if (nextOperation
 									.startsWith("Denudage Sertissage Coss")) {
-								toNext = new Intent(RepriseBlindageTa.this,
+								toNext = new Intent(
+										RepriseBlindageTa.this,
 										DenudageSertissageManchonsCossesTb.class);
 							}
 							if (toNext != null) {
@@ -325,21 +330,19 @@ public class RepriseBlindageTa extends Activity {
 					Log.e("Indice", "" + indiceLimite);
 					indiceCourant--;
 					Log.e("Indice", "" + indiceLimite);
-				
+
 				}
-				
-					
 
 				// MAJ de la durée
 				dureeMesuree = 0;
 				dateDebut = new Date();
 
 				clauseTotal = oldClauseTotal;
-				
+
 				if (liste.isEmpty()) {
-					
+
 				} else {
-					liste.remove(liste.size()-1);
+					liste.remove(liste.size() - 1);
 				}
 				// Vérification de l'état de la production
 				prodAchevee = (indiceLimite >= nbRows);
@@ -385,14 +388,18 @@ public class RepriseBlindageTa extends Activity {
 
 			}
 		});
-		
+
 		infoProduit.setOnClickListener(new View.OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				cursorInfo = cr.query(urlRac, colInfo, Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-						+ " ='" + numeroCo + "' OR " + Raccordement.NUMERO_COMPOSANT_TENANT + "='" + numeroCo+"'" , null, null);
-				Intent toInfo = new Intent(RepriseBlindageTa.this, InfoProduit.class);
+				cursorInfo = cr.query(urlRac, colInfo,
+						Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
+								+ numeroCo + "' OR "
+								+ Raccordement.NUMERO_COMPOSANT_TENANT + "='"
+								+ numeroCo + "'", null, null);
+				Intent toInfo = new Intent(RepriseBlindageTa.this,
+						InfoProduit.class);
 				labels = new String[7];
 
 				if (cursorInfo.moveToFirst()) {

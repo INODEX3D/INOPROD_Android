@@ -100,7 +100,8 @@ public class ControleFinalisationTa extends Activity {
 			Operation.DUREE_MESUREE };
 
 	private int layouts[] = new int[] { R.id.pointsVerifier,
-			R.id.valeurAttendue, R.id.controleValide, R.id.controleRefuse, R.id.commentaires };
+			R.id.valeurAttendue, R.id.controleValide, R.id.controleRefuse,
+			R.id.commentaires };
 	private String controle[] = new String[] { "Point vérifier",
 			"Valeur attendu", "Controle valide", "Controle refuse",
 			"Commentaires" };
@@ -119,9 +120,10 @@ public class ControleFinalisationTa extends Activity {
 			Raccordement.REPERE_ELECTRIQUE_TENANT,
 			Raccordement.NUMERO_POSITION_CHARIOT, Raccordement.NUMERO_FIL_CABLE };
 
-	private String colNom[] = new String[] { Cable.REFERENCE_INTERNE,
-			Cable.REFERENCE_FABRICANT2, Cable.QUANTITE, Cable.UNITE,
-			Cable.NUMERO_COMPOSANT, Cable.FAMILLE_PRODUIT, Cable._id, };
+	private String colNom[] = new String[] { Cable.DESIGNATION_ACCESSOIRE,
+			Cable.DESIGNATION_ACCESSOIRE, Cable.QUANTITE,
+			Cable.REFERENCE_FABRICANT2, Cable.UNITE, Cable.NUMERO_COMPOSANT,
+			Cable.FAMILLE_PRODUIT, Cable._id, Cable.DESIGNATION_COMPOSANT, };
 
 	private String colInfo[] = new String[] { Raccordement._id,
 			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS,
@@ -245,7 +247,7 @@ public class ControleFinalisationTa extends Activity {
 			@Override
 			public void onClick(View v) {
 
-				if (indiceTab > 5) {
+				if (indiceTab >= 5) {
 
 					contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0]
 							+ " " + nomPrenomOperateur[1]);
@@ -316,7 +318,8 @@ public class ControleFinalisationTa extends Activity {
 
 					clause = "(" + Operation.RANG_1_1 + " LIKE '%" + numeroCo
 							+ "%'" + clauseSup + " ) AND (" + Operation.GAMME
-							+ " LIKE 'Cheminement%' )";
+							+ " LIKE 'Cheminement%'  OR " + Operation.GAMME
+							+ "  LIKE 'Fret%' )";
 					cursor = cr.query(urlSeq, columnsSeq, clause, null,
 							Operation._id);
 					if (cursor.moveToFirst()) {
@@ -398,9 +401,11 @@ public class ControleFinalisationTa extends Activity {
 											controle[2], "X");
 
 									indiceTab++;
-									if (indiceTab >5) {
-										Toast.makeText(ControleFinalisationTa.this, "Contrôle achevée", Toast.LENGTH_LONG)
-										.show();
+									if (indiceTab >= 5) {
+										Toast.makeText(
+												ControleFinalisationTa.this,
+												"Contrôle achevée",
+												Toast.LENGTH_LONG).show();
 									}
 									displayContentProvider();
 								}
@@ -417,10 +422,12 @@ public class ControleFinalisationTa extends Activity {
 											controle[3], "X");
 
 									indiceTab++;
-									if (indiceTab >5) {
-										Toast.makeText(ControleFinalisationTa.this, "Contrôle achevée", Toast.LENGTH_LONG)
-										.show();
-										}
+									if (indiceTab >= 5) {
+										Toast.makeText(
+												ControleFinalisationTa.this,
+												"Contrôle achevée",
+												Toast.LENGTH_LONG).show();
+									}
 									displayContentProvider();
 								}
 							});
@@ -429,95 +436,7 @@ public class ControleFinalisationTa extends Activity {
 				}
 			}
 		});
-		/*
-		 * boutonCheck.setOnClickListener(new View.OnClickListener() {
-		 * 
-		 * @Override public void onClick(View v) {
-		 * 
-		 * dateRealisation = new Date(); contact.put(Operation.NOM_OPERATEUR,
-		 * nomPrenomOperateur[0] + " " + nomPrenomOperateur[1]);
-		 * contact.put(Operation.DATE_REALISATION,
-		 * dateRealisation.toGMTString()); heureRealisation.setToNow();
-		 * contact.put(Operation.HEURE_REALISATION,
-		 * heureRealisation.toString()); dureeMesuree +=
-		 * dateRealisation.getTime() - dateDebut.getTime();
-		 * contact.put(Operation.DUREE_MESUREE, dureeMesuree / 1000);
-		 * cr.update(urlSeq, contact, Operation._id + " = ?", new String[] {
-		 * Integer.toString(opId[indiceCourant]) }); contact.clear();
-		 * 
-		 * // MAJ de la durée dureeMesuree = 0; dateDebut = new Date();
-		 * 
-		 * // Signalement du point de controle String clauseSup = ""; String
-		 * clauseTotal = null;
-		 * 
-		 * // Recherche des aboutissants clause = new
-		 * String(Raccordement.NUMERO_COMPOSANT_TENANT + "='" + numeroCo + "'");
-		 * 
-		 * cursorA = cr.query(urlRac, colRac, clause, null, Raccordement._id +
-		 * " ASC"); if (cursorA.moveToFirst()) {
-		 * 
-		 * do { if (clauseTotal == null) { clauseTotal =
-		 * Raccordement.NUMERO_FIL_CABLE + "='" + cursorA.getString(cursorA
-		 * .getColumnIndex(Raccordement.NUMERO_FIL_CABLE)) + "'"; } else {
-		 * 
-		 * clauseTotal += " OR " + Raccordement.NUMERO_FIL_CABLE + "='" +
-		 * cursorA.getString(cursorA
-		 * .getColumnIndex(Raccordement.NUMERO_FIL_CABLE)) + "'"; } } while
-		 * (cursorA.moveToNext());
-		 * 
-		 * } cursorA = cr.query(urlRac, colRac, " (" + clauseTotal + ") AND " +
-		 * Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT + "!='null' GROUP BY " +
-		 * Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT, null,
-		 * Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT);
-		 * 
-		 * if (cursorA.moveToFirst()) { do {
-		 * 
-		 * clauseSup += " OR " + Operation.RANG_1_1 + " LIKE '%" +
-		 * cursorA.getString(cursorA
-		 * .getColumnIndex(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT)) + "' ";
-		 * 
-		 * } while (cursorA.moveToNext()); }
-		 * 
-		 * clause = "(" + Operation.RANG_1_1 + " LIKE '%" + numeroCo + "%'" +
-		 * clauseSup + " ) AND (" + Operation.GAMME + " LIKE 'Cheminement%' )";
-		 * cursor = cr.query(urlSeq, columnsSeq, clause, null, Operation._id);
-		 * if (cursor.moveToFirst()) {
-		 * 
-		 * contact.put(Operation.REALISABLE, 1); int id =
-		 * cursor.getInt(cursor.getColumnIndex(Operation._id));
-		 * cr.update(urlSeq, contact, clause, null); contact.clear(); }
-		 * 
-		 * indiceCourant++; String nextOperation = null; try { int test =
-		 * opId[indiceCourant]; clause = Operation._id + "='" + test + "'";
-		 * cursor = cr.query(urlSeq, columnsSeq, clause, null, Operation._id);
-		 * 
-		 * if (cursor.moveToFirst()) { nextOperation = cursor.getString(cursor
-		 * .getColumnIndex(Operation.DESCRIPTION_OPERATION)); Intent toNext =
-		 * null; if (nextOperation.startsWith("Contrôle final tête")) { toNext =
-		 * new Intent(ControleFinalisationTa.this,
-		 * ControleFinalisationTa.class); } else if (nextOperation
-		 * .startsWith("Contrôle rétention")) { toNext = new
-		 * Intent(ControleFinalisationTa.this, ControleRetentionTa.class); }
-		 * else if (nextOperation .startsWith("Contrôle sertissage")) { toNext =
-		 * new Intent(ControleFinalisationTa.this, ControleSertissageTa.class);
-		 * } else if (nextOperation .startsWith("Contrôle final harnais")) {
-		 * toNext = new Intent(ControleFinalisationTa.this,
-		 * ControleFinalHarnais.class); }
-		 * 
-		 * if (toNext != null) {
-		 * 
-		 * toNext.putExtra("opId", opId); toNext.putExtra("Noms",
-		 * nomPrenomOperateur); toNext.putExtra("Indice", indiceCourant);
-		 * startActivity(toNext); finish(); } }
-		 * 
-		 * } catch (ArrayIndexOutOfBoundsException e) { Intent toNext = new
-		 * Intent(ControleFinalisationTa.this, MainMenuControleur.class);
-		 * toNext.putExtra("Noms", nomPrenomOperateur); toNext.putExtra("opId",
-		 * opId); toNext.putExtra("Indice", indiceCourant);
-		 * startActivity(toNext); finish();
-		 * 
-		 * } } });
-		 */
+
 		infoProduit.setOnClickListener(new View.OnClickListener() {
 
 			@Override
@@ -617,7 +536,6 @@ public class ControleFinalisationTa extends Activity {
 			}
 		});
 
-		
 	}
 
 	private void displayContentProvider() {
@@ -625,7 +543,7 @@ public class ControleFinalisationTa extends Activity {
 
 		if (indiceTab < 3) {
 			cursorB = cr.query(urlNom, colNom, Cable.NUMERO_COMPOSANT + "='"
-					+ numeroCo + "' AND " + Cable.FAMILLE_PRODUIT
+					+ numeroCo + "' AND " + Cable.DESIGNATION_COMPOSANT
 					+ " LIKE '%Gaine%' ", null, Cable._id);
 			if (cursorB.moveToFirst()) {
 
@@ -640,7 +558,7 @@ public class ControleFinalisationTa extends Activity {
 
 			}
 
-		} else if (indiceTab>3 && indiceTab<5) {
+		} else if (indiceTab >= 3 && indiceTab < 5) {
 
 			element = new HashMap<String, String>();
 			element.put(controle[0], points[indiceTab]);

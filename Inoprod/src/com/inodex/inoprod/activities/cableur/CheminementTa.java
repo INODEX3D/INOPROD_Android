@@ -242,9 +242,12 @@ public class CheminementTa extends Activity {
 							.getColumnIndex(Raccordement.ZONE_ACTIVITE))
 					+ "-"
 					+ cursorA.getString(cursorA
-							.getColumnIndex(Raccordement.LOCALISATION1)));
+							.getColumnIndex(Raccordement.LOCALISATION1))
+					+ "-"
+					+ cursorA.getString(cursorA
+							.getColumnIndex(Raccordement.NUMERO_REPERE_TABLE_CHEMINEMENT)));
 
-			numeroCheminement.append(" : "
+			numeroCheminement.append("  "
 					+ cursorA.getString(cursorA
 							.getColumnIndex(Raccordement.NUMERO_CHEMINEMENT)));
 
@@ -304,7 +307,7 @@ public class CheminementTa extends Activity {
 		timer = (TextView) findViewById(R.id.timeDisp);
 		dureeTotal = 0;
 		cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
-				+ " LIKE '%btura%' ", null, Duree._id);
+				+ " LIKE '%heminement%' ", null, Duree._id);
 		if (cursorTime.moveToFirst()) {
 			dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
 					.getColumnIndex(Duree.DUREE_THEORIQUE)));
@@ -322,32 +325,26 @@ public class CheminementTa extends Activity {
 
 				// Vérification de l'état de la production
 				if (prodAchevee) {
+					//indiceCourant++;
 
-					
-					
+					/*
+					 * clause = Operation.RANG_1_1 + " LIKE '%" + numeroCo +
+					 * "%' AND " + Operation.NUMERO_OPERATION +
+					 * " LIKE '7-%' AND(" + Operation.DESCRIPTION_OPERATION +
+					 * " LIKE '%Préparation%' OR " +
+					 * Operation.DESCRIPTION_OPERATION + " LIKE '%Mise%' OR " +
+					 * Operation.DESCRIPTION_OPERATION + " LIKE '%Reprise%' OR "
+					 * + Operation.DESCRIPTION_OPERATION +
+					 * " LIKE '%Denudage Sertissage%')"; cursor =
+					 * cr.query(urlSeq, columnsSeq, clause, null,
+					 * Operation._id); if (cursor.moveToFirst()) {
+					 * 
+					 * contact.put(Operation.REALISABLE, 1); int id =
+					 * cursor.getInt(cursor .getColumnIndex(Operation._id));
+					 * cr.update(urlSeq, contact, clause, null);
+					 * contact.clear(); }
+					 */
 
-					/*	clause = Operation.RANG_1_1 + " LIKE '%" + numeroCo
-								+ "%' AND " + Operation.NUMERO_OPERATION
-								+ " LIKE '7-%' AND("
-								+ Operation.DESCRIPTION_OPERATION
-								+ " LIKE '%Préparation%' OR "
-								+ Operation.DESCRIPTION_OPERATION
-								+ " LIKE '%Mise%' OR "
-								+ Operation.DESCRIPTION_OPERATION
-								+ " LIKE '%Reprise%' OR "
-								+ Operation.DESCRIPTION_OPERATION
-								+ " LIKE '%Denudage Sertissage%')";
-						cursor = cr.query(urlSeq, columnsSeq, clause, null,
-								Operation._id);
-						if (cursor.moveToFirst()) {
-
-							contact.put(Operation.REALISABLE, 1);
-							int id = cursor.getInt(cursor
-									.getColumnIndex(Operation._id));
-							cr.update(urlSeq, contact, clause, null);
-							contact.clear();
-						} */
-					
 					String clauseSup = "";
 					String clauseTotal = null;
 
@@ -399,16 +396,17 @@ public class CheminementTa extends Activity {
 					}
 
 					clause = "(" + Operation.RANG_1_1 + " LIKE '%" + numeroCo
-							+ "%'" + clauseSup + " ) AND " + Operation.NUMERO_OPERATION
-								+ " LIKE '7-%' AND("
-								+ Operation.DESCRIPTION_OPERATION
-								+ " LIKE '%Préparation%' OR "
-								+ Operation.DESCRIPTION_OPERATION
-								+ " LIKE '%Mise%' OR "
-								+ Operation.DESCRIPTION_OPERATION
-								+ " LIKE '%Reprise%' OR "
-								+ Operation.DESCRIPTION_OPERATION
-								+ " LIKE '%Denudage Sertissage%')";;
+							+ "%'" + clauseSup + " ) AND "
+							+ Operation.NUMERO_OPERATION + " LIKE '7-%' AND("
+							+ Operation.DESCRIPTION_OPERATION
+							+ " LIKE '%Préparation%' OR "
+							+ Operation.DESCRIPTION_OPERATION
+							+ " LIKE '%Mise%' OR "
+							+ Operation.DESCRIPTION_OPERATION
+							+ " LIKE '%Reprise%' OR "
+							+ Operation.DESCRIPTION_OPERATION
+							+ " LIKE '%Denudage Sertissage%')";
+					;
 					cursor = cr.query(urlSeq, columnsSeq, clause, null,
 							Operation._id);
 					if (cursor.moveToFirst()) {
@@ -419,8 +417,6 @@ public class CheminementTa extends Activity {
 						cr.update(urlSeq, contact, clause, null);
 						contact.clear();
 					}
-					
-					
 
 					String nextOperation = null;
 					// Passage à l'étape suivante en fonction de sa description
@@ -502,7 +498,7 @@ public class CheminementTa extends Activity {
 						startActivityForResult(intent, 0);
 						// Si aucun scan détécté, ajout du cable au clavier
 					} catch (ActivityNotFoundException e) {
-						 entreCable("Impossible de trouver une application pour le scan. Entrez le n° de cable : ");
+						entreCable("Impossible de trouver une application pour le scan. Entrez le n° de cable : ");
 					}
 				}
 
@@ -654,17 +650,22 @@ public class CheminementTa extends Activity {
 
 		gridView.setAdapter(sca);
 		// MAJ Table de sequencement
-		
 
 		Log.e("Indice Limite", "" + indiceLimite);
 		Log.e("Liste", listeNonAffiche.toString());
 
+		cursor = cr.query(urlSeq, columnsSeq, Operation.DESCRIPTION_OPERATION
+				+ " LIKE '%" + description + "%' AND "
+				+ Operation.DATE_REALISATION + "!='null' ", null, null);
+
 		// Vérification de l'état de la production
-		if (indiceLimite >= nbRows) {
+		if (cursor.getCount() >= nbRows) {
 			prodAchevee = true;
 			Toast.makeText(this, "Production achevée", Toast.LENGTH_LONG)
 					.show();
 		}
+		
+		cursor.close();
 
 	}
 
@@ -744,11 +745,11 @@ public class CheminementTa extends Activity {
 												.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
 								Log.e("Cheminement", "" + numeroSection);
 								cursorC = cr.query(urlChe, colChe,
-										Cheminement.NUMERO_SECTION_CHEMINEMENT
-												+ "='" + numeroSection + "'",
-										null, Cheminement._id);
+										Cheminement.NUMERO_FIL_CABLE + "='"
+												+ numeroCable + "'", null,
+										Cheminement._id);
 								if (cursorC.moveToFirst()) {
-									/*do { */
+									do {
 										zonePose += cursorA
 												.getString(cursorA
 														.getColumnIndex(Cheminement.ZONE_ACTIVITE))
@@ -762,7 +763,7 @@ public class CheminementTa extends Activity {
 																.getColumnIndex(Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT))
 												+ ", ";
 										Log.e("Zone posé", zonePose);
-									/*} while (cursorC.moveToNext());*/
+									} while (cursorC.moveToNext());
 								}
 							} while (cursor.moveToNext());
 							element.put(colRac[7], zonePose);
@@ -802,7 +803,7 @@ public class CheminementTa extends Activity {
 				String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 			} else if (resultCode == RESULT_CANCELED) {
 
-				//entreCable("Echec du scan. Entrez le n° de cable :");
+				// entreCable("Echec du scan. Entrez le n° de cable :");
 			}
 		}
 
@@ -915,14 +916,11 @@ public class CheminementTa extends Activity {
 										int numeroSection = cursor.getInt(cursor
 												.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
 										Log.e("Cheminement", "" + numeroSection);
-										cursorC = cr
-												.query(urlChe,
-														colChe,
-														Cheminement.NUMERO_SECTION_CHEMINEMENT
-																+ "='"
-																+ numeroSection
-																+ "'", null,
-														Cheminement._id);
+										cursorC = cr.query(urlChe, colChe,
+												Cheminement.NUMERO_FIL_CABLE
+														+ "='" + numeroCable
+														+ "'", null,
+												Cheminement._id);
 										if (cursorC.moveToFirst()) {
 											do {
 												zonePose += cursorC.getString(cursorC
@@ -957,33 +955,52 @@ public class CheminementTa extends Activity {
 
 									element.put(colRac[7],
 											"" + cursorC.getCount());
-									
-									if (cursorC.moveToFirst()) {
-										
-										do {
-											numeroCable = cursorC.getString(cursorC.getColumnIndex(Raccordement.NUMERO_FIL_CABLE));
-										dateRealisation = new Date();
-										contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0] + " "
-												+ nomPrenomOperateur[1]);
-										contact.put(Operation.DATE_REALISATION, dateRealisation.toGMTString());
-										heureRealisation.setToNow();
-										contact.put(Operation.HEURE_REALISATION, heureRealisation.toString());
-										dureeMesuree += dateRealisation.getTime() - dateDebut.getTime();
-										contact.put(Operation.DUREE_MESUREE, dureeMesuree / 1000);
-										cr.update(urlSeq, contact, Operation.RANG_1_1_1 + "='" + numeroCable
-												+ "' AND " + Operation.DESCRIPTION_OPERATION
-												+ " LIKE '%Cheminement%' AND " + Operation.RANG_1_1
-												+ " LIKE '%" + numeroCo + "%'", null);
-										contact.clear();
 
-										// MAJ de la durée
-										dureeMesuree = 0;
-										dateDebut = new Date();
-										} while(cursorC.moveToNext());
+									if (cursorC.moveToFirst()) {
+
+										do {
+											numeroCable = cursorC.getString(cursorC
+													.getColumnIndex(Raccordement.NUMERO_FIL_CABLE));
+											dateRealisation = new Date();
+											contact.put(
+													Operation.NOM_OPERATEUR,
+													nomPrenomOperateur[0]
+															+ " "
+															+ nomPrenomOperateur[1]);
+											contact.put(
+													Operation.DATE_REALISATION,
+													dateRealisation
+															.toGMTString());
+											heureRealisation.setToNow();
+											contact.put(
+													Operation.HEURE_REALISATION,
+													heureRealisation.toString());
+											dureeMesuree += dateRealisation
+													.getTime()
+													- dateDebut.getTime();
+											contact.put(
+													Operation.DUREE_MESUREE,
+													dureeMesuree / 1000);
+											cr.update(
+													urlSeq,
+													contact,
+													Operation.RANG_1_1_1
+															+ "='"
+															+ numeroCable
+															+ "' AND "
+															+ Operation.DESCRIPTION_OPERATION
+															+ " LIKE '%Cheminement%' AND "
+															+ Operation.RANG_1_1
+															+ " LIKE '%"
+															+ numeroCo + "%'",
+													null);
+											contact.clear();
+
+											// MAJ de la durée
+											dureeMesuree = 0;
+											dateDebut = new Date();
+										} while (cursorC.moveToNext());
 									}
-									
-									
-									
 
 								}
 							}
@@ -1107,9 +1124,9 @@ public class CheminementTa extends Activity {
 													cursorC = cr
 															.query(urlChe,
 																	colChe,
-																	Cheminement.NUMERO_SECTION_CHEMINEMENT
+																	Cheminement.NUMERO_FIL_CABLE
 																			+ "='"
-																			+ numeroSection
+																			+ numeroCable
 																			+ "'",
 																	null,
 																	Cheminement._id);
@@ -1172,7 +1189,7 @@ public class CheminementTa extends Activity {
 											indiceCourant++;
 										}
 
-									} while (cursor.moveToNext());
+									} while (cursorC.moveToNext());
 								}
 
 							}

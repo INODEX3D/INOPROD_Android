@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.R.layout;
+import com.inodex.inoprod.activities.InfoProduit;
 import com.inodex.inoprod.business.DureesProvider;
 import com.inodex.inoprod.business.NomenclatureProvider;
 import com.inodex.inoprod.business.RaccordementProvider;
@@ -47,7 +48,8 @@ public class DenudageSertissageManchonsCossesTb extends Activity {
 	/** Elements à récuperer de la vue */
 	private TextView titre, numeroConnecteur, designation, repereElectrique,
 			referenceInterne, longueur, gainage, positionChariot,
-			referenceFabricant, referencePince, numeroSeriePince, zone;
+			referenceFabricant, referencePince, numeroSeriePince, zone,
+			empreinte;
 	private ImageButton boutonCheck, infoProduit, retour, boutonAide,
 			petitePause, grandePause;
 	private GridView gridView;
@@ -116,11 +118,19 @@ public class DenudageSertissageManchonsCossesTb extends Activity {
 			Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT,
 			Raccordement.NUMERO_OPERATION,
 			Raccordement.NUMERO_POSITION_CHARIOT,
-			Raccordement.LONGUEUR_FIL_CABLE, Raccordement.ORDRE_REALISATION ,Raccordement.NUMERO_BORNE_ABOUTISSANT };
+			Raccordement.LONGUEUR_FIL_CABLE, Raccordement.ORDRE_REALISATION,
+			Raccordement.NUMERO_BORNE_ABOUTISSANT,
+
+			Raccordement.REGLAGE_OUTIL_ABOUTISSANT,
+			Raccordement.REGLAGE_OUTIL_TENANT, Raccordement.ZONE_ACTIVITE,
+			Raccordement.LOCALISATION1,
+			Raccordement.NUMERO_REPERE_TABLE_CHEMINEMENT,
+			Raccordement.REFERENCE_OUTIL_ABOUTISSANT };
 
 	private String colNom[] = new String[] { Cable.REFERENCE_INTERNE,
 			Cable.REFERENCE_FABRICANT2, Cable.QUANTITE, Cable.UNITE,
-			Cable.NUMERO_COMPOSANT, Cable.FAMILLE_PRODUIT, Cable._id, };
+			Cable.NUMERO_COMPOSANT, Cable.FAMILLE_PRODUIT, Cable._id,
+			Cable.DESIGNATION_COMPOSANT };
 
 	private String colInfo[] = new String[] { Raccordement._id,
 			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS,
@@ -165,8 +175,8 @@ public class DenudageSertissageManchonsCossesTb extends Activity {
 		referencePince = (TextView) findViewById(R.id.textView7);
 		gainage = (TextView) findViewById(R.id.textView5a);
 		positionChariot = (TextView) findViewById(R.id.textView5b);
-		referenceFabricant = (TextView) findViewById(R.id.textView5c);
-		longueur = (TextView) findViewById(R.id.textView5d);
+		referenceFabricant = (TextView) findViewById(R.id.textView5d);
+		longueur = (TextView) findViewById(R.id.textView5c);
 		boutonAide = (ImageButton) findViewById(R.id.imageButton4);
 		retour = (ImageButton) findViewById(R.id.imageButton2);
 		boutonCheck = (ImageButton) findViewById(R.id.imageButton3);
@@ -197,12 +207,24 @@ public class DenudageSertissageManchonsCossesTb extends Activity {
 			longueur.append(" : "
 					+ cursorA.getString(cursorA.getColumnIndex(Cable.QUANTITE))
 					+ cursorA.getString(cursorA.getColumnIndex(Cable.UNITE)));
+
+			referenceInterne.append(" : "
+					+ cursorA.getString(cursorA
+							.getColumnIndex(Cable.REFERENCE_INTERNE)));
+			referenceFabricant.append(" : "
+					+ cursorA.getString(cursorA
+							.getColumnIndex(Cable.REFERENCE_FABRICANT2)));
+			designation.append(" : "
+					+ cursorA.getString(cursorA
+							.getColumnIndex(Cable.DESIGNATION_COMPOSANT)));
+
 		}
 
 		// Recuperation de la première opération
 		clause = new String(Raccordement.NUMERO_COMPOSANT_TENANT + "='"
-				+ numeroCo + "' OR " +Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + "='"
-				+ numeroCo + "'");
+				+ numeroCo + "' OR "
+				+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + "='" + numeroCo
+				+ "'");
 		cursorA = cr.query(urlRac, colRac, clause, null, Raccordement._id
 				+ " ASC");
 		if (cursorA.moveToFirst()) {
@@ -211,17 +233,19 @@ public class DenudageSertissageManchonsCossesTb extends Activity {
 					.append(" : "
 							+ cursorA.getString(cursorA
 									.getColumnIndex(Raccordement.NUMERO_POSITION_CHARIOT)));
-			longueur.append(" : "
-					+ cursorA.getString(cursorA
-							.getColumnIndex(Raccordement.LONGUEUR_FIL_CABLE)));
 
-			referenceInterne.append(" : "
+			zone.append(" : "
 					+ cursorA.getString(cursorA
-							.getColumnIndex(Raccordement.REFERENCE_INTERNE)));
-			referenceFabricant
-					.append(" : "
-							+ cursorA.getString(cursorA
-									.getColumnIndex(Raccordement.REFERENCE_FABRICANT2)));
+							.getColumnIndex(Raccordement.ZONE_ACTIVITE))
+					+ "-"
+					+ cursorA.getString(cursorA
+							.getColumnIndex(Raccordement.LOCALISATION1))
+					+ "-"
+					+ cursorA.getString(cursorA
+							.getColumnIndex(Raccordement.NUMERO_REPERE_TABLE_CHEMINEMENT)));
+			numeroSeriePince.append(" : "
+					+ cursorA.getString(cursorA
+							.getColumnIndex(Raccordement.NUMERO_SERIE_OUTIL)));
 
 			if (numeroOperation.startsWith("4")) {
 				titre.setText(R.string.denudageSertissageEnfichageTa);
@@ -229,6 +253,15 @@ public class DenudageSertissageManchonsCossesTb extends Activity {
 						.append(" : "
 								+ cursorA.getString(cursorA
 										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
+				referencePince
+						.append(" : "
+								+ cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.REFERENCE_OUTIL_TENANT)));
+				empreinte
+						.append(" : "
+								+ cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.REGLAGE_OUTIL_TENANT)));
+
 				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
 						+ numeroCo + "' AND ( " + Raccordement.FAUX_CONTACT
 						+ "='" + 0 + "' OR " + Raccordement.OBTURATEUR + "='"
@@ -242,6 +275,18 @@ public class DenudageSertissageManchonsCossesTb extends Activity {
 						.append(" : "
 								+ cursorA.getString(cursorA
 										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT)));
+				try {
+					empreinte
+							.append(" : "
+									+ cursorA.getString(cursorA
+											.getColumnIndex(Raccordement.REGLAGE_OUTIL_ABOUTISSANT)));
+				} catch (NullPointerException e) {
+
+				}
+				referencePince
+						.append(" : "
+								+ cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.REFERENCE_OUTIL_ABOUTISSANT)));
 				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
 						+ numeroCo + "' AND ( " + Raccordement.FAUX_CONTACT
 						+ "='" + 0 + "' OR " + Raccordement.OBTURATEUR + "='"
@@ -360,7 +405,7 @@ public class DenudageSertissageManchonsCossesTb extends Activity {
 								toNext = new Intent(
 										DenudageSertissageManchonsCossesTb.this,
 										MiseLongueurTb.class);
-							} else if (nextOperation.startsWith("Mise")) {
+							} else if (nextOperation.startsWith("Denudage Sertissage Coss")) {
 								toNext = new Intent(
 										DenudageSertissageManchonsCossesTb.this,
 										DenudageSertissageManchonsCossesTb.class);
@@ -446,6 +491,43 @@ public class DenudageSertissageManchonsCossesTb extends Activity {
 			}
 		});
 
+		// Info Produit
+
+		infoProduit.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				cursorInfo = cr.query(urlRac, colInfo,
+						Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
+								+ numeroCo + "' OR "
+								+ Raccordement.NUMERO_COMPOSANT_TENANT + "='"
+								+ numeroCo + "'", null, null);
+				Intent toInfo = new Intent(
+						DenudageSertissageManchonsCossesTb.this,
+						InfoProduit.class);
+				labels = new String[7];
+
+				if (cursorInfo.moveToFirst()) {
+					labels[0] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.DESIGNATION));
+					labels[1] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_HARNAIS_FAISCEAUX));
+					labels[2] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.STANDARD));
+					labels[3] = "";
+					labels[4] = "";
+					labels[5] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_REVISION_HARNAIS));
+					labels[6] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.REFERENCE_FICHIER_SOURCE));
+					toInfo.putExtra("Labels", labels);
+				}
+
+				startActivity(toInfo);
+
+			}
+		});
+
 		// Petite Pause
 		petitePause.setOnClickListener(new View.OnClickListener() {
 
@@ -491,10 +573,9 @@ public class DenudageSertissageManchonsCossesTb extends Activity {
 		 * cr.update(urlSeq, contact, Operation._id + " = ?", new String[] {
 		 * Integer.toString(opId[indiceCourant]) });
 		 */
-		cr.update(urlSeq, contact, Operation.RANG_1_1_1 + "='" + numeroCable
-				+ "' AND " + Operation.DESCRIPTION_OPERATION
-				+ " LIKE '%Denudage Sertissage Enfichage%' AND "
-				+ Operation.RANG_1_1 + " LIKE '%" + numeroCo + "%'", null);
+		cr.update(urlSeq, contact, Operation.DESCRIPTION_OPERATION
+				+ " LIKE '%Cosse%' AND " + Operation.RANG_1_1 + " LIKE '%"
+				+ numeroCo + "%'", null);
 		contact.clear();
 
 		// MAJ de la durée
@@ -616,7 +697,7 @@ public class DenudageSertissageManchonsCossesTb extends Activity {
 							liste.add(element);
 							indiceLimite++;
 							displayContentProvider();
-							//indiceCourant++;
+							// indiceCourant++;
 
 						} while (cursorA.moveToNext());
 
@@ -631,7 +712,7 @@ public class DenudageSertissageManchonsCossesTb extends Activity {
 				}
 
 			} else if (resultCode == RESULT_CANCELED) {
-				//entreCable("Impossible de trouver une application pour le scan. Entrez le N° de cable.");
+				// entreCable("Impossible de trouver une application pour le scan. Entrez le N° de cable.");
 			}
 		}
 	}
@@ -762,7 +843,7 @@ public class DenudageSertissageManchonsCossesTb extends Activity {
 									liste.add(element);
 									indiceLimite++;
 									displayContentProvider();
-									//indiceCourant++;
+									indiceCourant++;
 
 								} while (cursorB.moveToNext());
 

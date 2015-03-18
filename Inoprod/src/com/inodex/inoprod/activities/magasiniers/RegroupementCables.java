@@ -21,16 +21,18 @@ import android.widget.TextView;
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.activities.InfoProduit;
 import com.inodex.inoprod.business.CheminementProvider;
+import com.inodex.inoprod.business.Durees.Duree;
 import com.inodex.inoprod.business.DureesProvider;
 import com.inodex.inoprod.business.KittingProvider;
-import com.inodex.inoprod.business.ProductionProvider;
-import com.inodex.inoprod.business.SequencementProvider;
-import com.inodex.inoprod.business.TimeConverter;
-import com.inodex.inoprod.business.Durees.Duree;
 import com.inodex.inoprod.business.Production.Fil;
+import com.inodex.inoprod.business.ProductionProvider;
+import com.inodex.inoprod.business.RaccordementProvider;
+import com.inodex.inoprod.business.SequencementProvider;
 import com.inodex.inoprod.business.TableCheminement.Cheminement;
 import com.inodex.inoprod.business.TableKittingCable.Kitting;
+import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
+import com.inodex.inoprod.business.TimeConverter;
 
 /**
  * Ecran affichant un ensemble de cables à regrouper
@@ -46,6 +48,7 @@ public class RegroupementCables extends Activity {
 	private Uri urlSeq = SequencementProvider.CONTENT_URI;
 	private Uri urlChem = CheminementProvider.CONTENT_URI;
 	private Uri urlProd = ProductionProvider.CONTENT_URI;
+	private Uri urlRac = RaccordementProvider.CONTENT_URI;
 
 	/** Tableau des opérations à réaliser */
 	private int opId[] = null;
@@ -59,9 +62,9 @@ public class RegroupementCables extends Activity {
 	/** Numero de cheminement courant */
 	private int numeroCh;
 	/** Heure et dates à ajouter à la table de séquencment */
-	private Date dateRealisation = new Date();
+	private Date dateDebut, dateRealisation;
+	private long dureeMesuree = 0;
 	private Time heureRealisation = new Time();
-
 	/** Nom de l'opérateur */
 	private String nomPrenomOperateur[] = null;
 
@@ -97,17 +100,32 @@ public class RegroupementCables extends Activity {
 			Kitting.UNITE, Kitting.NUMERO_CHEMINEMENT, Kitting._id,
 			Kitting.NUMERO_OPERATION };
 
+	private String colRac[] = new String[] { Raccordement.NUMERO_FIL_CABLE,
+			Raccordement._id, Raccordement.NUMERO_COMPOSANT_TENANT,
+			Raccordement.REPERE_ELECTRIQUE_TENANT,
+			Raccordement.NUMERO_OPERATION,
+			Raccordement.NUMERO_COMPOSANT_ABOUTISSANT,
+			Raccordement.NUMERO_POSITION_CHARIOT,
+			Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT,
+			Raccordement.NUMERO_CHEMINEMENT, Raccordement.LOCALISATION1,
+			Raccordement.NUMERO_SECTION_CHEMINEMENT,
+			Raccordement.NUMERO_REPERE_TABLE_CHEMINEMENT };
+
 	private String columnsChem[] = new String[] { Cheminement._id,
 			Cheminement.NUMERO_SECTION_CHEMINEMENT,
 			Cheminement.NUMERO_COMPOSANT_TENANT,
 			Cheminement.REPERE_ELECTRIQUE_TENANT,
 			Cheminement.ORDRE_REALISATION,
 			Cheminement.NUMERO_COMPOSANT_ABOUTISSANT,
-			Cheminement.REPERE_ELECTRIQUE_ABOUTISSANT};
+			Cheminement.REPERE_ELECTRIQUE_ABOUTISSANT,
+			Cheminement.NUMERO_CHEMINEMNT };
 
 	private String columnsProd[] = new String[] { Fil._id,
 			Fil.DESIGNATION_PRODUIT, Fil.NUMERO_REVISION_HARNAIS, Fil.STANDARD,
-			Fil.NUMERO_HARNAIS_FAISCEAUX, Fil.REFERENCE_FICHIER_SOURCE };
+			Fil.NUMERO_HARNAIS_FAISCEAUX, Fil.REFERENCE_FICHIER_SOURCE,
+			Fil.NUMERO_COMPOSANT_ABOUTISSANT, Fil.NUMERO_COMPOSANT_TENANT };
+
+	private Cursor cursorInfo;
 
 	private TextView timer;
 	private Cursor cursorTime;
@@ -130,6 +148,7 @@ public class RegroupementCables extends Activity {
 		opId = intent.getIntArrayExtra("opId");
 		cr = getContentResolver();
 		contact = new ContentValues();
+		dateDebut = new Date();
 
 		// Récuperation des éléments de la vue
 		gridView = (GridView) findViewById(R.id.gridview);
@@ -153,44 +172,50 @@ public class RegroupementCables extends Activity {
 
 		// Récupération du numéro de cheminement
 		numeroCom = descriptionOperation.substring(42, 45);
-		clause = new String(Cheminement.NUMERO_COMPOSANT_ABOUTISSANT + "='" + numeroCom
-				+ "' OR " + Cheminement.NUMERO_COMPOSANT_TENANT + "='" + numeroCom
-				+ "'");
+		clause = new String(Cheminement.NUMERO_COMPOSANT_ABOUTISSANT + "='"
+				+ numeroCom + "' OR " + Cheminement.NUMERO_COMPOSANT_TENANT
+				+ "='" + numeroCom + "'");
 		cursorA = cr.query(urlChem, columnsChem, clause, null, null);
 		if (cursorA.moveToFirst()) {
 			numeroCh = cursorA.getInt(cursorA
-					.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
-			cursorB = cr.query(urlProd, columnsProd, Fil.NUMERO_FIL_CABLE
-					+ " = " + Kitting.NUMERO_FIL_CABLE, null, null);
+					.getColumnIndex(Cheminement.NUMERO_CHEMINEMNT));
+			cursorB = cr.query(urlRac, colRac,
+					Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + "='"
+							+ numeroCom + "' OR "
+							+ Raccordement.NUMERO_COMPOSANT_TENANT + "='"
+							+ numeroCom + "'", null, null);
+			if (cursorB.moveToFirst()) {
+				try {
+					numeroChariot
+							.append(": "
+									+ cursorB.getString(cursorB
+											.getColumnIndex(Raccordement.NUMERO_POSITION_CHARIOT)));
+				} catch (NullPointerException e) {
+				}
+			}
 
 			// Affichage des éléments du regroupement en cours
-			/*
-			 * try {
-			 * numeroChariot.append(cursorA.getString(cursorA.getColumnIndex
-			 * (Cheminement.NUMERO_POSITION_CHARIOT))); } catch
-			 * (NullPointerException e) { }
-			 */
+
 			try {
 				String numeroCo = cursorA.getString(cursorA
 						.getColumnIndex(Cheminement.NUMERO_COMPOSANT_TENANT));
 				if (numeroCo.equals(null)) {
-					numeroCo = cursorA.getString(cursorA
-							.getColumnIndex(Cheminement.NUMERO_COMPOSANT_ABOUTISSANT));
+					numeroCo = cursorA
+							.getString(cursorA
+									.getColumnIndex(Cheminement.NUMERO_COMPOSANT_ABOUTISSANT));
 				}
-				numeroComposant.append(": "
-						+ numeroCo );
+				numeroComposant.append(": " + numeroCo);
 			} catch (NullPointerException e) {
 			}
 			try {
 				String rep = cursorA.getString(cursorA
 						.getColumnIndex(Cheminement.REPERE_ELECTRIQUE_TENANT));
 				if (rep.equals(null)) {
-					rep = cursorA.getString(cursorA
-							.getColumnIndex(Cheminement.REPERE_ELECTRIQUE_ABOUTISSANT));
+					rep = cursorA
+							.getString(cursorA
+									.getColumnIndex(Cheminement.REPERE_ELECTRIQUE_ABOUTISSANT));
 				}
-				repereElectrique
-						.append(": "
-								+ rep);
+				repereElectrique.append(": " + rep);
 			} catch (NullPointerException e) {
 			}
 			try {
@@ -201,7 +226,7 @@ public class RegroupementCables extends Activity {
 			} catch (NullPointerException e) {
 			}
 			try {
-				numeroCheminement.append(": " + Integer.toString(numeroCh));
+				numeroCheminement.append(" " + Integer.toString(numeroCh));
 			} catch (NullPointerException e) {
 			}
 		} else {
@@ -233,6 +258,7 @@ public class RegroupementCables extends Activity {
 			@Override
 			public void onClick(View v) {
 				// MAJ Table de sequencement
+				dateRealisation = new Date();
 				contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0]
 						+ " " + nomPrenomOperateur[1]);
 				contact.put(Operation.DATE_REALISATION,
@@ -240,6 +266,10 @@ public class RegroupementCables extends Activity {
 				heureRealisation.setToNow();
 				contact.put(Operation.HEURE_REALISATION,
 						heureRealisation.toString());
+
+				dureeMesuree += dateRealisation.getTime() - dateDebut.getTime();
+				contact.put(Operation.DUREE_MESUREE, dureeMesuree / 1000);
+
 				cr.update(urlSeq, contact, Operation._id + " = ?",
 						new String[] { Integer.toString(opId[indiceCourant]) });
 				contact.clear();
@@ -296,22 +326,26 @@ public class RegroupementCables extends Activity {
 
 			@Override
 			public void onClick(View v) {
+				cursorInfo = cr.query(urlProd, columnsProd,
+						Fil.NUMERO_COMPOSANT_ABOUTISSANT + " ='" + numeroCom
+								+ "' OR " + Fil.NUMERO_COMPOSANT_TENANT + "='"
+								+ numeroCom + "'", null, null);
 				Intent toInfo = new Intent(RegroupementCables.this,
 						InfoProduit.class);
 				labels = new String[7];
 
-				if (cursorB.moveToFirst()) {
-					labels[0] = cursorB.getString(cursorB
+				if (cursorInfo.moveToFirst()) {
+					labels[0] = cursorInfo.getString(cursorInfo
 							.getColumnIndex(Fil.DESIGNATION_PRODUIT));
-					labels[1] = cursorB.getString(cursorB
+					labels[1] = cursorInfo.getString(cursorInfo
 							.getColumnIndex(Fil.NUMERO_HARNAIS_FAISCEAUX));
-					labels[2] = cursorB.getString(cursorB
+					labels[2] = cursorInfo.getString(cursorInfo
 							.getColumnIndex(Fil.STANDARD));
 					labels[3] = "";
 					labels[4] = "";
-					labels[5] = cursorB.getString(cursorB
+					labels[5] = cursorInfo.getString(cursorInfo
 							.getColumnIndex(Fil.NUMERO_REVISION_HARNAIS));
-					labels[6] = cursorB.getString(cursorB
+					labels[6] = cursorInfo.getString(cursorInfo
 							.getColumnIndex(Fil.REFERENCE_FICHIER_SOURCE));
 					toInfo.putExtra("Labels", labels);
 				}
@@ -334,7 +368,7 @@ public class RegroupementCables extends Activity {
 				layouts);
 		gridView.setAdapter(sca);
 		// Requête dans la base
-		clause = Kitting.NUMERO_CHEMINEMENT + " ='" + numeroCh + "'";
+		clause = Kitting.NUMERO_COMPOSANT + " ='" + numeroCom + "'";
 		cursor = cr.query(urlKitting, columns, clause, null, null);
 		sca.changeCursor(cursor);
 

@@ -54,7 +54,7 @@
         android:layout_height="50dip"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_margin="@dimen/b12"
+        android:layout_margin="@dimen/forT"
         android:src="@drawable/valider9" />
 
     <ImageButton
@@ -63,7 +63,7 @@
         android:layout_height="50dip"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_margin="@dimen/b12"
+        android:layout_margin="@dimen/forT"
         android:src="@drawable/aide3" />
 
     <TextView
@@ -77,7 +77,7 @@
       
         android:text="Référez-vous aux instructions, affichées sur l’écran de la machine de coupe, jusqu’à la fin de la production de cette séquence
 "
-        android:textSize="@dimen/b12" />
+        android:textSize="@dimen/forT" />
 
     <ImageView
         android:id="@+id/imageView1"
@@ -166,27 +166,20 @@
             android:textSize="@dimen/forTMin" />
 
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/textView5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/textView2"
-        android:layout_alignLeft="@+id/linearLayout1"
-        android:text="@string/etatCable"
-        android:textSize="@dimen/forT" />
     
     <GridView
         android:id="@+id/gridview"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/head"  
-        android:layout_toLeftOf="@id/exitButton1"
-        android:layout_toRightOf="@id/infoButton1"     
+        android:layout_below="@+id/head"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="75dp"
+        android:layout_toLeftOf="@id/exitButton1"
+        android:layout_toRightOf="@id/infoButton1"
         android:numColumns="1"
+        android:scrollbarStyle="outsideInset"
         android:stretchMode="columnWidth" >
+
     </GridView>
 
     <TextView
@@ -197,5 +190,14 @@
         android:layout_alignRight="@id/imageView1"
         android:layout_below="@id/imageView1"
         android:textColor="#00ef00" />
+
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView2"
+        android:layout_centerHorizontal="true"
+        android:text="@string/etatCable"
+        android:textSize="@dimen/forT" />
 
 </RelativeLayout>

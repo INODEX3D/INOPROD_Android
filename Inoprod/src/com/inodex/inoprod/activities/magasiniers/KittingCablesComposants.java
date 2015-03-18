@@ -214,7 +214,7 @@ public class KittingCablesComposants extends Activity {
 			}
 			try {
 				ordreRealisation
-						.append(": "
+						.append(" "
 								+ cursorA.getString(cursorA
 										.getColumnIndex(Cheminement.ORDRE_REALISATION)));
 			} catch (NullPointerException e) {
@@ -239,6 +239,7 @@ public class KittingCablesComposants extends Activity {
 			@Override
 			public void onClick(View v) {
 				// MAJ Table de sequencement
+				dateRealisation = new Date();
 				contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0]
 						+ " " + nomPrenomOperateur[1]);
 				contact.put(Operation.DATE_REALISATION,

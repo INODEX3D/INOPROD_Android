@@ -46,7 +46,7 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="15dp"
             android:text="@string/phaseOperatoireSuivante"
-            android:textSize="@dimen/b12" />
+            android:textSize="@dimen/forT" />
         
         
          <LinearLayout
@@ -70,7 +70,7 @@
 
         <TextView
             android:id="@+id/textView10"
-            android:layout_width="250dp"
+            android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/operationsRealiser"

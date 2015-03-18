@@ -4,9 +4,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -30,6 +33,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.SimpleAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -70,15 +74,21 @@ public class DebitCables extends Activity {
 
 	/** Tableau des opérations à réaliser */
 	private int opId[] = null;
+	private HashSet<Integer> rowId = new HashSet<Integer>();
 
 	/** Indice de l'opération courante */
 	private int indiceCourant = 0;
+	private int indiceLimite = 0;
 
+	/** Liste à afficher dans l'adapteur */
+	private List<HashMap<String, String>> liste = new ArrayList<HashMap<String, String>>();
+	private HashMap<String, String> element;
 	/** Tableau des infos produit */
 	private String labels[];
 
 	/** Heure et dates à ajouter à la table de séquencment */
-	private Date dateRealisation = new Date();
+	private Date dateDebut, dateRealisation;
+	private long dureeMesuree = 0;
 	private Time heureRealisation = new Time();
 
 	private int numeroDebit, nbRows, idFirst;
@@ -91,6 +101,7 @@ public class DebitCables extends Activity {
 	private ContentResolver cr;
 	private ContentValues contact;
 	private boolean affichage;
+	private Iterator<Integer> rowIt;
 
 	/** Colonnes utilisés pour les requêtes */
 	private String columnsDuree[] = new String[] { Duree._id,
@@ -113,7 +124,7 @@ public class DebitCables extends Activity {
 	private String columnsProd[] = new String[] { Fil._id,
 			Fil.DESIGNATION_PRODUIT, Fil.NUMERO_REVISION_HARNAIS, Fil.STANDARD,
 			Fil.NUMERO_HARNAIS_FAISCEAUX, Fil.REFERENCE_FICHIER_SOURCE };
-	
+
 	private TextView timer;
 	private Cursor cursorTime;
 	private Uri urlTim = DureesProvider.CONTENT_URI;
@@ -134,6 +145,7 @@ public class DebitCables extends Activity {
 		nomPrenomOperateur = intent.getStringArrayExtra("Noms");
 		opId = intent.getIntArrayExtra("opId");
 		cr = getContentResolver();
+		dateDebut = new Date();
 
 		// initialisation de la production
 		prodAchevee = false;
@@ -167,6 +179,7 @@ public class DebitCables extends Activity {
 			cursorInfo = cr.query(urlProd, columnsProd, Fil.NUMERO_FIL_CABLE
 					+ " = " + Kitting.NUMERO_FIL_CABLE, null, null);
 			Log.e("NumeroConnectuer", numeroCo);
+			Log.e("NumeroDebit", numeroDebit + "");
 		} else {
 			Toast.makeText(this, "Debit non trouvée", Toast.LENGTH_LONG).show();
 		}
@@ -174,34 +187,33 @@ public class DebitCables extends Activity {
 		clause = new String(Kitting.NUMERO_DEBIT + "='" + numeroDebit + "'");
 		nbRows = cr.query(urlKitting, columnsKitting, clause, null, null)
 				.getCount();
-		
-		// Affichage du temps nécessaire
-				timer = (TextView) findViewById(R.id.timeDisp);
-				dureeTotal = 0;
-				cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
-						+ " LIKE '%Débit%' ", null, Duree._id);
-				if (cursorTime.moveToFirst()) {
-					dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
-							.getColumnIndex(Duree.DUREE_THEORIQUE)));
 
-				}
-				dureeTotal = dureeTotal * nbRows;
-				timer.setTextColor(Color.GREEN);
-				timer.setText(TimeConverter.display(dureeTotal));
+		// Affichage du temps nécessaire
+		timer = (TextView) findViewById(R.id.timeDisp);
+		dureeTotal = 0;
+		cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
+				+ " LIKE '%Débit%' ", null, Duree._id);
+		if (cursorTime.moveToFirst()) {
+			dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
+					.getColumnIndex(Duree.DUREE_THEORIQUE)));
+
+		}
+		dureeTotal = dureeTotal * nbRows;
+		timer.setTextColor(Color.GREEN);
+		timer.setText(TimeConverter.display(dureeTotal));
 
 		contact = new ContentValues();
 		affichage = false;
 
 		// Affichage de la prémiere ligne du contenu
-		 displayContentProvider();
+		// displayContentProvider();
 
 		// Simulation lecture fichier excel
 		InputStream input = null;
 		try {
-			input = new FileInputStream(Environment.getDataDirectory()
-					.getAbsolutePath()
-					+ "/data/com.inodex.inoprod/"
-					+ "debitCables.xls");
+			input = new FileInputStream(Environment
+					.getExternalStorageDirectory().getAbsolutePath()
+					+ "/Android/data/com.inodex.inoprod/" + "debitCables.xls");
 			POIFSFileSystem fs = new POIFSFileSystem(input);
 			HSSFWorkbook wb = new HSSFWorkbook(fs);
 			HSSFSheet sheet = wb.getSheetAt(0);
@@ -213,18 +225,27 @@ public class DebitCables extends Activity {
 			// Stockage des indices des colonnes
 			for (int i = 0; i < row.getLastCellNum(); i++) {
 				colonnes.put(row.getCell(i).toString(), i);
+				Log.d("en tete", row.getCell(i).toString());
 
 			}
-			/*
-			
-			for (int i=1; i<= nbRows; i++) {
-				Date debut = new Date();
-				while( new Date().getTime() - debut.getTime() <2000) {
-					
+
+			while (rows.hasNext()) {
+				row = (HSSFRow) rows.next();
+				if (Integer.parseInt(row.getCell(
+						colonnes.get(Kitting.NUMERO_DEBIT)).toString()) == numeroDebit) {
+					rowId.add(row.getRowNum());
 				}
-				displayContentProvider();
-				indiceCourant++;
-			} */
+			}
+			rowIt = rowId.iterator();
+			Log.d("Nombre ligne", rowId.size() + "");
+			/*
+			 * 
+			 * for (int i=1; i<= nbRows; i++) { Date debut = new Date(); while(
+			 * new Date().getTime() - debut.getTime() <2000) {
+			 * 
+			 * } displayContentProvider(); indiceCourant++; }
+			 */
+			input.close();
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -237,7 +258,7 @@ public class DebitCables extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				indiceCourant++;
+
 				// Controle de l'état de la production
 				if (prodAchevee) { // Fin de la prodction
 
@@ -283,7 +304,7 @@ public class DebitCables extends Activity {
 					// On affiche le cable suivant à débiter
 
 					displayContentProvider();
-											
+					indiceCourant++;
 
 				}
 			}
@@ -328,35 +349,84 @@ public class DebitCables extends Activity {
 	 * éléments
 	 */
 	private void displayContentProvider() {
+		InputStream input = null;
+		try {
+			input = new FileInputStream(Environment
+					.getExternalStorageDirectory().getAbsolutePath()
+					+ "/Android/data/com.inodex.inoprod/" + "debitCables.xls");
+			POIFSFileSystem fs = new POIFSFileSystem(input);
+			HSSFWorkbook wb = new HSSFWorkbook(fs);
+			HSSFSheet sheet = wb.getSheetAt(0);
+			// Iteration sur chacune des lignes du fichier
+			Iterator rows = sheet.rowIterator();
+			HSSFRow row = (HSSFRow) rows.next();
+			HashMap<String, Integer> colonnes = new HashMap<String, Integer>();
+
+			if (rowIt.hasNext()) {
+
+				row = (HSSFRow) sheet.getRow(rowIt.next());
+				Log.d("N°ligne", row.getRowNum() + "");
+				Log.d("N°fil", row.getCell(7).toString());
+				element = new HashMap<String, String>();
+				element.put(columnsKitting[0], row.getCell(7).toString());
+
+				element.put(columnsKitting[1], row.getCell(2).toString());
+				element.put(columnsKitting[2], row.getCell(4).toString());
+				element.put(columnsKitting[3], row.getCell(3).toString());
+				element.put(columnsKitting[4], row.getCell(5).toString());
+				element.put(columnsKitting[5], row.getCell(11).toString());
+				element.put(columnsKitting[6], row.getCell(12).toString());
+				liste.add(element);
+				indiceLimite++;
+
+			} else {
+				prodAchevee = true;
+				Toast.makeText(this, "Production achevée", Toast.LENGTH_LONG)
+						.show();
+			}
+			input.close();
+
+		} catch (IOException e) {
+			Log.e("Fichier", "Erreur lecture");
+		}
+
 		// Création du SimpleCursorAdapter affilié au GridView
-		SimpleCursorAdapter sca = new SimpleCursorAdapter(this,
-				R.layout.grid_layout_debit_cable, null, columnsKitting, layouts);
+		SimpleAdapter sca = new SimpleAdapter(this, liste,
+				R.layout.grid_layout_debit_cable, columnsKitting, layouts);
 
 		gridView.setAdapter(sca);
 		// MAJ Table de sequencement
+		dateRealisation = new Date();
 		contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0] + " "
 				+ nomPrenomOperateur[1]);
 		contact.put(Operation.DATE_REALISATION, dateRealisation.toGMTString());
 		heureRealisation.setToNow();
+		
+		dureeMesuree += dateRealisation.getTime() - dateDebut.getTime();
+		contact.put(Operation.DUREE_MESUREE, dureeMesuree / 1000);
 		contact.put(Operation.HEURE_REALISATION, heureRealisation.toString());
 		cr.update(urlSeq, contact, Operation._id + " = ?",
 				new String[] { Integer.toString(opId[indiceCourant]) });
 		contact.clear();
 
 		// Affichage des cables à débiter ou dèja débité
-		clause = new String(Kitting.NUMERO_DEBIT + "='" + numeroDebit
-				+ "' AND " + Kitting._id + "<='" + (opId[indiceCourant]) + "'");
-		cursor = cr.query(urlKitting, columnsKitting, clause, null, null);
-		sca.changeCursor(cursor);
+		/*
+		 * clause = new String(Kitting.NUMERO_DEBIT + "='" + numeroDebit +
+		 * "' AND " + Kitting._id + "<='" + (opId[indiceCourant]) + "'"); cursor
+		 * = cr.query(urlKitting, columnsKitting, clause, null, null);
+		 */
 
 		affichage = false;
 
 		// Vérification de l'état de la production
-		if (cursor.getCount() == nbRows) {
+		if (!(rowIt.hasNext())) {
 			prodAchevee = true;
 			Toast.makeText(this, "Production achevée", Toast.LENGTH_LONG)
 					.show();
 		}
+		
+		dateDebut = new Date();
+		dureeMesuree=0;
 
 	}
 

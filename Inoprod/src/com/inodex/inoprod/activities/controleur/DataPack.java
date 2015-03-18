@@ -51,7 +51,8 @@ public class DataPack extends Activity {
 			Operation.RANG_1_1, Operation.NUMERO_OPERATION,
 			Operation.NOM_OPERATEUR, Operation.DATE_REALISATION,
 			Operation.HEURE_REALISATION, Operation.DESCRIPTION_OPERATION,
-			Operation.DUREE_MESUREE, Operation.RANG_1_1_1 , Operation.SECONDE_DUREE_MESUREE};
+			Operation.DUREE_MESUREE, Operation.RANG_1_1_1,
+			Operation.SECONDE_DUREE_MESUREE };
 	private Uri urlSeq = SequencementProvider.CONTENT_URI;
 
 	private String colInfo[] = new String[] { Raccordement._id,
@@ -119,9 +120,9 @@ public class DataPack extends Activity {
 
 				// Infos par connecteur
 
-				cursor = cr.query(urlSeq, colSeq, Operation.RANG_1_1 + 
-					" LIKE 'Connecteur%' GROUP BY "
-						+ Operation.RANG_1_1, null, null);
+				cursor = cr.query(urlSeq, colSeq, Operation.RANG_1_1
+						+ " LIKE 'Connecteur%' GROUP BY " + Operation.RANG_1_1,
+						null, null);
 				if (cursor.moveToFirst()) {
 					do {
 						indiceColonne = 0;
@@ -135,53 +136,49 @@ public class DataPack extends Activity {
 						cursorA = cr.query(urlSeq, colSeq, Operation.RANG_1_1
 								+ "='" + numeroCo + "'", null, Operation._id);
 						if (cursorA.moveToFirst()) {
-							//En têtes
+							// En têtes
 							indiceColonne = 0;
 							row = sheet.createRow(indiceLigne++);
-							row.createCell(indiceColonne++)
-							.setCellValue("Description opération");
-							row.createCell(indiceColonne++)
-							.setCellValue("Date réalisation");
-							row.createCell(indiceColonne++)
-							.setCellValue("Durée mesurée");
-							row.createCell(indiceColonne++)
-							.setCellValue("Seconde durée mesurée");
-							row.createCell(indiceColonne++)
-							.setCellValue("Nom opérateur");
-							
+							row.createCell(indiceColonne++).setCellValue(
+									"Description opération");
+							row.createCell(indiceColonne++).setCellValue(
+									"Date réalisation");
+
+							row.createCell(indiceColonne++).setCellValue(
+									"Nom opérateur");
+
 							do {
 								indiceColonne = 0;
 								row = sheet.createRow(indiceLigne++);
-								row.createCell(indiceColonne++).setCellValue(
-										cursorA.getString(cursorA
-												.getColumnIndex(Operation.DESCRIPTION_OPERATION)));
-								row.createCell(indiceColonne++).setCellValue(
-										cursorA.getString(cursorA
-												.getColumnIndex(Operation.DATE_REALISATION)));
-								row.createCell(indiceColonne++).setCellValue(
-										cursorA.getString(cursorA
-												.getColumnIndex(Operation.DUREE_MESUREE)));
-								row.createCell(indiceColonne++).setCellValue(
-										cursorA.getString(cursorA
-												.getColumnIndex(Operation.SECONDE_DUREE_MESUREE)));
-								row.createCell(indiceColonne++).setCellValue(
-										cursorA.getString(cursorA
-												.getColumnIndex(Operation.NOM_OPERATEUR)));
-								
-								
-								
-								
+								row.createCell(indiceColonne++)
+										.setCellValue(
+												cursorA.getString(cursorA
+														.getColumnIndex(Operation.DESCRIPTION_OPERATION)));
+								row.createCell(indiceColonne++)
+										.setCellValue(
+												cursorA.getString(cursorA
+														.getColumnIndex(Operation.DATE_REALISATION)));
+
+								row.createCell(indiceColonne++)
+										.setCellValue(
+												cursorA.getString(cursorA
+														.getColumnIndex(Operation.NOM_OPERATEUR)));
+
 							} while (cursorA.moveToNext());
-							
-							
+
 						}
 
 					} while (cursor.moveToNext());
-					
+
 					try {
 						FileOutputStream fileOut;
-						File debit = new File(Environment.getDataDirectory()
-								.getAbsolutePath() + "/data/com.inodex.inoprod/",
+						File debit = new File(Environment
+								.getExternalStorageDirectory()
+								.getAbsolutePath()
+								+ File.separator
+								+ "Android"
+								+ File.separator
+								+ "data" + File.separator + getPackageName(),
 								"dataPack.xls");
 
 						fileOut = new FileOutputStream(debit);
@@ -192,7 +189,6 @@ public class DataPack extends Activity {
 					} catch (Exception e) {
 						Log.e("DataPack", " " + e);
 					}
-
 
 				}
 			}

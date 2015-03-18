@@ -26,11 +26,15 @@ import android.widget.ImageButton;
 import android.widget.SimpleCursorAdapter;
 
 import com.inodex.inoprod.R;
+import com.inodex.inoprod.activities.InfoProduit;
 import com.inodex.inoprod.activities.Inoprod;
+import com.inodex.inoprod.activities.controleur.MainMenuControleur;
 import com.inodex.inoprod.business.KittingProvider;
+import com.inodex.inoprod.business.RaccordementProvider;
 import com.inodex.inoprod.business.SequencementProvider;
 import com.inodex.inoprod.business.Outillage.Outil;
 import com.inodex.inoprod.business.TableKittingCable.Kitting;
+import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
 
 /**
@@ -46,7 +50,7 @@ public class MainMenuMagasinier extends Activity {
 	private ImageButton boutonExit = null;
 
 	/** Bouton de validation */
-	private ImageButton boutonCheck = null;
+	private ImageButton boutonCheck, infoProduit;
 
 	/** Nom de l'opérateur */
 	private String nomPrenomOperateur[] = null;
@@ -54,7 +58,7 @@ public class MainMenuMagasinier extends Activity {
 	/** Colonnes utilisés pour les requêtes */
 	private String columns[] = { Operation._id, Operation.RANG_1_1,
 			Operation.GAMME };
-	
+
 	private int layouts[] = { R.id.ordreOperations, R.id.operationsRealiser };
 
 	/** Tableau des opérations à réaliser */
@@ -65,13 +69,22 @@ public class MainMenuMagasinier extends Activity {
 
 	/** Uri de la table de sequencement */
 	private Uri url = SequencementProvider.CONTENT_URI;
-	
+	private Uri urlRac = RaccordementProvider.CONTENT_URI;
 	/** Curseur et Content Resolver à utiliser lors des requêtes */
 	private Cursor cursor;
 	private ContentResolver cr;
 
 	/** Clause à utiliser lors des requêtes */
 	private String clause;
+
+	private String colInfo[] = new String[] { Raccordement._id,
+			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS,
+			Raccordement.STANDARD, Raccordement.NUMERO_HARNAIS_FAISCEAUX,
+			Raccordement.REFERENCE_FICHIER_SOURCE };
+	private Cursor cursorInfo;
+
+	/** Tableau des infos produit */
+	private String labels[];
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -86,8 +99,6 @@ public class MainMenuMagasinier extends Activity {
 
 		// Affichage de lordre du jour
 		displayContentProvider();
-
-		
 
 		// Retour menu principal
 		boutonExit = (ImageButton) findViewById(R.id.exitButton1);
@@ -142,6 +153,38 @@ public class MainMenuMagasinier extends Activity {
 					startActivity(toNext);
 					finish();
 				}
+			}
+		});
+
+		// Info Produit
+		infoProduit = (ImageButton) findViewById(R.id.infoButton1);
+		infoProduit.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				cursorInfo = cr.query(urlRac, colInfo, null, null, null);
+				Intent toInfo = new Intent(MainMenuMagasinier.this,
+						InfoProduit.class);
+				labels = new String[7];
+
+				if (cursorInfo.moveToFirst()) {
+					labels[0] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.DESIGNATION));
+					labels[1] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_HARNAIS_FAISCEAUX));
+					labels[2] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.STANDARD));
+					labels[3] = "";
+					labels[4] = "";
+					labels[5] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_REVISION_HARNAIS));
+					labels[6] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.REFERENCE_FICHIER_SOURCE));
+					toInfo.putExtra("Labels", labels);
+				}
+
+				startActivity(toInfo);
+
 			}
 		});
 	}

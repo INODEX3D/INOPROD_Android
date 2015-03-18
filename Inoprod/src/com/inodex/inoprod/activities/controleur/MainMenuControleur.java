@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.inodex.inoprod.R;
 import com.inodex.inoprod.R.layout;
+import com.inodex.inoprod.activities.InfoProduit;
 import com.inodex.inoprod.activities.Inoprod;
 import com.inodex.inoprod.activities.cableur.CheminementTa;
 import com.inodex.inoprod.activities.cableur.DenudageSertissageContactTa;
@@ -46,7 +47,7 @@ public class MainMenuControleur extends Activity {
 	private ImageButton boutonExit = null;
 
 	/** Bouton de validation */
-	private ImageButton boutonCheck = null;
+	private ImageButton boutonCheck, infoProduit;
 
 	/** Tableau des opérations à réaliser */
 	private int opId[] = null;
@@ -83,6 +84,15 @@ public class MainMenuControleur extends Activity {
 	private int layouts[] = { R.id.numeroOperation, R.id.operationsRealiser,
 			R.id.referenceOutillage, R.id.numeroSerie };
 
+	private String colInfo[] = new String[] { Raccordement._id,
+			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS,
+			Raccordement.STANDARD, Raccordement.NUMERO_HARNAIS_FAISCEAUX,
+			Raccordement.REFERENCE_FICHIER_SOURCE };
+	private Cursor cursorInfo;
+
+	/** Tableau des infos produit */
+	private String labels[];
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -102,8 +112,8 @@ public class MainMenuControleur extends Activity {
 		cursorB = cr.query(url, columns, Operation.DESCRIPTION_OPERATION
 				+ " LIKE 'Contrôle%' AND " + Operation.NOM_OPERATEUR
 				+ "!='null' ", null, Operation._id);
-		if (cursorB.getCount() == cursorA.getCount() -1) {
-			cursorB =cr.query(url, columns, Operation.DESCRIPTION_OPERATION
+		if (cursorB.getCount() == cursorA.getCount() - 1) {
+			cursorB = cr.query(url, columns, Operation.DESCRIPTION_OPERATION
 					+ " LIKE 'Contrôle final harnais'  ", null, Operation._id);
 			if (cursorB.moveToFirst()) {
 				ContentValues contact = new ContentValues();
@@ -147,6 +157,38 @@ public class MainMenuControleur extends Activity {
 							}
 						});
 				builder.show();
+
+			}
+		});
+
+		// Info Produit
+		infoProduit = (ImageButton) findViewById(R.id.infoButton1);
+		infoProduit.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				cursorInfo = cr.query(urlRac, colInfo, null, null, null);
+				Intent toInfo = new Intent(MainMenuControleur.this,
+						InfoProduit.class);
+				labels = new String[7];
+
+				if (cursorInfo.moveToFirst()) {
+					labels[0] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.DESIGNATION));
+					labels[1] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_HARNAIS_FAISCEAUX));
+					labels[2] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.STANDARD));
+					labels[3] = "";
+					labels[4] = "";
+					labels[5] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.NUMERO_REVISION_HARNAIS));
+					labels[6] = cursorInfo.getString(cursorInfo
+							.getColumnIndex(Raccordement.REFERENCE_FICHIER_SOURCE));
+					toInfo.putExtra("Labels", labels);
+				}
+
+				startActivity(toInfo);
 
 			}
 		});
@@ -202,12 +244,8 @@ public class MainMenuControleur extends Activity {
 				+ Operation.GAMME + " LIKE 'Cont%' AND ("
 				+ Operation.NOM_OPERATEUR + " IS NULL OR "
 				+ Operation.DATE_REALISATION + " LIKE '%"
-				+ (new Date()).toGMTString().substring(0, 10) + "%') AND "
-				+ "(" + Operation.RANG_1_1 + " LIKE '%P06%' OR "
-				+ Operation.RANG_1_1 + " LIKE '%J08%' OR " + Operation.RANG_1_1
-				+ " LIKE '%P14%' OR " + Operation.RANG_1_1
-				+ " LIKE '%P09%'  OR " + Operation.RANG_1_1 + " LIKE '%J12%')");
-		
+				+ (new Date()).toGMTString().substring(0, 10) + "%') ");
+
 		cursor = cr.query(url, columns, clause + " GROUP BY "
 				+ Operation.DESCRIPTION_OPERATION, null, Operation._id + " ASC"
 		/* + " LIMIT 30" */);
@@ -223,10 +261,10 @@ public class MainMenuControleur extends Activity {
 						.getColumnIndex(Operation.DATE_REALISATION)) != null) {
 					element.put(
 							columns[1],
-							"***"
+							""
 									+ cursor.getString(cursor
 											.getColumnIndex(Operation.DESCRIPTION_OPERATION))
-									+ "***");
+									+ "*** Achevée");
 
 				} else {
 					element.put(columns[1], cursor.getString(cursor
@@ -258,12 +296,8 @@ public class MainMenuControleur extends Activity {
 
 		clause = new String(Operation.REALISABLE + "='" + 1 + "'  AND "
 				+ Operation.GAMME + " LIKE 'Cont%' AND "
-				+ Operation.NOM_OPERATEUR + " IS NULL AND " + "("
-				+ Operation.RANG_1_1 + " LIKE '%P06%' OR " + Operation.RANG_1_1
-				+ " LIKE '%J08%' OR " + Operation.RANG_1_1
-				+ " LIKE '%P14%' OR " + Operation.RANG_1_1
-				+ " LIKE '%P09%'  OR " + Operation.RANG_1_1 + " LIKE '%J12%')");
-		
+				+ Operation.NOM_OPERATEUR + " IS NULL ");
+
 		cursor = cr.query(url, columns, clause, null, Operation._id + " ASC");
 
 		// Rempliassage du tableau pour chaque numero de cable

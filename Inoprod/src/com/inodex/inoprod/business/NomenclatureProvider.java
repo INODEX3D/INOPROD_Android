@@ -68,6 +68,7 @@ public class NomenclatureProvider extends ContentProvider {
 					+ Cable.REFERENCE_FICHIER_SOURCE + " STRING, "
 					+ Cable.REFERENCE_IMPOSEE + " BOOLEAN, "
 					+ Cable.REFERENCE_INTERNE + " STRING, "
+					+ Cable.DESIGNATION_ACCESSOIRE + " STRING, "
 					+ Cable.REPERE_ELECTRIQUE + " STRING, " + Cable.STANDARD
 					+ " FLOAT," + Cable.UNITE + " STRING" + ");");
 

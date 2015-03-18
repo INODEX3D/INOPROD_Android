@@ -213,7 +213,7 @@ public class PositionnementTaTab extends Activity {
 					+ "-"
 					+ cursorA.getString(cursorA
 							.getColumnIndex(Raccordement.LOCALISATION1)));
-			numeroCheminement.append(" : "
+			numeroCheminement.append("  "
 					+ cursorA.getString(cursorA
 							.getColumnIndex(Raccordement.NUMERO_CHEMINEMENT)));
 		}
@@ -401,7 +401,7 @@ public class PositionnementTaTab extends Activity {
 				element2.put(colChe1[0], "" + numeroSection);
 
 				do {
-					zonePose += cursorA.getString(cursorA
+					/*zonePose += cursorA.getString(cursorA
 							.getColumnIndex(Cheminement.ZONE_ACTIVITE))
 							+ "-"
 							+ cursorA.getString(cursorA
@@ -410,7 +410,7 @@ public class PositionnementTaTab extends Activity {
 							+ cursorA
 									.getString(cursorA
 											.getColumnIndex(Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT))
-							+ ", ";
+							+ ", "; */
 
 					if (!(cursorA.getString(cursorA
 							.getColumnIndex(Cheminement.TYPE_SUPPORT))

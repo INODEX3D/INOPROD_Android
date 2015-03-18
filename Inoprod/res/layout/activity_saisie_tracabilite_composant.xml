@@ -21,7 +21,7 @@
             android:layout_height="50dip"
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
-            android:layout_margin="@dimen/b12"
+            android:layout_margin="@dimen/forT"
             android:src="@drawable/annuler6" />
         
         <ImageButton
@@ -30,7 +30,7 @@
             android:layout_height="50dip"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
-            android:layout_margin="@dimen/b12"
+            android:layout_margin="@dimen/forT"
             android:src="@drawable/aide3" />
 
         <TextView
@@ -43,7 +43,7 @@
             android:layout_marginLeft="85dp"
             android:layout_marginRight="85dp"
             android:text="@string/instructionSaisieTracabilite"
-            android:textSize="@dimen/b12" />
+            android:textSize="@dimen/forT" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -57,14 +57,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#0000ff"
-                android:textSize="@dimen/b12" />
+                android:textSize="@dimen/forT" />
 
             <TextView
                 android:id="@+id/textView4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#0000ff"
-                android:textSize="@dimen/b12" />
+                android:textSize="@dimen/forT" />
 
         </LinearLayout>
 
@@ -74,7 +74,7 @@
             android:layout_height="50dip"
             android:layout_above="@+id/exitButton1"
             android:layout_alignParentRight="true"
-            android:layout_margin="@dimen/b12"
+            android:layout_margin="@dimen/forT"
             android:src="@drawable/valider9" />
 
         <EditText

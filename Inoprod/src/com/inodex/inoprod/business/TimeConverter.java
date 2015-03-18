@@ -7,7 +7,7 @@ public class TimeConverter {
 			long t = 0;
 			int taille = time.length();
 			//secondes
-			t+= Integer.parseInt(time.substring(taille-3, taille-1 ));
+			t+= Integer.parseInt(time.substring(6, 8));
 			//minutes
 			t+= 60*Integer.parseInt(time.substring(3, 5));
 			//heures

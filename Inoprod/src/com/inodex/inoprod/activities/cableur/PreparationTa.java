@@ -103,10 +103,10 @@ public class PreparationTa extends Activity {
 			Raccordement.NUMERO_COMPOSANT_ABOUTISSANT,
 			Raccordement.NUMERO_COMPOSANT_TENANT,
 			Raccordement.NUMERO_BORNE_ABOUTISSANT,
-			Raccordement.NUMERO_FIL_CABLE };
+			Raccordement.NUMERO_FIL_CABLE , Raccordement.TYPE_ELEMENT_RACCORDE};
 	private String colNom[] = new String[] { Cable.DESIGNATION_COMPOSANT,
 			Cable.NUMERO_COMPOSANT, Cable.REFERENCE_INTERNE,
-			Cable.REFERENCE_FABRICANT2, Cable._id };
+			Cable.REFERENCE_FABRICANT2, Cable._id , Cable.FAMILLE_PRODUIT};
 
 	private String colInfo[] = new String[] { Raccordement._id,
 			Raccordement.DESIGNATION, Raccordement.NUMERO_REVISION_HARNAIS,
@@ -212,8 +212,10 @@ public class PreparationTa extends Activity {
 		timer = (TextView) findViewById(R.id.timeDisp);
 		dureeTotal = 0;
 		cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
-				+ " LIKE '%hemine%' ", null, Duree._id);
+				+ " LIKE '%btura%' ", null, Duree._id);
 		if (cursorTime.moveToFirst()) {
+			Log.d("Duree", cursorTime.getString(cursorTime
+					.getColumnIndex(Duree.DUREE_THEORIQUE)));
 			dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
 					.getColumnIndex(Duree.DUREE_THEORIQUE)));
 
@@ -296,17 +298,26 @@ public class PreparationTa extends Activity {
 						HashMap<String, String> element;
 
 						element = new HashMap<String, String>();
+						String clauseA;
+						if ((cursorA.getString(cursorA.getColumnIndex(Raccordement.TYPE_ELEMENT_RACCORDE))).equals("OBT")) {
+							clauseA = Cable.NUMERO_COMPOSANT
+									+ " LIKE '%" + numeroCo + "%' AND "
+									+ Cable.FAMILLE_PRODUIT
+									+ " LIKE '%bturateu%' ";
+						} else {
+							clauseA = Cable.NUMERO_COMPOSANT
+									+ " LIKE '%" + numeroCo + "%' AND "
+									+ Cable.FAMILLE_PRODUIT
+									+ " LIKE '%Faux %' ";
+						}
 						Cursor cursorB = cr
-								.query(urlNom, colNom, Cable.NUMERO_COMPOSANT
-										+ " LIKE '%" + numeroCo + "%' AND "
-										+ Cable.DESIGNATION_COMPOSANT
-										+ " LIKE '%bturateu%'", null, Cable._id);
+								.query(urlNom, colNom,clauseA , null, Cable._id);
 						if (cursorB.moveToFirst()) {
 
 							element.put(colRac[0], cursorB.getString(cursorB
 									.getColumnIndex(Cable.DESIGNATION_COMPOSANT)));
 							element.put(colRac[1], cursorB.getString(cursorB
-									.getColumnIndex(Cable.REFERENCE_FABRICANT1)));
+									.getColumnIndex(Cable.REFERENCE_FABRICANT2)));
 							element.put(colRac[2], cursorB.getString(cursorB
 									.getColumnIndex(Cable.REFERENCE_INTERNE)));
 						}
