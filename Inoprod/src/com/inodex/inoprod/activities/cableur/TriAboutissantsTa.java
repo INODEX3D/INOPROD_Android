@@ -17,8 +17,10 @@ import com.inodex.inoprod.business.TableRaccordement.Raccordement;
 import com.inodex.inoprod.business.TableSequencement.Operation;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -101,7 +103,7 @@ public class TriAboutissantsTa extends Activity {
 			Raccordement.STANDARD, Raccordement.NUMERO_HARNAIS_FAISCEAUX,
 			Raccordement.REFERENCE_FICHIER_SOURCE };
 	private Cursor cursorInfo;
-	
+
 	private TextView timer;
 	private Cursor cursorTime;
 	private Uri urlTim = DureesProvider.CONTENT_URI;
@@ -388,6 +390,112 @@ public class TriAboutissantsTa extends Activity {
 
 		});
 
+		// Grande pause
+		grandePause.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						TriAboutissantsTa.this);
+				builder.setMessage("Êtes-vous sur de vouloir quitter l'application ?");
+				builder.setCancelable(false);
+				builder.setPositiveButton("Oui",
+						new DialogInterface.OnClickListener() {
+
+							public void onClick(DialogInterface dialog,
+									int which) {
+								/*
+								 * Intent toMain = new Intent(
+								 * CheminementTa.this, MainActivity.class);
+								 * startActivity(toMain);
+								 */
+								// MAJ Table de sequencement
+								dateRealisation = new Date();
+								contact.put(Operation.NOM_OPERATEUR,
+										nomPrenomOperateur[0] + " "
+												+ nomPrenomOperateur[1]);
+								contact.put(Operation.DATE_REALISATION,
+										dateRealisation.toGMTString());
+								heureRealisation.setToNow();
+								contact.put(Operation.HEURE_REALISATION,
+										heureRealisation.toString());
+								dureeMesuree += dateRealisation.getTime()
+										- dateDebut.getTime();
+								contact.put(Operation.DUREE_MESUREE,
+										dureeMesuree / 1000);
+								cr.update(urlSeq, contact, Operation._id
+										+ " = ?", new String[] { Integer
+										.toString(opId[indiceCourant]) });
+								contact.clear();
+
+								// Signalement du point de controle
+								clause = Operation.RANG_1_1 + " LIKE '%"
+										+ numeroCo + "%' AND ( "
+										+ Operation.DESCRIPTION_OPERATION
+										+ " LIKE 'Contrôle rétention%' OR "
+										+ Operation.DESCRIPTION_OPERATION
+										+ " LIKE 'Contrôle final%')";
+								cursor = cr.query(urlSeq, columnsSeq, clause,
+										null, Operation._id);
+								if (cursor.moveToFirst()) {
+									do {
+										contact.put(Operation.REALISABLE, 1);
+										int id = cursor.getInt(cursor
+												.getColumnIndex(Operation._id));
+										cr.update(
+												urlSeq,
+												contact,
+												Operation._id + "='" + id + "'",
+												null);
+										contact.clear();
+									} while (cursor.moveToNext());
+								}
+								finish();
+
+							}
+
+						});
+
+				builder.setNegativeButton("Non",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+
+								dialog.cancel();
+
+							}
+						});
+				builder.show();
+
+			}
+		});
+
+		// Petite Pause
+		petitePause.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				dureeMesuree += new Date().getTime() - dateDebut.getTime();
+				AlertDialog.Builder builder = new AlertDialog.Builder(
+						TriAboutissantsTa.this);
+				builder.setMessage("L'opération est en pause. Cliquez sur le bouton pour reprendre.");
+				builder.setCancelable(false);
+
+				builder.setNegativeButton("Retour",
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+
+								dateDebut = new Date();
+								dialog.cancel();
+
+							}
+						});
+				builder.show();
+
+			}
+		});
+
 		// Affichage du contenu
 		displayContentProvider();
 
@@ -404,20 +512,20 @@ public class TriAboutissantsTa extends Activity {
 				R.layout.grid_layout_tri_aboutissants_ta, colRac, layouts);
 
 		gridView.setAdapter(sca);
-		
-		// Affichage du temps nécessaire
-				timer = (TextView) findViewById(R.id.timeDisp);
-				dureeTotal = 0;
-				cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
-						+ " LIKE '%hemine%' ", null, Duree._id);
-				if (cursorTime.moveToFirst()) {
-					dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
-							.getColumnIndex(Duree.DUREE_THEORIQUE)));
 
-				}
-				dureeTotal = dureeTotal * liste.size();
-				timer.setTextColor(Color.GREEN);
-				timer.setText(TimeConverter.display(dureeTotal));
+		// Affichage du temps nécessaire
+		timer = (TextView) findViewById(R.id.timeDisp);
+		dureeTotal = 0;
+		cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
+				+ " LIKE '%hemine%' ", null, Duree._id);
+		if (cursorTime.moveToFirst()) {
+			dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
+					.getColumnIndex(Duree.DUREE_THEORIQUE)));
+
+		}
+		dureeTotal = dureeTotal * liste.size();
+		timer.setTextColor(Color.GREEN);
+		timer.setText(TimeConverter.display(dureeTotal));
 
 	}
 

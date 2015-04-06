@@ -44,7 +44,7 @@
         android:layout_height="50dip"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:layout_margin="@dimen/forT"
+        android:layout_margin="@dimen/b12"
         android:src="@drawable/chrono2" />
 
     <TextView
@@ -55,14 +55,14 @@
         android:layout_centerHorizontal="true"
         android:layout_margin="7dp"
         android:text="@string/instructionRepriseBlindage"
-        android:textSize="@dimen/forT" />
+        android:textSize="@dimen/b12" />
 
     <LinearLayout
         android:id="@+id/ll1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/textView1"
-        android:layout_margin="@dimen/forT"
+        android:layout_margin="@dimen/b12"
         android:orientation="vertical" >
 
         <LinearLayout
@@ -74,10 +74,10 @@
                 android:id="@+id/textView3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="105dp"
+                android:layout_marginRight="@dimen/c6"
                 android:text="@string/numeroConnecteur"
                 android:textColor="#0000ff"
-                android:textSize="@dimen/forT" />
+                android:textSize="@dimen/b9" />
 
             <TextView
                 android:id="@+id/textView4"
@@ -86,7 +86,7 @@
                 android:layout_marginLeft="15dip"
                 android:text="@string/numeroPositionChariot"
                 android:textColor="#0000ff"
-                android:textSize="@dimen/forT" />
+                android:textSize="@dimen/b9" />
         </LinearLayout>
 
         <LinearLayout
@@ -101,7 +101,7 @@
                 android:layout_marginRight="30dip"
                 android:text="@string/repereElectrique"
                 android:textColor="#0000ff"
-                android:textSize="@dimen/forT" />
+                android:textSize="@dimen/b9" />
         </LinearLayout>
     </LinearLayout>
 
@@ -133,113 +133,113 @@
 
         <TextView
             android:id="@+id/textView9"
-            android:layout_width="75dp"
+            android:layout_width="@dimen/c1"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/statutLiaison"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/forTMin" />
+            android:textSize="@dimen/b5" />
 
         <TextView
             android:id="@+id/textView10"
-            android:layout_width="75dp"
+            android:layout_width="@dimen/c1"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/numeroRevisionLiaison"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/forTMin" />
+            android:textSize="@dimen/b5" />
 
         <TextView
             android:id="@+id/textView11"
-            android:layout_width="75dp"
+            android:layout_width="@dimen/c1"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/numeroFilCable"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/forTMin" />
+            android:textSize="@dimen/b5" />
 
         <TextView
             android:id="@+id/textView12"
-            android:layout_width="75dp"
+            android:layout_width="@dimen/c1"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/typeCable"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/forTMin" />
+            android:textSize="@dimen/b5" />
 
         <TextView
             android:id="@+id/temps"
-            android:layout_width="75dp"
+            android:layout_width="@dimen/c1"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/numeroReprise"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/forTMin" />
+            android:textSize="@dimen/b5" />
 
         <TextView
             android:id="@+id/textView14"
-            android:layout_width="75dp"
+            android:layout_width="@dimen/c1"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/typeFilReprise"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/forTMin" />
+            android:textSize="@dimen/b5" />
 
         <TextView
             android:id="@+id/textView16"
-            android:layout_width="75dp"
+            android:layout_width="@dimen/c1"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/referenceFabricantManchon"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/forTMin" />
+            android:textSize="@dimen/b5" />
 
         <TextView
             android:id="@+id/textView17"
-            android:layout_width="75dp"
+            android:layout_width="@dimen/c1"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/referenceInterneManchon"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/forTMin" />
+            android:textSize="@dimen/b5" />
 
         <TextView
             android:id="@+id/textView18"
-            android:layout_width="75dp"
+            android:layout_width="@dimen/c1"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/referenceOutillage"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/forTMin" />
+            android:textSize="@dimen/b5" />
 
         <TextView
             android:id="@+id/textView19"
-            android:layout_width="75dp"
+            android:layout_width="@dimen/c1"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/numeroSerieOutillage"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/forTMin" />
+            android:textSize="@dimen/b5" />
 
         <TextView
             android:id="@+id/textView20"
-            android:layout_width="75dp"
+            android:layout_width="@dimen/c1"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/reglageTemperature"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/forTMin" />
+            android:textSize="@dimen/b5" />
     </LinearLayout>
 
     <LinearLayout
@@ -254,24 +254,24 @@
             android:id="@+id/textView7"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="105dp"
+            android:layout_marginRight="@dimen/c6"
             android:text="@string/numeroReprise"
             android:textColor="#0000ff"
-            android:textSize="@dimen/forT" />
+            android:textSize="@dimen/b9" />
 
         <TextView
             android:id="@+id/textView6"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="105dp"
+            android:layout_marginRight="@dimen/c6"
             android:text="@string/sensReprise"
             android:textColor="#0000ff"
-            android:textSize="@dimen/forT" />
+            android:textSize="@dimen/b9" />
     </LinearLayout>
 
     <GridView
         android:id="@+id/gridview"
-        android:layout_width="1150dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/imageButton1"
         android:layout_alignRight="@+id/imageView1"

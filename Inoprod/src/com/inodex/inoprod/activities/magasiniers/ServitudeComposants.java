@@ -224,9 +224,13 @@ public class ServitudeComposants extends Activity {
 			} catch (NullPointerException e) {
 			}
 			try {
-				referenceImposee.append(": "
-						+ Integer.toString(cursor.getInt(cursor
-								.getColumnIndex(BOM.REFERENCE_IMPOSEE))));
+				int ref = cursor.getInt(cursor
+						.getColumnIndex(BOM.REFERENCE_IMPOSEE));
+				if (ref == 0) {
+					referenceImposee.append(": Non ");
+				} else {
+					referenceImposee.append(": Oui ");
+				}
 			} catch (NullPointerException e) {
 			}
 
@@ -256,7 +260,8 @@ public class ServitudeComposants extends Activity {
 			while (rows.hasNext()) {
 				row = (HSSFRow) rows.next();
 				if (Integer.parseInt(row
-						.getCell(colonnes.get(BOM.NUMERO_DEBIT)).toString()) == numeroDebit) {
+						.getCell(colonnes.get(BOM.NUMERO_DEBIT)).toString()) == numeroDebit
+						) {
 					rowId.add(row.getRowNum());
 				}
 			}
@@ -371,40 +376,36 @@ public class ServitudeComposants extends Activity {
 
 					try {
 						int test = opId[indiceCourant]; // Si OK il reste encore
-						// des cables à débiter
-						Intent toNext = new Intent(ServitudeComposants.this,
-								SaisieTracabiliteComposant.class);
-						toNext.putExtra("Noms", nomPrenomOperateur);
-						toNext.putExtra("opId", opId);
-						toNext.putExtra("Indice", indiceCourant);
-						startActivity(toNext);
-						finish();
-
-					} catch (ArrayIndexOutOfBoundsException e) {
-						// Il ne reste plus de cables à débiter
-						// On passe donc au regroupement
-						clause = new String(Operation.RANG_1_1
-								+ " LIKE '%Constitution%' ");
+						clause = Operation._id + "='" + test + "'";
 						cursor = cr.query(urlSeq, columnsSeq, clause, null,
-								Operation._id + " ASC");
-						// Rempliassage du tableau pour chaque numero de débit
+								Operation._id);
 						if (cursor.moveToFirst()) {
-							opId = new int[cursor.getCount()];
-							do {
-								opId[cursor.getPosition()] = cursor
-										.getInt(cursor
-												.getColumnIndex(Operation._id));
+							String firstOperation = cursor.getString(cursor
+									.getColumnIndex(Operation.DESCRIPTION_OPERATION));
+							Intent toNext = null;
+							if (firstOperation.startsWith("Débit du fil")) {
+								toNext = new Intent(ServitudeComposants.this,
+										ImportCoupeCables.class);
+							} else if (firstOperation
+									.startsWith("Regroupement des")) {
+								toNext = new Intent(ServitudeComposants.this,
+										RegroupementCables.class);
+							} else if (firstOperation.startsWith("Débit pour")) {
+								toNext = new Intent(ServitudeComposants.this,
+										SaisieTracabiliteComposant.class);
+							} else {
+								toNext = new Intent(ServitudeComposants.this,
+										KittingCablesComposants.class);
+							}
 
-							} while (cursor.moveToNext());
+							toNext.putExtra("Noms", nomPrenomOperateur);
+							toNext.putExtra("opId", opId);
+							toNext.putExtra("Indice", indiceCourant);
+							startActivity(toNext);
+							finish();
 						}
 
-						Intent toNext = new Intent(ServitudeComposants.this,
-								KittingCablesComposants.class);
-						toNext.putExtra("Noms", nomPrenomOperateur);
-						toNext.putExtra("opId", opId);
-						toNext.putExtra("Indice", 0);
-						startActivity(toNext);
-						finish();
+					} catch (Exception e) {
 
 					}
 				} else {// Production toujours en cours
@@ -582,15 +583,15 @@ public class ServitudeComposants extends Activity {
 		contact.put(Operation.DATE_REALISATION, dateRealisation.toGMTString());
 		heureRealisation.setToNow();
 		contact.put(Operation.HEURE_REALISATION, heureRealisation.toString());
-		
+
 		dureeMesuree += dateRealisation.getTime() - dateDebut.getTime();
 		contact.put(Operation.DUREE_MESUREE, dureeMesuree / 1000);
 		cr.update(urlSeq, contact, Operation._id + " = ?",
-				new String[] { Integer.toString(idFirst++) });
+				new String[] { Integer.toString(opId[indiceCourant]) });
 		contact.clear();
-		
+
 		dateDebut = new Date();
-		dureeMesuree=0;
+		dureeMesuree = 0;
 
 	}
 

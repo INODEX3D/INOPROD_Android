@@ -12,7 +12,7 @@
         android:layout_height="40dip"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_margin="@dimen/forT"
+        android:layout_margin="@dimen/b12"
         android:src="@drawable/exit" />
 
     <LinearLayout
@@ -34,7 +34,7 @@
                     android:id="@+id/imageView1"
                     android:layout_width="69dp"
                     android:layout_height="46dp"
-                    android:layout_margin="@dimen/forTMin"
+                    android:layout_margin="@dimen/b1"
                     android:src="@drawable/pause3" />
 
                 <LinearLayout
@@ -69,7 +69,7 @@
                     android:id="@+id/imageView2"
                     android:layout_width="69dp"
                     android:layout_height="46dp"
-                    android:layout_margin="@dimen/forTMin"
+                    android:layout_margin="@dimen/b1"
                     android:src="@drawable/pause2" />
 
                 <TextView
@@ -89,7 +89,7 @@
                     android:id="@+id/imageView3"
                     android:layout_width="69dp"
                     android:layout_height="46dp"
-                    android:layout_margin="@dimen/forTMin"
+                    android:layout_margin="@dimen/b1"
                     android:src="@drawable/aide5" />
 
                 <TextView
@@ -109,7 +109,7 @@
                     android:id="@+id/imageView4"
                     android:layout_width="69dp"
                     android:layout_height="46dp"
-                    android:layout_margin="@dimen/forTMin"
+                    android:layout_margin="@dimen/b1"
                     android:src="@drawable/valider8" />
 
                 <TextView
@@ -130,7 +130,7 @@
                     android:id="@+id/imageView5"
                     android:layout_width="69dp"
                     android:layout_height="46dp"
-                    android:layout_margin="@dimen/forTMin"
+                    android:layout_margin="@dimen/b1"
                     android:src="@drawable/aide2" />
 
                 <TextView
@@ -150,7 +150,7 @@
                     android:id="@+id/imageView10"
                     android:layout_width="69dp"
                     android:layout_height="46dp"
-                    android:layout_margin="@dimen/forTMin"
+                    android:layout_margin="@dimen/b1"
                     android:src="@drawable/back" />
 
                 <LinearLayout
@@ -192,7 +192,7 @@
                     android:id="@+id/imageView20"
                     android:layout_width="69dp"
                     android:layout_height="46dp"
-                    android:layout_margin="@dimen/forTMin"
+                    android:layout_margin="@dimen/b1"
                     android:src="@drawable/enregistrer" />
 
                 <TextView
@@ -214,7 +214,7 @@
                     android:id="@+id/imageView21"
                     android:layout_width="69dp"
                     android:layout_height="46dp"
-                    android:layout_margin="@dimen/forTMin"
+                    android:layout_margin="@dimen/b1"
                     android:src="@drawable/micro" />
 
                 <TextView
@@ -235,7 +235,7 @@
                     android:id="@+id/imageView22"
                     android:layout_width="69dp"
                     android:layout_height="46dp"
-                    android:layout_margin="@dimen/forTMin"
+                    android:layout_margin="@dimen/b1"
                     android:src="@drawable/rechercher" />
 
                 <TextView
@@ -256,7 +256,7 @@
                     android:id="@+id/imageView23"
                     android:layout_width="69dp"
                     android:layout_height="46dp"
-                    android:layout_margin="@dimen/forTMin"
+                    android:layout_margin="@dimen/b1"
                     android:src="@drawable/valider3" />
 
                 <TextView
@@ -277,7 +277,7 @@
                     android:id="@+id/imageView24"
                     android:layout_width="69dp"
                     android:layout_height="46dp"
-                    android:layout_margin="@dimen/forTMin"
+                    android:layout_margin="@dimen/b1"
                     android:src="@drawable/annuler6" />
 
                 <TextView

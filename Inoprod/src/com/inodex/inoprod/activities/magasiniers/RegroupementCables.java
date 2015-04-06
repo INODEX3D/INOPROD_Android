@@ -179,11 +179,12 @@ public class RegroupementCables extends Activity {
 		if (cursorA.moveToFirst()) {
 			numeroCh = cursorA.getInt(cursorA
 					.getColumnIndex(Cheminement.NUMERO_CHEMINEMNT));
-			cursorB = cr.query(urlRac, colRac,
-					Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + "='"
-							+ numeroCom + "' OR "
-							+ Raccordement.NUMERO_COMPOSANT_TENANT + "='"
-							+ numeroCom + "'", null, null);
+			cursorB = cr.query(urlRac, colRac, "("
+					+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + "='"
+					+ numeroCom + "' OR "
+					+ Raccordement.NUMERO_COMPOSANT_TENANT + "='" + numeroCom
+					+ "') AND " + Raccordement.NUMERO_POSITION_CHARIOT
+					+ "!='null' ", null, Raccordement._id);
 			if (cursorB.moveToFirst()) {
 				try {
 					numeroChariot
@@ -226,7 +227,7 @@ public class RegroupementCables extends Activity {
 			} catch (NullPointerException e) {
 			}
 			try {
-				numeroCheminement.append(" " + Integer.toString(numeroCh));
+			//	numeroCheminement.append(" " + Integer.toString(numeroCh));
 			} catch (NullPointerException e) {
 			}
 		} else {
@@ -276,45 +277,37 @@ public class RegroupementCables extends Activity {
 
 				indiceCourant++;
 				try {
-					int test = opId[indiceCourant];// Si OK il reste encore
-					// des cables à regrouper
-					Intent toNext = new Intent(RegroupementCables.this,
-							RegroupementCables.class);
+					int test = opId[indiceCourant]; // Si OK il reste encore
+					clause = Operation._id + "='" + test + "'";
+					cursor = cr.query(urlSeq, columnsSeq, clause, null,
+							Operation._id);
+					if (cursor.moveToFirst()) {
+						String firstOperation = cursor.getString(cursor
+								.getColumnIndex(Operation.DESCRIPTION_OPERATION));
+						Intent toNext = null;
+						if (firstOperation.startsWith("Débit du fil")) {
+							toNext = new Intent(RegroupementCables.this,
+									ImportCoupeCables.class);
+							} else if (firstOperation.startsWith("Regroupement des")) {
+								toNext = new Intent(RegroupementCables.this,
+										RegroupementCables.class);
+							} else if (firstOperation.startsWith("Débit pour")) {
+								 toNext = new Intent(RegroupementCables.this,
+										SaisieTracabiliteComposant.class);
+							} else {
+								toNext = new Intent(RegroupementCables.this,
+										KittingCablesComposants.class);
+							}
+				
 					toNext.putExtra("Noms", nomPrenomOperateur);
 					toNext.putExtra("opId", opId);
 					toNext.putExtra("Indice", indiceCourant);
 					startActivity(toNext);
 					finish();
-
-				} catch (ArrayIndexOutOfBoundsException e) {
-					// Il ne reste plus de cables à regrouper
-					// On passe donc au kitting têtes
-					String s = "Débit";
-					clause = new String(Operation.RANG_1 + "='"
-							+ "Kitting têtes" + "' AND " + Operation.RANG_1_1
-							+ " LIKE '%Débit%' ");
-					cursor = cr.query(urlSeq, columnsSeq, clause, null,
-							Operation._id + " ASC");
-					// Rempliassage du tableau pour chaque rang
-					if (cursor.moveToFirst()) {
-						opId = new int[cursor.getCount()];
-						do {
-							opId[cursor.getPosition()] = cursor.getInt(cursor
-									.getColumnIndex(Operation._id));
-
-						} while (cursor.moveToNext());
-					} else {
-						Log.e("Regroupement", "Opération non trouvée");
 					}
 
-					Intent toNext = new Intent(RegroupementCables.this,
-							SaisieTracabiliteComposant.class);
-					toNext.putExtra("Noms", nomPrenomOperateur);
-					toNext.putExtra("opId", opId);
-					toNext.putExtra("Indice", indiceCourant);
-					startActivity(toNext);
-					finish();
-
+				} catch (Exception e ) {
+					
 				}
 			}
 

@@ -2,16 +2,27 @@
 <resources>
 
     <dimen name="basicima">20dip</dimen>
-    <dimen name="b1">7dip</dimen>
+    <dimen name="b1">14dip</dimen>
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
-    <dimen name="b12">12dip</dimen>
+    <dimen name="b12">24dip</dimen>
     <dimen name="b30">30dip</dimen>
-    <dimen name="b9">9dip</dimen>
-    <dimen name="b5">5dip</dimen>
-    <dimen name="b7">7dp</dimen>
+    <dimen name="b9">18dip</dimen>
+    <dimen name="b5">10dip</dimen>
+    <dimen name="b7">14dp</dimen>
     <dimen name="forT">18dp</dimen>
     <dimen name="forTPlus">28dp</dimen>
     <dimen name="forTMin">15dp</dimen>
+    <dimen name="c1">75dp</dimen>
+    <dimen name="c2">80dp</dimen>
+    <dimen name="c3">85dp</dimen>
+    <dimen name="c4">90dp</dimen>
+    <dimen name="c5">100dp</dimen>
+    <dimen name="c6">105dp</dimen>
+    <dimen name="c7">120dp</dimen>
+    <dimen name="c8">150dp</dimen>
+    <dimen name="c9">200dp</dimen>
+    <dimen name="c10">250dp</dimen>
+    
 
 </resources>

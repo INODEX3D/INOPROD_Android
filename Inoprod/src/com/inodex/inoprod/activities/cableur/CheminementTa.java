@@ -85,7 +85,7 @@ public class CheminementTa extends Activity {
 	private ContentValues contact;
 
 	private String clause, numeroOperation, numeroCo, clauseTotal,
-			oldClauseTotal, numeroCable, description, ordre;
+			oldClauseTotal, numeroCable, description, ordre, rep;
 	private boolean prodAchevee, teteB;
 
 	/** Colonnes utilisés pour les requêtes */
@@ -325,7 +325,7 @@ public class CheminementTa extends Activity {
 
 				// Vérification de l'état de la production
 				if (prodAchevee) {
-					//indiceCourant++;
+					indiceCourant+= nbRows;
 
 					/*
 					 * clause = Operation.RANG_1_1 + " LIKE '%" + numeroCo +
@@ -550,7 +550,7 @@ public class CheminementTa extends Activity {
 				if (indiceLimite > 0) {
 					indiceLimite--;
 					Log.e("Indice", "" + indiceLimite);
-					indiceCourant--;
+					//indiceCourant--;
 					Log.e("Indice", "" + indiceLimite);
 				}
 
@@ -567,7 +567,7 @@ public class CheminementTa extends Activity {
 				dateDebut = new Date();
 
 				// Vérification de l'état de la production
-				prodAchevee = (indiceLimite >= nbRows);
+				prodAchevee = false;
 				displayContentProvider();
 			}
 		});
@@ -791,7 +791,7 @@ public class CheminementTa extends Activity {
 
 						indiceLimite++;
 						displayContentProvider();
-						indiceCourant++;
+						//indiceCourant++;
 					}
 				} else {
 					// Le cable n'est pas utilisé pour
@@ -861,12 +861,12 @@ public class CheminementTa extends Activity {
 													+ "='"
 													+ numeroCable
 													+ "' AND "
-													+ Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT
+													+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
 													+ "!='null'", null,
 											Raccordement._id);
 							if (cursorB.moveToFirst()) {
-								String rep = cursorB.getString(cursorB
-										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
+								rep = cursorB.getString(cursorB
+										.getColumnIndex(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT));
 								element.put(colRac[3], rep);
 
 								// Signalement du point de controle
@@ -904,7 +904,7 @@ public class CheminementTa extends Activity {
 														+ "='"
 														+ numeroCable
 														+ "' AND "
-														+ Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT
+														+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
 														+ "='"
 														+ rep
 														+ "' GROUP BY "
@@ -946,7 +946,7 @@ public class CheminementTa extends Activity {
 													" ("
 															+ clauseTotal
 															+ ") AND "
-															+ Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT
+															+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
 															+ "='"
 															+ rep
 															+ "' GROUP BY "
@@ -1023,13 +1023,25 @@ public class CheminementTa extends Activity {
 
 								indiceLimite++;
 								displayContentProvider();
-								indiceCourant++;
+								//indiceCourant++;
 
 								// Ajout des autres cables à la liste des
 								// éléments non affichés
-								if (cursorC.moveToFirst()) {
+								cursorA = cr
+										.query(urlRac,
+												colRac,
+												" ("
+														+ clauseTotal
+														+ ") AND "
+														+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+														+ "='"
+														+ rep
+														+ "' GROUP BY "
+														+ Raccordement.NUMERO_FIL_CABLE,
+												null, Raccordement._id);
+								if (cursorA.moveToFirst()) {
 									do {
-										numeroCable = cursorC.getString(cursorC
+										numeroCable = cursorA.getString(cursorA
 												.getColumnIndex(Raccordement.NUMERO_FIL_CABLE));
 
 										element = new HashMap<String, String>();
@@ -1107,7 +1119,7 @@ public class CheminementTa extends Activity {
 																	+ "='"
 																	+ numeroCable
 																	+ "' AND "
-																	+ Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT
+																	+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
 																	+ "='"
 																	+ rep
 																	+ "' GROUP BY "
@@ -1159,7 +1171,7 @@ public class CheminementTa extends Activity {
 																		+ "='"
 																		+ numeroCo
 																		+ "' AND "
-																		+ Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT
+																		+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
 																		+ "='"
 																		+ rep
 																		+ "' GROUP BY "
@@ -1186,10 +1198,10 @@ public class CheminementTa extends Activity {
 
 											indiceLimite++;
 
-											indiceCourant++;
+											//indiceCourant++;
 										}
 
-									} while (cursorC.moveToNext());
+									} while (cursorA.moveToNext());
 								}
 
 							}

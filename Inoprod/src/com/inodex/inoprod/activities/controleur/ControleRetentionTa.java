@@ -29,6 +29,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -168,26 +169,31 @@ public class ControleRetentionTa extends Activity {
 					.getColumnIndex(Operation.RANG_1_1))).substring(11, 14);
 			numeroConnecteur.append(" : " + numeroCo);
 		}
+		String tb;
 
 		if (description.contains("tête A")) {
 			clause = new String(Raccordement.NUMERO_COMPOSANT_TENANT + "='"
 					+ numeroCo + "' AND " + Raccordement.REFERENCE_FABRICANT2
 					+ "!='null' AND " + Raccordement.REPRISE_BLINDAGE
-					+ " IS NULL GROUP BY " + Raccordement.NUMERO_BORNE_TENANT);
+					+ " IS NULL  AND " + Raccordement.FIL_SENSIBLE
+					+ "='1' GROUP BY " + Raccordement.NUMERO_BORNE_TENANT);
 			titre.setText(R.string.controleRetentionTa);
-
+tb = Raccordement.REPERE_ELECTRIQUE_TENANT;
 		} else {
 			clause = new String(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
 					+ "='" + numeroCo + "' AND "
 					+ Raccordement.REFERENCE_FABRICANT2 + "!='null' AND "
-					+ Raccordement.REPRISE_BLINDAGE + " IS NULL GROUP BY "
+					+ Raccordement.REPRISE_BLINDAGE + " IS NULL  AND "
+					+ Raccordement.FIL_SENSIBLE + "='1' GROUP BY "
 					+ Raccordement.NUMERO_BORNE_ABOUTISSANT);
 			titre.setText(R.string.controleRetentionTb);
+			tb = Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT;
 
 		}
 		cursorA = cr.query(urlRac, colRac, clause, null, Raccordement._id
 				+ " ASC");
 		nbRows = cursorA.getCount();
+		Log.d("Nombre lignes",  nbRows + "");
 		if (cursorA.moveToFirst()) {
 
 			positionChariot
@@ -197,7 +203,7 @@ public class ControleRetentionTa extends Activity {
 			repereElectrique
 					.append(" : "
 							+ cursorA.getString(cursorA
-									.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
+									.getColumnIndex(tb)));
 
 		}
 
@@ -393,6 +399,24 @@ public class ControleRetentionTa extends Activity {
 								 * CheminementTa.this, MainActivity.class);
 								 * startActivity(toMain);
 								 */
+
+								dateRealisation = new Date();
+								contact.put(Operation.NOM_OPERATEUR,
+										nomPrenomOperateur[0] + " "
+												+ nomPrenomOperateur[1]);
+								contact.put(Operation.DATE_REALISATION,
+										dateRealisation.toGMTString());
+								heureRealisation.setToNow();
+								contact.put(Operation.HEURE_REALISATION,
+										heureRealisation.toString());
+								dureeMesuree += dateRealisation.getTime()
+										- dateDebut.getTime();
+								contact.put(Operation.DUREE_MESUREE,
+										dureeMesuree / 1000);
+								cr.update(urlSeq, contact, Operation._id
+										+ " = ?", new String[] { Integer
+										.toString(opId[indiceCourant]) });
+								contact.clear();
 								finish();
 
 							}

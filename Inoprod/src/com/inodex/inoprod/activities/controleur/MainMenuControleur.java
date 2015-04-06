@@ -33,6 +33,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -112,9 +113,12 @@ public class MainMenuControleur extends Activity {
 		cursorB = cr.query(url, columns, Operation.DESCRIPTION_OPERATION
 				+ " LIKE 'Contrôle%' AND " + Operation.NOM_OPERATEUR
 				+ "!='null' ", null, Operation._id);
+		Log.e("CA", cursorA.getCount() + "");
+		Log.e("CB", cursorB.getCount() + "");
 		if (cursorB.getCount() == cursorA.getCount() - 1) {
 			cursorB = cr.query(url, columns, Operation.DESCRIPTION_OPERATION
 					+ " LIKE 'Contrôle final harnais'  ", null, Operation._id);
+			Log.e("CBF", cursorB.getCount() + "");
 			if (cursorB.moveToFirst()) {
 				ContentValues contact = new ContentValues();
 				contact.put(Operation.REALISABLE, 1);
@@ -257,8 +261,9 @@ public class MainMenuControleur extends Activity {
 
 				element = new HashMap<String, String>();
 				element.put(columns[0], "" + indice++);
-				if (cursor.getString(cursor
-						.getColumnIndex(Operation.DATE_REALISATION)) != null) {
+				String date = cursor.getString(cursor
+						.getColumnIndex(Operation.DATE_REALISATION));
+				if (date != null || date=="") {
 					element.put(
 							columns[1],
 							""

@@ -100,9 +100,15 @@ public class InfoProduit extends Activity {
 
 		dureeMesure.append(" " + TimeConverter.display((long) dMes));
 		dureeReference.append(" " + TimeConverter.display((long) dRef));
-		tauxProg.append(" "
-				+ Float.toString(((float) (dMes * 100) / dRef)).substring(0, 4)
-				+ "%");
+		try {
+			tauxProg.append(" "
+					+ Float.toString(((float) (dMes * 100) / dRef)).substring(
+							0, 4) + "%");
+		} catch (StringIndexOutOfBoundsException e) {
+			tauxProg.append(" "
+					+ Float.toString(((float) (dMes * 100) / dRef)).substring(
+							0, 3) + "%");
+		}
 
 		// Retour à l'activité précédente
 		boutonExit = (ImageButton) findViewById(R.id.exitButton1);

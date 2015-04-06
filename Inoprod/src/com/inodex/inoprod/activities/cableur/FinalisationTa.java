@@ -330,6 +330,23 @@ public class FinalisationTa extends Activity {
 								 * CheminementTa.this, MainActivity.class);
 								 * startActivity(toMain);
 								 */
+								clause = Operation.RANG_1_1 + " LIKE '%" + numeroCo
+										+ "%' AND ( " + Operation.DESCRIPTION_OPERATION
+										+ " LIKE 'Contrôle rétention tête " + ordre
+										+ "%' OR + " + Operation.DESCRIPTION_OPERATION
+										+ " LIKE 'Contrôle final tête " + ordre + "%')";
+								cursor = cr.query(urlSeq, columnsSeq, clause, null,
+										Operation._id);
+								if (cursor.moveToFirst()) {
+									do {
+										contact.put(Operation.REALISABLE, 1);
+										int id = cursor.getInt(cursor
+												.getColumnIndex(Operation._id));
+										cr.update(urlSeq, contact, Operation._id + "='" + id
+												+ "'", null);
+										contact.clear();
+									} while (cursor.moveToNext());
+								}
 								finish();
 
 							}

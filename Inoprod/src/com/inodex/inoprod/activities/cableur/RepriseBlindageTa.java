@@ -192,7 +192,8 @@ public class RepriseBlindageTa extends Activity {
 										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT)));
 				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
 						+ numeroCo + "' AND " + Raccordement.REPRISE_BLINDAGE
-						+ "!='" + "null" + "' GROUP BY "
+						+ "!='" + "null" + "' AND "
+						+ Raccordement.REPRISE_BLINDAGE + "!='' GROUP BY "
 						+ Raccordement.REPRISE_BLINDAGE;
 
 			} else {
@@ -203,7 +204,8 @@ public class RepriseBlindageTa extends Activity {
 										.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT)));
 				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
 						+ numeroCo + "' AND " + Raccordement.REPRISE_BLINDAGE
-						+ "!='" + "null" + "' GROUP BY "
+						+ "!='" + "null" + "' AND "
+						+ Raccordement.REPRISE_BLINDAGE + "!='' GROUP BY "
 						+ Raccordement.REPRISE_BLINDAGE;
 				colRac1[6] = Raccordement.REFERENCE_OUTIL_ABOUTISSANT;
 				colRac1[7] = Raccordement.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT;
@@ -499,7 +501,8 @@ public class RepriseBlindageTa extends Activity {
 
 				clause = Raccordement.NUMERO_FIL_CABLE + "='" + numeroCable
 						+ "' AND " + Raccordement.REPRISE_BLINDAGE + "!='"
-						+ "null" + "'";
+						+ "null" + "' AND " + Raccordement.REPRISE_BLINDAGE
+						+ "!='' ";
 				cursorA = cr.query(urlRac, colRac1, clause, null,
 						Raccordement._id);
 				if (cursorA.moveToFirst()) {
@@ -587,7 +590,8 @@ public class RepriseBlindageTa extends Activity {
 						clause = Raccordement.NUMERO_FIL_CABLE + "='"
 								+ numeroCable + "' AND "
 								+ Raccordement.REPRISE_BLINDAGE + "!='"
-								+ "null" + "'";
+								+ "null" + "' AND "
+								+ Raccordement.REPRISE_BLINDAGE + "!='' ";
 						cursorA = cr.query(urlRac, colRac1, clause, null,
 								Raccordement._id);
 						if (cursorA.moveToFirst()) {
@@ -661,6 +665,50 @@ public class RepriseBlindageTa extends Activity {
 									liste.add(element);
 
 								} while (cursorB.moveToNext());
+
+							} else {
+								HashMap<String, String> element;
+
+								element = new HashMap<String, String>();
+								element.put(
+										colRac1[0],
+										cursorA.getString(cursorA
+												.getColumnIndex(colRac1[0])));
+								element.put(
+										colRac1[1],
+										cursorA.getString(cursorA
+												.getColumnIndex(colRac1[1])));
+								element.put(
+										colRac1[2],
+										cursorA.getString(cursorA
+												.getColumnIndex(colRac1[2])));
+								element.put(
+										colRac1[3],
+										cursorA.getString(cursorA
+												.getColumnIndex(colRac1[3])));
+							
+								element.put(
+										colRac1[6],
+										cursorA.getString(cursorA
+												.getColumnIndex(colRac1[4])));
+								element.put(
+										colRac1[7],
+										cursorA.getString(cursorA
+												.getColumnIndex(colRac1[5])));
+								element.put(
+										colRac1[8],
+										cursorA.getString(cursorA
+												.getColumnIndex(colRac1[6])));
+								element.put(
+										colRac1[9],
+										cursorA.getString(cursorA
+												.getColumnIndex(colRac1[7])));
+								element.put(
+										colRac1[10],
+										cursorA.getString(cursorA
+												.getColumnIndex(colRac1[8])));
+
+								liste.add(element);
 
 							}
 

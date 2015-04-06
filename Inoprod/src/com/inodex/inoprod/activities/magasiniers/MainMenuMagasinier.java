@@ -2,8 +2,10 @@ package com.inodex.inoprod.activities.magasiniers;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -20,9 +22,11 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.SimpleAdapter;
 import android.widget.SimpleCursorAdapter;
 
 import com.inodex.inoprod.R;
@@ -57,7 +61,8 @@ public class MainMenuMagasinier extends Activity {
 
 	/** Colonnes utilisés pour les requêtes */
 	private String columns[] = { Operation._id, Operation.RANG_1_1,
-			Operation.GAMME };
+			Operation.GAMME, Operation.DESCRIPTION_OPERATION,
+			Operation.DATE_REALISATION, Operation.NOM_OPERATEUR };
 
 	private int layouts[] = { R.id.ordreOperations, R.id.operationsRealiser };
 
@@ -66,6 +71,8 @@ public class MainMenuMagasinier extends Activity {
 
 	/** Indice de l'opération courante */
 	private int indiceCourant = 0;
+
+	private List<HashMap<String, String>> liste = new ArrayList<HashMap<String, String>>();
 
 	/** Uri de la table de sequencement */
 	private Uri url = SequencementProvider.CONTENT_URI;
@@ -145,8 +152,22 @@ public class MainMenuMagasinier extends Activity {
 			@Override
 			public void onClick(View v) {
 				if (cursor.moveToFirst()) {
-					Intent toNext = new Intent(MainMenuMagasinier.this,
-							ImportCoupeCables.class);
+					Intent toNext = null;
+					String firstOperation = cursor.getString(cursor
+							.getColumnIndex(Operation.DESCRIPTION_OPERATION));
+					if (firstOperation.startsWith("Débit du fil")) {
+						toNext = new Intent(MainMenuMagasinier.this,
+								ImportCoupeCables.class);
+					} else if (firstOperation.startsWith("Regroupement des")) {
+						toNext = new Intent(MainMenuMagasinier.this,
+								RegroupementCables.class);
+					} else if (firstOperation.startsWith("Débit pour")) {
+						toNext = new Intent(MainMenuMagasinier.this,
+								SaisieTracabiliteComposant.class);
+					} else {
+						toNext = new Intent(MainMenuMagasinier.this,
+								KittingCablesComposants.class);
+					}
 					toNext.putExtra("opId", opId);
 					toNext.putExtra("Noms", nomPrenomOperateur);
 					toNext.putExtra("Indice", indiceCourant);
@@ -196,19 +217,47 @@ public class MainMenuMagasinier extends Activity {
 	 */
 	private void displayContentProvider() {
 		// Création du SimpleCursorAdapter affilié au GridView
-		SimpleCursorAdapter sca = new SimpleCursorAdapter(this,
-				R.layout.grid_layout_menu_magasinier, null, columns, layouts);
-		GridView gridView = (GridView) findViewById(R.id.gridview);
-		gridView.setAdapter(sca);
 		// Requête dans la table sequencement
 		clause = new String(Operation.GAMME + "='" + "Kitting" + "'"
 				+ " GROUP BY " + Operation.RANG_1_1);
 		cursor = cr.query(url, columns, clause, null, Operation._id + " ASC");
+		if (cursor.moveToFirst()) {
+			int indice = 1;
+			HashMap<String, String> element;
+			do {
 
-		sca.changeCursor(cursor);
+				element = new HashMap<String, String>();
+				element.put(columns[0], "" + indice++);
 
-		clause = new String(Operation.RANG_1_1 + " LIKE '%" + "Débit"
-				+ "%' AND " + Operation.RANG_1 + "='" + "Kitting câble" + "'");
+				if ((cursor.getString(cursor
+						.getColumnIndex(Operation.DATE_REALISATION)) != null)
+						&& (!(cursor.getString(cursor
+								.getColumnIndex(Operation.NOM_OPERATEUR)))
+								.equals(""))) {
+					element.put(
+							columns[1],
+							""
+									+ cursor.getString(cursor
+											.getColumnIndex(Operation.RANG_1_1))
+									+ "*** Achevée");
+
+				} else {
+					element.put(columns[1], cursor.getString(cursor
+							.getColumnIndex(Operation.RANG_1_1)));
+				}
+
+				liste.add(element);
+			} while (cursor.moveToNext());
+		}
+
+		SimpleAdapter sca = new SimpleAdapter(this, liste,
+				R.layout.grid_layout_menu_magasinier, columns, layouts);
+		GridView gridView = (GridView) findViewById(R.id.gridview);
+		gridView.setAdapter(sca);
+
+		clause = new String(Operation.GAMME + "='" + "Kitting" + "' AND "
+				+ Operation.DATE_REALISATION + " IS NULL");
+		//clause = Operation.DESCRIPTION_OPERATION + " LIKE 'Regrou%'";
 		cursor = cr.query(url, columns, clause, null, Operation._id + " ASC");
 		// Rempliassage du tableau pour chaque numero de cable
 		if (cursor.moveToFirst()) {
@@ -216,6 +265,8 @@ public class MainMenuMagasinier extends Activity {
 			do {
 				opId[cursor.getPosition()] = cursor.getInt(cursor
 						.getColumnIndex(Operation._id));
+				Log.e("N°", cursor.getInt(cursor.getColumnIndex(Operation._id))
+						+ "");
 
 			} while (cursor.moveToNext());
 		}

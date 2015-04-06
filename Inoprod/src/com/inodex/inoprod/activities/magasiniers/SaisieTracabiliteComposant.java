@@ -165,6 +165,7 @@ public class SaisieTracabiliteComposant extends Activity {
 
 			@Override
 			public void onClick(View v) {
+				boolean fin = false;
 				// Vérification des champs remplis
 				if ((numeroLot.getText().length() == 0)
 						|| (referenceArticle.getText().length() == 0)) {
@@ -233,17 +234,30 @@ public class SaisieTracabiliteComposant extends Activity {
 								row.getCell(colonnes.get(BOM.NUMERO_LOT_SCANNE))
 										.setCellValue(
 												numeroLot.getText().toString());
-								row.getCell(
-										colonnes.get(BOM.REFERENCE_FABRICANT_SCANNE))
-										.setCellValue(
-												referenceArticle.getText()
-														.toString());
+								String ref = row.getCell(
+										colonnes.get(BOM.REFERENCE_FABRICANT2))
+										.toString();
+								fin = ref.equals(referenceArticle.getText()
+										.toString());
+								if (fin) {
+									row.getCell(
+											colonnes.get(BOM.REFERENCE_FABRICANT_SCANNE))
+											.setCellValue(
+													referenceArticle.getText()
+															.toString());
+								}
 
 							} catch (Exception e) {
 								Log.e("err1", " " + e);
 							}
 
 						}
+						if (!(fin)) {
+							Toast.makeText(SaisieTracabiliteComposant.this,
+									"La référence scanné ne correspond pas",
+									Toast.LENGTH_SHORT).show();
+						}
+
 						Log.e("Num colon", "Début écriture");
 						FileOutputStream fileOut;
 						File debit = new File(Environment
@@ -311,8 +325,10 @@ public class SaisieTracabiliteComposant extends Activity {
 					toNext.putExtra("Noms", nomPrenomOperateur);
 					toNext.putExtra("opId", opId);
 					toNext.putExtra("Indice", indiceCourant);
-					startActivity(toNext);
-					finish();
+					if (fin) {
+						startActivity(toNext);
+						finish();
+					}
 				}
 
 			}

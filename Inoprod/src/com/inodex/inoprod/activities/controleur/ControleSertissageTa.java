@@ -138,7 +138,7 @@ public class ControleSertissageTa extends Activity {
 
 	};
 	private long dureeTotal;
-	
+
 	private String Rac;
 
 	@Override
@@ -183,12 +183,13 @@ public class ControleSertissageTa extends Activity {
 					.getColumnIndex(Operation.RANG_1_1))).substring(11, 14);
 			numeroConnecteur.append(" : " + numeroCo);
 		}
-		
+
 		if (description.contains("tête A")) {
 			clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='" + numeroCo
 					+ "' AND " + Raccordement.FAUX_CONTACT + "='" + 0
 					+ "' AND " + Raccordement.OBTURATEUR + "='" + 0 + "' AND "
-					+ Raccordement.REPRISE_BLINDAGE + " IS NULL ";
+					+ Raccordement.REPRISE_BLINDAGE + " IS NULL AND "
+					+ Raccordement.FIL_SENSIBLE + "='1'";
 			titre.setText(R.string.controleSertissageTa);
 			ordre = "A";
 			Rac = Raccordement.NUMERO_COMPOSANT_TENANT;
@@ -197,7 +198,8 @@ public class ControleSertissageTa extends Activity {
 			clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
 					+ numeroCo + "' AND " + Raccordement.FAUX_CONTACT + "='"
 					+ 0 + "' AND " + Raccordement.OBTURATEUR + "='" + 0
-					+ "' AND " + Raccordement.REPRISE_BLINDAGE + " IS NULL ";
+					+ "' AND " + Raccordement.REPRISE_BLINDAGE
+					+ " IS NULL AND " + Raccordement.FIL_SENSIBLE + "='1'";
 			titre.setText(R.string.controleSertissageTb);
 			ordre = "B";
 			Rac = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT;
@@ -276,7 +278,9 @@ public class ControleSertissageTa extends Activity {
 							+ " LIKE 'Finalisation Tête " + ordre + "%' OR "
 							+ Operation.DESCRIPTION_OPERATION
 							+ " LIKE 'Tri des aboutissants Tête " + ordre
-							+ "%')";
+							+ "%' OR  " + Operation.DESCRIPTION_OPERATION
+							+ " LIKE 'Denudage Sertissage Enfichage%Tête "
+							+ ordre + "%' )";
 					cursor = cr.query(urlSeq, columnsSeq, clause, null,
 							Operation._id);
 					if (cursor.moveToFirst()) {
@@ -391,17 +395,15 @@ public class ControleSertissageTa extends Activity {
 											clause = Raccordement.NUMERO_FIL_CABLE
 													+ "='"
 													+ numeroCable
-													+ "' AND ("
-													+ Raccordement.NUMERO_COMPOSANT_TENANT
+													+ "' AND "
+													+ Rac
 													+ "='"
 													+ numeroCo
-													+ "' OR "
-													+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-													+ "='"
-													+ numeroCo
-													+ "' ) AND "
+													+ "'  AND "
 													+ Raccordement.REPRISE_BLINDAGE
-													+ " IS NULL ";
+													+ " IS NULL AND "
+													+ Raccordement.FIL_SENSIBLE
+													+ "='1'";
 											cursorA = cr.query(urlRac, colRac,
 													clause, null,
 													Raccordement._id);
@@ -633,6 +635,86 @@ public class ControleSertissageTa extends Activity {
 								 * CheminementTa.this, MainActivity.class);
 								 * startActivity(toMain);
 								 */
+								contact.put(Operation.NOM_OPERATEUR,
+										nomPrenomOperateur[0] + " "
+												+ nomPrenomOperateur[1]);
+								dateRealisation = new Date();
+								contact.put(Operation.DATE_REALISATION,
+										dateRealisation.toGMTString());
+								heureRealisation.setToNow();
+								contact.put(Operation.HEURE_REALISATION,
+										heureRealisation.toString());
+								dureeMesuree += dateRealisation.getTime()
+										- dateDebut.getTime();
+								contact.put(Operation.DUREE_MESUREE,
+										dureeMesuree / 1000);
+								cr.update(urlSeq, contact, Operation._id
+										+ " = ?", new String[] { Integer
+										.toString(opId[indiceCourant]) });
+								contact.clear();
+
+								// Signalement du point de controle
+								// Cables validés
+								clause = Operation.RANG_1_1
+										+ " LIKE '%"
+										+ numeroCo
+										+ "%' AND ("
+										+ Operation.DESCRIPTION_OPERATION
+										+ " LIKE 'Enfichage Tête "
+										+ ordre
+										+ "%' OR "
+										+ Operation.DESCRIPTION_OPERATION
+										+ " LIKE 'Finalisation Tête "
+										+ ordre
+										+ "%' OR "
+										+ Operation.DESCRIPTION_OPERATION
+										+ " LIKE 'Tri des aboutissants Tête "
+										+ ordre
+										+ "%' OR  "
+										+ Operation.DESCRIPTION_OPERATION
+										+ " LIKE 'Denudage Sertissage Enfichage%Tête "
+										+ ordre + "%' )";
+								cursor = cr.query(urlSeq, columnsSeq, clause,
+										null, Operation._id);
+								if (cursor.moveToFirst()) {
+									do {
+
+										contact.put(Operation.REALISABLE, 1);
+										int id = cursor.getInt(cursor
+												.getColumnIndex(Operation._id));
+										cr.update(
+												urlSeq,
+												contact,
+												Operation._id + "='" + id + "'",
+												null);
+										contact.clear();
+
+									} while (cursor.moveToNext());
+								}
+
+								// Cables refusées
+								clause = Operation.RANG_1_1 + " LIKE '%"
+										+ numeroCo + "%' AND "
+										+ Operation.DESCRIPTION_OPERATION
+										+ " LIKE 'Denudage%' ";
+								cursor = cr.query(urlSeq, columnsSeq, clause,
+										null, Operation._id);
+								if (cursor.moveToFirst()) {
+									for (int i = 0; i < (nbRows - nbValide); i++) {
+
+										contact.put(Operation.NOM_OPERATEUR, "");
+										int id = cursor.getInt(cursor
+												.getColumnIndex(Operation._id));
+										cr.update(
+												urlSeq,
+												contact,
+												Operation._id + "='" + id + "'",
+												null);
+										contact.clear();
+										cursor.moveToNext();
+									}
+								}
+
 								finish();
 
 							}
@@ -714,10 +796,13 @@ public class ControleSertissageTa extends Activity {
 
 				String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 				numeroCable = contents;
-				clause = Raccordement.NUMERO_FIL_CABLE + "='" + numeroCable
-						+ "' AND " + Rac
-						+ "='" + numeroCo +  "'  AND " + Raccordement.REPRISE_BLINDAGE
-						+ " IS NULL ";
+				clause = Raccordement.NUMERO_FIL_CABLE
+						+ "='" + numeroCable + "' AND "
+						+ Rac + "='" + numeroCo + "'  AND "
+						+ Raccordement.REPRISE_BLINDAGE
+						+ " IS NULL AND "
+						+ Raccordement.FIL_SENSIBLE
+						+ "='1'";
 				cursorA = cr.query(urlRac, colRac, clause, null,
 						Raccordement._id);
 				if (cursorA.moveToFirst()) {
@@ -771,10 +856,13 @@ public class ControleSertissageTa extends Activity {
 										int which) {
 									numeroCable = cable.getText().toString();
 
-									clause = Raccordement.NUMERO_FIL_CABLE + "='" + numeroCable
-											+ "' AND " + Rac
-											+ "='" + numeroCo +  "'  AND " + Raccordement.REPRISE_BLINDAGE
-											+ " IS NULL ";
+									clause = Raccordement.NUMERO_FIL_CABLE
+											+ "='" + numeroCable + "' AND "
+											+ Rac + "='" + numeroCo + "'  AND "
+											+ Raccordement.REPRISE_BLINDAGE
+											+ " IS NULL AND "
+											+ Raccordement.FIL_SENSIBLE
+											+ "='1'";
 									cursorA = cr.query(urlRac, colRac, clause,
 											null, Raccordement._id);
 									if (cursorA.moveToFirst()) {

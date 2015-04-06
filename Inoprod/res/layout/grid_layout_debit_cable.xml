@@ -6,56 +6,56 @@
     
     <TextView
             android:id="@+id/numeroFil"
-            android:layout_width="90dp"
+            android:layout_width="@dimen/c4"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:textSize="@dimen/forTMin"
+            android:textSize="@dimen/b1"
              android:textColor="#000000" />
     
     <TextView
             android:id="@+id/positionChariot"
-            android:layout_width="90dp"
+            android:layout_width="@dimen/c4"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:textSize="@dimen/forTMin" 
+            android:textSize="@dimen/b1" 
              android:textColor="#000000"/>
     
     <TextView
             android:id="@+id/repereElectrique"
-            android:layout_width="90dp"
+            android:layout_width="@dimen/c4"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:textSize="@dimen/forTMin"
+            android:textSize="@dimen/b1"
              android:textColor="#000000" />
     <TextView
             android:id="@+id/numeroConnecteur"
-            android:layout_width="90dp"
+            android:layout_width="@dimen/c4"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:textSize="@dimen/forTMin"
+            android:textSize="@dimen/b1"
              android:textColor="#000000" />
     <TextView
             android:id="@+id/ordreRealisation"
-            android:layout_width="90dp"
+            android:layout_width="@dimen/c4"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:textSize="@dimen/forTMin"
+            android:textSize="@dimen/b1"
              android:textColor="#000000" />
     
     <TextView
             android:id="@+id/longueurCoupe"
-            android:layout_width="90dp"
+            android:layout_width="@dimen/c4"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:textSize="@dimen/forTMin"
+            android:textSize="@dimen/b1"
              android:textColor="#000000" />
     
     <TextView
             android:id="@+id/uniteMesure"
-            android:layout_width="90dp"
+            android:layout_width="@dimen/c4"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
-            android:textSize="@dimen/forTMin"
+            android:textSize="@dimen/b1"
              android:textColor="#000000" />
     
 

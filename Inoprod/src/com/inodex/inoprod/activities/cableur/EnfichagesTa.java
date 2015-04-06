@@ -77,7 +77,7 @@ public class EnfichagesTa extends Activity {
 	private ContentValues contact;
 
 	private String clause, numeroOperation, numeroCo, clauseTotal,
-			oldClauseTotal, numeroCable, description, b;
+			oldClauseTotal, numeroCable, description, b, rac;
 	private boolean prodAchevee;
 
 	/** Colonnes utilisés pour les requêtes */
@@ -193,13 +193,16 @@ public class EnfichagesTa extends Activity {
 
 		if (description.contains("Tête A")) {
 			clause = new String(Raccordement.NUMERO_COMPOSANT_TENANT + "='"
-					+ numeroCo + "'AND " + Raccordement.REPRISE_BLINDAGE
-					+ " IS NULL ");
+					+ numeroCo + "' AND (" + Raccordement.REPRISE_BLINDAGE
+					+ " IS NULL OR " + Raccordement.REPRISE_BLINDAGE + "='')");
+			
 
 		} else {
 			clause = new String(Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-					+ "='" + numeroCo + "'AND " + Raccordement.REPRISE_BLINDAGE
-					+ " IS NULL ");
+					+ "='" + numeroCo + "' AND ("
+					+ Raccordement.REPRISE_BLINDAGE + " IS NULL OR "
+					+ Raccordement.REPRISE_BLINDAGE + "='')");
+			
 		}
 		cursorA = cr.query(urlRac, colRac, clause, null, Raccordement._id
 				+ " ASC");
@@ -240,8 +243,9 @@ public class EnfichagesTa extends Activity {
 						+ numeroCo + "' AND  " + Raccordement.FAUX_CONTACT
 						+ "='" + 0 + "' AND " + Raccordement.OBTURATEUR + "='"
 						+ 0 + "' AND " + Raccordement.REPRISE_BLINDAGE
-						+ " IS NULL ";
+						+ " IS NULL AND " + Raccordement.FIL_SENSIBLE + "='1'";
 				b = Raccordement.NUMERO_BORNE_TENANT;
+				rac = Raccordement.NUMERO_COMPOSANT_TENANT;
 			} else {
 				titre.setText(R.string.enfichageTb);
 
@@ -249,9 +253,10 @@ public class EnfichagesTa extends Activity {
 						+ numeroCo + "' AND  " + Raccordement.FAUX_CONTACT
 						+ "='" + 0 + "' AND " + Raccordement.OBTURATEUR + "='"
 						+ 0 + "' AND " + Raccordement.REPRISE_BLINDAGE
-						+ " IS NULL ";
+						+ " IS NULL AND " + Raccordement.FIL_SENSIBLE + "='1'";
 				colRac[6] = Raccordement.NUMERO_BORNE_ABOUTISSANT;
 				b = Raccordement.NUMERO_BORNE_ABOUTISSANT;
+				rac = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT;
 			}
 
 		}
@@ -318,7 +323,11 @@ public class EnfichagesTa extends Activity {
 							} else if (nextOperation.startsWith("Tri")) {
 								toNext = new Intent(EnfichagesTa.this,
 										TriAboutissantsTa.class);
-							} else if (nextOperation
+							} 
+							else if (nextOperation.startsWith("Enfi")) {
+								toNext = new Intent(EnfichagesTa.this,
+										EnfichagesTa.class);
+							}else if (nextOperation
 									.startsWith("Positionnement")) {
 								toNext = new Intent(EnfichagesTa.this,
 										PositionnementTaTab.class);
@@ -500,23 +509,20 @@ public class EnfichagesTa extends Activity {
 	 */
 	private void displayContentProvider() {
 		// Création du SimpleCursorAdapter affilié au GridView
-		/*if (description.contains("Tête A")) { */
-			cursor = cr.query(urlRac, colRac,
-					Raccordement.NUMERO_COMPOSANT_TENANT + "='" + numeroCo
-							+ "' AND (" + clauseTotal + ") AND "
-							+ Raccordement.REPRISE_BLINDAGE
-							+ " IS NULL ", null,
-					Raccordement._id);
-		/*} else {
-			cursor = cr.query(urlRac, colRac,
-					Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + "='" + numeroCo
-							+ "' AND (" + clauseTotal + ") AND "
-							+ Raccordement.REPRISE_BLINDAGE
-							+ " IS NULL GROUP BY "
-							+ Raccordement.NUMERO_BORNE_ABOUTISSANT, null,
-					Raccordement._id);
-		}*/
-		Log.e("Curseur", ""+cursor.getCount());
+		/* if (description.contains("Tête A")) { */
+		cursor = cr.query(urlRac, colRac, rac
+				+ "='" + numeroCo + "' AND (" + clauseTotal + ") AND "
+				+ Raccordement.REPRISE_BLINDAGE + " IS NULL ", null,
+				Raccordement._id);
+		/*
+		 * } else { cursor = cr.query(urlRac, colRac,
+		 * Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + "='" + numeroCo +
+		 * "' AND (" + clauseTotal + ") AND " + Raccordement.REPRISE_BLINDAGE +
+		 * " IS NULL GROUP BY " + Raccordement.NUMERO_BORNE_ABOUTISSANT, null,
+		 * Raccordement._id); }
+		 */
+		Log.e("Curseur", rac);
+		Log.e("Curseur", "" + cursor.getCount());
 		Log.e("Clause total", clauseTotal);
 		SimpleCursorAdapter sca = new SimpleCursorAdapter(this,
 				R.layout.grid_layout_enfichage_ta, cursor, colRac, layouts);
@@ -573,33 +579,39 @@ public class EnfichagesTa extends Activity {
 							+ "' AND (" + Raccordement.NUMERO_COMPOSANT_TENANT
 							+ "='" + numeroCo + "' OR "
 							+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + "='"
-							+ numeroCo + "' )";
+							+ numeroCo + "' ) AND " + Raccordement.FIL_SENSIBLE
+							+ "='1' AND (" + Raccordement.REPRISE_BLINDAGE
+							+ " IS NULL OR " + Raccordement.REPRISE_BLINDAGE
+							+ "='' )";
 					cursorA = cr.query(urlRac, colRac, clause, null,
 							Raccordement._id);
 					if (cursorA.moveToFirst()) {
-						int borne = cursorA.getInt(cursorA
-								.getColumnIndex(b));
+						int borne = cursorA.getInt(cursorA.getColumnIndex(b));
 						Log.e("Borne", "" + borne);
 						Log.e(" OU", b);
-						clause =  b + "='"
-								+ borne + ".0' AND ("
-								+ Raccordement.NUMERO_COMPOSANT_TENANT
-								+ "='" + numeroCo + "' OR "
+						clause = b + "='" + borne + ".0' AND ("
+								+ Raccordement.NUMERO_COMPOSANT_TENANT + "='"
+								+ numeroCo + "' OR "
 								+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-								+ "='" + numeroCo + "' )";
-						cursorB = cr.query(urlRac, colRac,clause, null, Raccordement._id);
-				
+								+ "='" + numeroCo + "' ) AND  ("
+								+ Raccordement.REPRISE_BLINDAGE
+								+ " IS NULL OR "
+								+ Raccordement.REPRISE_BLINDAGE + "='' )";
+						cursorB = cr.query(urlRac, colRac, clause, null,
+								Raccordement._id);
+
 						if (cursorB.moveToFirst()) {
-							
+
 							do {
-								numeroCable = cursorB.getString(cursorB
-										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE));
+								numeroCable = cursorB
+										.getString(cursorB
+												.getColumnIndex(Raccordement.NUMERO_FIL_CABLE));
 								Log.e("N° Cable", numeroCable);
 								if (clauseTotal.equals("")) {
 									clauseTotal = Raccordement.NUMERO_FIL_CABLE
 											+ "='" + numeroCable + "'";
 								} else {
-									
+
 									oldClauseTotal = clauseTotal;
 									clauseTotal += " OR "
 											+ Raccordement.NUMERO_FIL_CABLE
@@ -659,7 +671,11 @@ public class EnfichagesTa extends Activity {
 									+ Raccordement.NUMERO_COMPOSANT_TENANT
 									+ "='" + numeroCo + "' OR "
 									+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-									+ "='" + numeroCo + "' )";
+									+ "='" + numeroCo + "' ) AND "
+									+ Raccordement.FIL_SENSIBLE + "='1' AND ("
+									+ Raccordement.REPRISE_BLINDAGE
+									+ " IS NULL OR "
+									+ Raccordement.REPRISE_BLINDAGE + "='' )";
 							cursorA = cr.query(urlRac, colRac, clause, null,
 									Raccordement._id);
 							if (cursorA.moveToFirst()) {
@@ -667,16 +683,25 @@ public class EnfichagesTa extends Activity {
 										.getColumnIndex(b));
 								Log.e("Borne", "" + borne);
 								Log.e(" OU", b);
-								clause =  b + "='"
-										+ borne + ".0' AND ("
+								clause = b
+										+ "='"
+										+ borne
+										+ ".0' AND ("
 										+ Raccordement.NUMERO_COMPOSANT_TENANT
-										+ "='" + numeroCo + "' OR "
+										+ "='"
+										+ numeroCo
+										+ "' OR "
 										+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-										+ "='" + numeroCo + "' )";
-								cursorB = cr.query(urlRac, colRac,clause, null, Raccordement._id);
-						
+										+ "='" + numeroCo + "' ) AND  ("
+										+ Raccordement.REPRISE_BLINDAGE
+										+ " IS NULL OR "
+										+ Raccordement.REPRISE_BLINDAGE
+										+ "='' )";
+								cursorB = cr.query(urlRac, colRac, clause,
+										null, Raccordement._id);
+
 								if (cursorB.moveToFirst()) {
-									
+
 									do {
 										numeroCable = cursorB.getString(cursorB
 												.getColumnIndex(Raccordement.NUMERO_FIL_CABLE));
@@ -685,7 +710,7 @@ public class EnfichagesTa extends Activity {
 											clauseTotal = Raccordement.NUMERO_FIL_CABLE
 													+ "='" + numeroCable + "'";
 										} else {
-											
+
 											oldClauseTotal = clauseTotal;
 											clauseTotal += " OR "
 													+ Raccordement.NUMERO_FIL_CABLE

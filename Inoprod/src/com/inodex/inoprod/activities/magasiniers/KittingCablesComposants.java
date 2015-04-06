@@ -1,6 +1,9 @@
 package com.inodex.inoprod.activities.magasiniers;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -17,6 +20,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.SimpleAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
@@ -58,6 +62,8 @@ public class KittingCablesComposants extends Activity {
 	private ContentResolver cr;
 	private ContentValues contact;
 	private GridView gridView;
+
+	private List<HashMap<String, String>> liste = new ArrayList<HashMap<String, String>>();
 
 	private boolean prodAchevee;
 	private String clause, numeroOperation, numeroCom, descriptionOperation;
@@ -115,8 +121,10 @@ public class KittingCablesComposants extends Activity {
 
 	private String columnsChem[] = new String[] { Cheminement._id,
 			Cheminement.NUMERO_SECTION_CHEMINEMENT,
-			Cheminement.NUMERO_COMPOSANT_TENANT, Cheminement.REPERE_ELECTRIQUE_TENANT,
-			Cheminement.NUMERO_COMPOSANT_ABOUTISSANT, Cheminement.REPERE_ELECTRIQUE_ABOUTISSANT,
+			Cheminement.NUMERO_COMPOSANT_TENANT,
+			Cheminement.REPERE_ELECTRIQUE_TENANT,
+			Cheminement.NUMERO_COMPOSANT_ABOUTISSANT,
+			Cheminement.REPERE_ELECTRIQUE_ABOUTISSANT,
 			Cheminement.ORDRE_REALISATION };
 
 	private String columnsProd[] = new String[] { Fil._id,
@@ -125,7 +133,7 @@ public class KittingCablesComposants extends Activity {
 			Fil.NUMERO_COMPOSANT_ABOUTISSANT, Fil.NUMERO_COMPOSANT_TENANT };
 	private Cursor cursorInfo;
 	private Uri urlProd = ProductionProvider.CONTENT_URI;
-	
+
 	private TextView timer;
 	private Cursor cursorTime;
 	private Uri urlTim = DureesProvider.CONTENT_URI;
@@ -171,45 +179,55 @@ public class KittingCablesComposants extends Activity {
 		} else {
 			Log.e("Regroupement", "Problème séquencement");
 		}
+		
+		
 
 		// Récupération du numéro de cheminement
-		numeroCom = descriptionOperation.substring(37, 40);
-		clause = new String(Cheminement.NUMERO_COMPOSANT_ABOUTISSANT + "='" + numeroCom
-				+ "' OR " + Cheminement.NUMERO_COMPOSANT_TENANT + "='" + numeroCom
-				+ "'");
+		numeroCom = descriptionOperation.substring(43, 46);
+		
+		//Récuperation du numero pos chariot
+				clause = Kitting.NUMERO_COMPOSANT + "='" + numeroCom +"'";
+				cursorA = cr.query(urlKitting, columnsKitting, clause, null, null);
+				if (cursorA.moveToFirst()) {
+					numeroChariot.append(" "
+							+ cursorA.getString(cursorA
+									.getColumnIndex(Kitting.NUMERO_POSITION_CHARIOT)));
+				}
+		
+		Log.e("Numero Composant", numeroCom);
+		clause = new String(Cheminement.NUMERO_COMPOSANT_ABOUTISSANT
+				+ " LIKE '%" + numeroCom + "%' OR "
+				+ Cheminement.NUMERO_COMPOSANT_TENANT + " LIKE '%" + numeroCom
+				+ "%'");
 		cursorA = cr.query(urlChem, columnsChem, clause, null, null);
 		if (cursorA.moveToFirst()) {
 			numeroCh = cursorA.getInt(cursorA
 					.getColumnIndex(Cheminement.NUMERO_SECTION_CHEMINEMENT));
 
 			// Affichage des éléments du regroupement en cours
-			/*
-			 * try { numeroChariot.append(cursorA.getString(cursorA
-			 * .getColumnIndex(Cheminement.))); } catch (NullPointerException e)
-			 * { }
-			 */
+			
+
 			try {
 				String numeroCo = cursorA.getString(cursorA
 						.getColumnIndex(Cheminement.NUMERO_COMPOSANT_TENANT));
 				if (numeroCo.equals(null)) {
-					numeroCo = cursorA.getString(cursorA
-							.getColumnIndex(Cheminement.NUMERO_COMPOSANT_ABOUTISSANT));
+					numeroCo = cursorA
+							.getString(cursorA
+									.getColumnIndex(Cheminement.NUMERO_COMPOSANT_ABOUTISSANT));
 				}
-				numeroComposant.append(": "
-						+ numeroCo );
-				
+				numeroComposant.append(": " + numeroCo);
+
 			} catch (NullPointerException e) {
 			}
 			try {
 				String rep = cursorA.getString(cursorA
 						.getColumnIndex(Cheminement.REPERE_ELECTRIQUE_TENANT));
 				if (rep.equals(null)) {
-					rep = cursorA.getString(cursorA
-							.getColumnIndex(Cheminement.REPERE_ELECTRIQUE_ABOUTISSANT));
+					rep = cursorA
+							.getString(cursorA
+									.getColumnIndex(Cheminement.REPERE_ELECTRIQUE_ABOUTISSANT));
 				}
-				repereElectrique
-						.append(": "
-								+ rep);
+				repereElectrique.append(": " + rep);
 			} catch (NullPointerException e) {
 			}
 			try {
@@ -257,7 +275,7 @@ public class KittingCablesComposants extends Activity {
 				dureeMesuree = 0;
 				dateDebut = new Date();
 
-				indiceCourant += 2;
+				indiceCourant++;
 				try {
 					int test = opId[indiceCourant];// Si OK il reste encore
 					// des cables à regrouper
@@ -285,18 +303,18 @@ public class KittingCablesComposants extends Activity {
 
 		});
 		// Affichage du temps nécessaire
-				timer = (TextView) findViewById(R.id.timeDisp);
-				dureeTotal = 0;
-				cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
-						+ " LIKE '%kit%' ", null, Duree._id);
-				if (cursorTime.moveToFirst()) {
-					dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
-							.getColumnIndex(Duree.DUREE_THEORIQUE)));
+		timer = (TextView) findViewById(R.id.timeDisp);
+		dureeTotal = 0;
+		cursorTime = cr.query(urlTim, colTim, Duree.DESIGNATION_OPERATION
+				+ " LIKE '%kit%' ", null, Duree._id);
+		if (cursorTime.moveToFirst()) {
+			dureeTotal += TimeConverter.convert(cursorTime.getString(cursorTime
+					.getColumnIndex(Duree.DUREE_THEORIQUE)));
 
-				}
+		}
 
-				timer.setTextColor(Color.GREEN);
-				timer.setText(TimeConverter.display(dureeTotal));
+		timer.setTextColor(Color.GREEN);
+		timer.setText(TimeConverter.display(dureeTotal));
 
 		// Grande pause
 		grandePause.setOnClickListener(new View.OnClickListener() {
@@ -405,16 +423,51 @@ public class KittingCablesComposants extends Activity {
 	 * est récupéré puis utiliser pour afficher chacun des éléments
 	 */
 	private void displayContentProvider() {
+
+		cursor = cr.query(urlKitting, columnsKitting, Kitting.NUMERO_COMPOSANT
+				+ "='" + numeroCom + "' GROUP BY " + Kitting.NUMERO_FIL_CABLE,
+				null, null);
+		if (cursor.moveToFirst()) {
+			HashMap<String, String> element;
+			do {
+				element = new HashMap<String, String>();
+				element.put(columnsKitting[0], cursor.getString(cursor
+						.getColumnIndex(Kitting.NUMERO_FIL_CABLE)));
+				element.put(columnsKitting[1], cursor.getString(cursor
+						.getColumnIndex(Kitting.TYPE_FIL_CABLE)));
+				element.put(columnsKitting[2], cursor.getString(cursor
+						.getColumnIndex(Kitting.DESIGNATION_COMPOSANT)));
+				element.put(columnsKitting[3], cursor.getString(cursor
+						.getColumnIndex(Kitting.REFERENCE_FABRICANT2)));
+				element.put(columnsKitting[4], cursor.getString(cursor
+						.getColumnIndex(Kitting.REFERENCE_INTERNE)));
+				cursorA = cr
+						.query(urlBOM,
+								columnsBOM,
+								BOM.DESIGNATION_COMPOSANT
+										+ " LIKE '%"
+										+ cursor.getString(cursor
+												.getColumnIndex(Kitting.REPERE_ELECTRIQUE))
+										+ "%'", null, null);
+				if (cursorA.moveToFirst()) {
+					element.put(columnsKitting[5], cursorA.getString(cursorA
+							.getColumnIndex(BOM.QUANTITE)));
+					element.put(columnsKitting[6], cursorA.getString(cursorA
+							.getColumnIndex(BOM.UNITE)));
+				}
+				liste.add(element);
+
+			} while (cursor.moveToNext());
+		}
+
 		// Création du SimpleCursorAdapter affilié au GridView
-		SimpleCursorAdapter sca = new SimpleCursorAdapter(this,
-				R.layout.grid_layout_kitting_cables_composants, null,
-				columnsKitting, layouts);
+		SimpleAdapter sca = new SimpleAdapter(this, liste,
+				R.layout.grid_layout_kitting_cables_composants, columnsKitting,
+				layouts);
 
 		gridView.setAdapter(sca);
 		// Requête dans la base Cheminement
-		clause = Kitting.NUMERO_CHEMINEMENT + " ='" + numeroCh + "'";
-		cursor = cr.query(urlKitting, columnsKitting, clause, null, null);
-		sca.changeCursor(cursor);
+
 	}
 
 	/** Bloquage du bouton retour */

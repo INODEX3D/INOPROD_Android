@@ -119,7 +119,7 @@ public class DebitCables extends Activity {
 	private String columnsSeq[] = new String[] { Operation._id,
 			Operation.GAMME, Operation.RANG_1_1, Operation.NUMERO_OPERATION,
 			Operation.NOM_OPERATEUR, Operation.DATE_REALISATION,
-			Operation.HEURE_REALISATION };
+			Operation.HEURE_REALISATION,  Operation.DESCRIPTION_OPERATION };
 
 	private String columnsProd[] = new String[] { Fil._id,
 			Fil.DESIGNATION_PRODUIT, Fil.NUMERO_REVISION_HARNAIS, Fil.STANDARD,
@@ -264,41 +264,36 @@ public class DebitCables extends Activity {
 
 					try {
 						int test = opId[indiceCourant]; // Si OK il reste encore
-														// des cables à débiter
-						Intent toNext = new Intent(DebitCables.this,
-								ImportCoupeCables.class);
+						clause = Operation._id + "='" + test + "'";
+						cursor = cr.query(urlSeq, columnsSeq, clause, null,
+								Operation._id);
+						if (cursor.moveToFirst()) {
+							String firstOperation = cursor.getString(cursor
+									.getColumnIndex(Operation.DESCRIPTION_OPERATION));
+							Intent toNext = null;
+							if (firstOperation.startsWith("Débit du fil")) {
+								toNext = new Intent(DebitCables.this,
+										ImportCoupeCables.class);
+								} else if (firstOperation.startsWith("Regroupement des")) {
+									toNext = new Intent(DebitCables.this,
+											RegroupementCables.class);
+								} else if (firstOperation.startsWith("Débit pour")) {
+									 toNext = new Intent(DebitCables.this,
+											SaisieTracabiliteComposant.class);
+								} else {
+									toNext = new Intent(DebitCables.this,
+											KittingCablesComposants.class);
+								}
+					
 						toNext.putExtra("Noms", nomPrenomOperateur);
 						toNext.putExtra("opId", opId);
 						toNext.putExtra("Indice", indiceCourant);
 						startActivity(toNext);
 						finish();
-
-					} catch (ArrayIndexOutOfBoundsException e) {
-						// Il ne reste plus de cables à débiter
-						// On passe donc au regroupement
-						clause = new String(Operation.RANG_1_1 + " LIKE '%"
-								+ "Regroupement des câbles%" + "'");
-						cursor = cr.query(urlSeq, columnsSeq, clause, null,
-								Operation._id + " ASC");
-						// Rempliassage du tableau pour chaque regroupement
-						if (cursor.moveToFirst()) {
-							opId = new int[cursor.getCount()];
-							do {
-								opId[cursor.getPosition()] = cursor
-										.getInt(cursor
-												.getColumnIndex(Operation._id));
-
-							} while (cursor.moveToNext());
 						}
 
-						Intent toNext = new Intent(DebitCables.this,
-								RegroupementCables.class);
-						toNext.putExtra("Noms", nomPrenomOperateur);
-						toNext.putExtra("opId", opId);
-						toNext.putExtra("Indice", 0);
-						startActivity(toNext);
-						finish();
-
+					} catch (Exception e ) {
+						
 					}
 				} else { // Production toujours en cours
 					// On affiche le cable suivant à débiter
@@ -307,6 +302,7 @@ public class DebitCables extends Activity {
 					indiceCourant++;
 
 				}
+			
 			}
 
 		});

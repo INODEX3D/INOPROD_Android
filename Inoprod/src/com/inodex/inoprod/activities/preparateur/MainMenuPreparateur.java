@@ -13,6 +13,7 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
@@ -344,6 +345,7 @@ public class MainMenuPreparateur extends Activity {
 	 */
 	protected void creationTables() throws IOException {
 		// Suppression des bd existantes
+
 		getContentResolver().delete(urlCheminement,
 				Cheminement._id + "!='null'", null);
 		getContentResolver().delete(urlRaccordement,
@@ -359,7 +361,8 @@ public class MainMenuPreparateur extends Activity {
 
 		// Création de la table de cheminement
 		// Tenant
-		clause = Fil.NUMERO_COMPOSANT_TENANT + "!='null' GROUP BY "
+		clause = Fil.NUMERO_COMPOSANT_TENANT + "!='null' AND "
+				+ Fil.NUMERO_COMPOSANT_TENANT + "!=''  GROUP BY "
 				+ Fil.NUMERO_COMPOSANT_TENANT;
 		cursor = cr.query(urlProduction, ColProd2, clause, null, Fil._id);
 		if (cursor.moveToFirst()) {
@@ -415,7 +418,8 @@ public class MainMenuPreparateur extends Activity {
 		}
 
 		// Aboutissant
-		clause = Fil.NUMERO_COMPOSANT_ABOUTISSANT + "!='null' GROUP BY "
+		clause = Fil.NUMERO_COMPOSANT_ABOUTISSANT + "!='null' AND "
+				+ Fil.NUMERO_COMPOSANT_ABOUTISSANT + "!='' GROUP BY "
 				+ Fil.NUMERO_COMPOSANT_ABOUTISSANT;
 		cursor = cr.query(urlProduction, ColProd2, clause, null, Fil._id);
 		if (cursor.moveToFirst()) {
@@ -470,66 +474,6 @@ public class MainMenuPreparateur extends Activity {
 			} while (cursor.moveToNext());
 		}
 
-		/*
-		 * String nomFichier = null; File data = new
-		 * File(Environment.getDataDirectory().getAbsolutePath() +
-		 * "/data/com.inodex.inoprod/");
-		 * 
-		 * for (String file : data.list()) { Log.d("Nom Fichier", file); if
-		 * (file.contains("cheminement")) { nomFichier = file;
-		 * Log.e("Nom Fichier", nomFichier); } }
-		 * 
-		 * InputStream input = new
-		 * FileInputStream(Environment.getDataDirectory() .getAbsolutePath() +
-		 * "/data/com.inodex.inoprod/" + nomFichier); // Interpretation du
-		 * fichier a l'aide de Apache POI POIFSFileSystem fs = new
-		 * POIFSFileSystem(input); HSSFWorkbook wb = new HSSFWorkbook(fs);
-		 * 
-		 * // Feuille outillages HSSFSheet sheet = wb.getSheetAt(0);
-		 * 
-		 * // Iteration sur chacune des lignes du fichier Iterator rows =
-		 * sheet.rowIterator(); rows.next(); HSSFRow row = (HSSFRow)
-		 * rows.next(); HashMap<String, Integer> colonnes = new HashMap<String,
-		 * Integer>(); // Stockage des indices des colonnes for (int i = 0; i <
-		 * row.getLastCellNum(); i++) { colonnes.put(row.getCell(i).toString(),
-		 * i);
-		 * 
-		 * }
-		 * 
-		 * while (rows.hasNext()) {
-		 * 
-		 * try { contact.put( Cheminement.NUMERO_SECTION_CHEMINEMENT,
-		 * row.getCell( colonnes.get("Numéro de section de cheminement"))
-		 * .toString()); } catch (NullPointerException e) { } try {
-		 * contact.put(Cheminement.LOCALISATION1,
-		 * row.getCell(colonnes.get("Localisation_1 (68)")) .toString()); }
-		 * catch (NullPointerException e) { } try { contact.put(
-		 * Cheminement.NUMERO_COMPOSANT, row.getCell(
-		 * colonnes.get("Numéro de composant (9 & 12)")) .toString()); } catch
-		 * (NullPointerException e) { } try {
-		 * contact.put(Cheminement.ORDRE_REALISATION,
-		 * row.getCell(colonnes.get("Ordre de réalisation (24)")) .toString());
-		 * } catch (NullPointerException e) { } try {
-		 * contact.put(Cheminement.ZONE_ACTIVITE,
-		 * row.getCell(colonnes.get("Zone-activité (67)")) .toString()); } catch
-		 * (NullPointerException e) { } try { contact.put(
-		 * Cheminement.NUMERO_REPERE_TABLE_CHEMINEMENT, row.getCell(
-		 * colonnes.get("N° de repère de la table de cheminement"))
-		 * .toString()); } catch (NullPointerException e) { } try {
-		 * contact.put(Cheminement.TYPE_SUPPORT,
-		 * row.getCell(colonnes.get("Type de support")).toString()); } catch
-		 * (NullPointerException e) { } try {
-		 * contact.put(Cheminement.REPERE_ELECTRIQUE,
-		 * row.getCell(colonnes.get("Repère electrique (8 & 11)")) .toString());
-		 * } catch (NullPointerException e) { }
-		 * 
-		 * // Ajout de l'entité getContentResolver().insert(urlCheminement,
-		 * contact); // Ecrasement de ses données pour passer à la suivante
-		 * contact.clear(); row = (HSSFRow) rows.next();
-		 * 
-		 * }
-		 */
-
 		// Création de la table de kitting
 		debit = 1;
 		indice = 1;
@@ -547,7 +491,8 @@ public class MainMenuPreparateur extends Activity {
 				norme = cursor.getString(cursor
 						.getColumnIndex(Cable.NORME_CABLE));
 				clause = new String(Fil.NORME_CABLE + "='" + norme + "' AND "
-						+ Fil.REPERE_ELECTRIQUE_TENANT + "!='" + "null" + "'"
+						+ Fil.REPERE_ELECTRIQUE_TENANT + "!='" + "null"
+						+ "' AND " + Fil.REPERE_ELECTRIQUE_TENANT + "!='' "
 						+ " GROUP BY " + Fil.NUMERO_FIL_CABLE);
 
 				rang_1 = "Débit "
@@ -559,7 +504,8 @@ public class MainMenuPreparateur extends Activity {
 						+ " ("
 						+ cursor.getString(cursor
 								.getColumnIndex(Cable.REFERENCE_INTERNE)) + ")";
-				cursorA = cr.query(urlProduction, colProd1, clause, null, null);
+				cursorA = cr.query(urlProduction, colProd1, clause, null,
+						Fil._id + " , " + Fil.ORDRE_REALISATION);
 				if (cursorA.moveToFirst()) {
 					do {
 
@@ -604,6 +550,10 @@ public class MainMenuPreparateur extends Activity {
 						contact.put(Kitting.ORDRE_REALISATION, cursorA
 								.getString(cursorA
 										.getColumnIndex(Fil.ORDRE_REALISATION)));
+						contact.put(
+								Kitting.LONGUEUR_FIL_CABLE,
+								cursorA.getString(cursorA
+										.getColumnIndex(Fil.LONGUEUR_FIL_CABLE)));
 
 						// Attribution du numéro positionchariot
 						String face;
@@ -901,10 +851,34 @@ public class MainMenuPreparateur extends Activity {
 							Raccordement.NUMERO_POSITION_CHARIOT,
 							cursorB.getString(cursorB
 									.getColumnIndex(Kitting.NUMERO_POSITION_CHARIOT)));
+				} else {
+					String face;
+					if (contact.getAsString(Raccordement.ORDRE_REALISATION) == null) {
+						face = "Face 2";
+					} else if (contact.getAsString(
+							Raccordement.ORDRE_REALISATION).equals("Tête A")) {
+						face = "Face 1";
+					} else {
+						face = "Face 2";
+					}
+					clause = Chariot.FACE_CHARIOT + "='" + face + "'";
+
+					cursorB = cr.query(urlChariot, colCha, clause, null,
+							Chariot._id + " ASC");
+					if (cursorB.moveToFirst()) {
+						cursorB.moveToPosition(indiceChariotA);
+						numeroChariot = cursorB.getString(cursorB
+								.getColumnIndex(Chariot.POSITION_NUMERO));
+
+					}
+					contact.put(Raccordement.NUMERO_POSITION_CHARIOT,
+							numeroChariot);
 				}
 
 				// Numéro cheminement + Numéro Opération
-				if (contact.getAsString(Raccordement.NUMERO_COMPOSANT_TENANT) != null) {
+				if (contact.getAsString(Raccordement.NUMERO_COMPOSANT_TENANT) != null
+						&& contact
+								.getAsString(Raccordement.NUMERO_COMPOSANT_TENANT) != "") {
 					numeroComposant = contact
 							.getAsString(Raccordement.NUMERO_COMPOSANT_TENANT);
 
@@ -959,202 +933,242 @@ public class MainMenuPreparateur extends Activity {
 		gamme = "Kitting";
 		rang = "Kitting têtes";
 		clause = new String(Cable.NUMERO_COMPOSANT + "!='" + "null" + "' AND "
-				+ Cable.REPERE_ELECTRIQUE + "!='" + "null" + "' ");
-		cursor = cr.query(urlNomenclature, colNom3, clause, null,
-				Cable.REFERENCE_INTERNE + " , " + Cable.QUANTITE);
+				+ Cable.NUMERO_COMPOSANT + "!='' AND "
+				+ Cable.REPERE_ELECTRIQUE + "!='" + "null" + "' AND "
+				+ Cable.REPERE_ELECTRIQUE + "!='' GROUP BY "
+				+ Cable.REFERENCE_INTERNE);
+		cursorA = cr.query(urlNomenclature, colNom3, clause, null,
+				Cable.QUANTITE + " DESC");
 
-		if (cursor.moveToFirst()) {
-			referenceCourante = cursor.getString(cursor
+		if (cursorA.moveToFirst()) {
+			referenceCourante = cursorA.getString(cursorA
 					.getColumnIndex(Cable.REFERENCE_FABRICANT2));
 
 			do {
+				clause = new String(Cable.REFERENCE_FABRICANT2
+						+ " LIKE '%"
+						+ (cursorA.getString(cursorA
+								.getColumnIndex(Cable.REFERENCE_FABRICANT2)))
+						+ "%'");
+				cursor = cr.query(urlNomenclature, colNom3, clause, null,
+						Cable.QUANTITE + " DESC");
+				if (cursor.moveToFirst()) {
 
-				num = numeroOperation + Integer.toString(indice++);
+					do {
 
-				contact.put(BOM.DESIGNATION_COMPOSANT, cursor.getString(cursor
-						.getColumnIndex(Cable.DESIGNATION_COMPOSANT)));
+						num = numeroOperation + Integer.toString(indice++);
 
-				contact.put(BOM.REFERENCE_FABRICANT2, cursor.getString(cursor
-						.getColumnIndex(Cable.REFERENCE_FABRICANT2)));
+						contact.put(
+								BOM.DESIGNATION_COMPOSANT,
+								cursor.getString(cursor
+										.getColumnIndex(Cable.DESIGNATION_COMPOSANT)));
 
-				try {
-					// Changement du numéro de débit
-					if (!(contact.get(BOM.REFERENCE_FABRICANT2)
-							.equals(referenceCourante))) {
-						debit++;
-						referenceCourante = contact.get(
-								BOM.REFERENCE_FABRICANT2).toString();
+						contact.put(
+								BOM.REFERENCE_FABRICANT2,
+								cursor.getString(cursor
+										.getColumnIndex(Cable.REFERENCE_FABRICANT2)));
 
-					}
-				} catch (NullPointerException e) {
+						try {
+							// Changement du numéro de débit
+							if (!(contact.get(BOM.REFERENCE_FABRICANT2)
+									.equals(referenceCourante))) {
+								debit++;
+								referenceCourante = contact.get(
+										BOM.REFERENCE_FABRICANT2).toString();
 
+							}
+						} catch (NullPointerException e) {
+
+						}
+						contact.put(
+								BOM.REFERENCE_INTERNE,
+								cursor.getString(cursor
+										.getColumnIndex(Cable.REFERENCE_INTERNE)));
+						contact.put(
+								BOM.FOURNISSEUR_FABRICANT,
+								cursor.getString(cursor
+										.getColumnIndex(Cable.FOURNISSEUR_FABRICANT)));
+						contact.put(BOM.EQUIPEMENT, cursor.getString(cursor
+								.getColumnIndex(Cable.EQUIPEMENT)));
+						contact.put(
+								BOM.REPERE_ELECTRIQUE_TENANT,
+								cursor.getString(cursor
+										.getColumnIndex(Cable.REPERE_ELECTRIQUE)));
+						contact.put(
+								BOM.NUMERO_COMPOSANT,
+								cursor.getString(cursor
+										.getColumnIndex(Cable.NUMERO_COMPOSANT)));
+						contact.put(
+								BOM.ACCESSOIRE_CABLAGE,
+								cursor.getString(cursor
+										.getColumnIndex(Cable.ACCESSOIRE_CABLAGE)));
+						contact.put(
+								BOM.ACCESSOIRE_COMPOSANT,
+								cursor.getString(cursor
+										.getColumnIndex(Cable.ACCESSOIRE_COMPOSANT)));
+						contact.put(
+								BOM.REFERENCE_IMPOSEE,
+								cursor.getString(cursor
+										.getColumnIndex(Cable.REFERENCE_IMPOSEE)));
+						contact.put(BOM.QUANTITE, cursor.getString(cursor
+								.getColumnIndex(Cable.QUANTITE)));
+						contact.put(BOM.UNITE, cursor.getString(cursor
+								.getColumnIndex(Cable.UNITE)));
+						contact.put(BOM.NUMERO_DEBIT, debit);
+						contact.put(BOM.NUMERO_OPERATION, num);
+
+						clause = new String(Cheminement.NUMERO_COMPOSANT_TENANT
+								+ "='"
+								+ contact.getAsString(BOM.NUMERO_COMPOSANT)
+								+ "' OR "
+								+ Cheminement.NUMERO_COMPOSANT_ABOUTISSANT
+								+ "='"
+								+ contact.getAsString(BOM.NUMERO_COMPOSANT)
+								+ "'");
+						cursorB = cr.query(urlCheminement, ColChem1, clause,
+								null, null);
+
+						if (cursorB.moveToFirst()) {
+							try {
+								numeroCheminement = cursorB
+										.getInt(cursorB
+												.getColumnIndex(Cheminement.NUMERO_CHEMINEMNT));
+								contact.put(BOM.NUMERO_CHEMINEMENT,
+										numeroCheminement);
+							} catch (NullPointerException e) {
+
+							}
+
+						}
+						clause = new String(
+								Kitting.NUMERO_COMPOSANT
+										+ "='"
+										+ cursor.getString(cursor
+												.getColumnIndex(Cable.NUMERO_COMPOSANT))
+										+ "'");
+						cursorB = cr.query(urlKitting, colKit3, clause, null,
+								null);
+						if (cursorB.moveToFirst()) {
+							contact.put(
+									BOM.NUMERO_POSITION_CHARIOT,
+									cursorB.getString(cursorB
+											.getColumnIndex(Kitting.NUMERO_POSITION_CHARIOT)));
+						}
+
+						// Ajouter les Ordre depuis la BD Production
+						clause = new String(Fil.NUMERO_COMPOSANT_TENANT + "='"
+								+ contact.getAsString(BOM.NUMERO_COMPOSANT)
+								+ "' OR " + Fil.NUMERO_COMPOSANT_ABOUTISSANT
+								+ "='"
+								+ contact.getAsString(BOM.NUMERO_COMPOSANT)
+								+ "'");
+						cursorB = cr.query(urlProduction, colProd1, clause,
+								null, Fil._id);
+						if (cursorB.moveToFirst()) {
+							contact.put(
+									BOM.ORDRE_REALISATION,
+									cursorB.getString(cursorB
+											.getColumnIndex(Fil.ORDRE_REALISATION)));
+						}
+
+						// Ajout de l'entité
+						getContentResolver().insert(urlBOM, contact);
+						// Ecrasement de ses données pour passer à la suivante
+						contact.clear();
+
+						rang_1 = "Débit "
+								+ cursor.getString(cursor
+										.getColumnIndex(Cable.DESIGNATION_COMPOSANT))
+								+ " réference "
+								+ cursor.getString(cursor
+										.getColumnIndex(Cable.REFERENCE_FABRICANT2))
+								+ " ("
+								+ cursor.getString(cursor
+										.getColumnIndex(Cable.REFERENCE_INTERNE))
+								+ ")";
+						descriptionOperation = "Débit pour connecteur"
+								+ cursor.getString(cursor
+										.getColumnIndex(Cable.NUMERO_COMPOSANT))
+								+ " ("
+								+ cursor.getString(cursor
+										.getColumnIndex(Cable.REPERE_ELECTRIQUE))
+								+ ")";
+
+						// Ajout des opérations à la table de séquencement
+						contact.put(Operation.GAMME, gamme);
+						contact.put(Operation.RANG_1, rang);
+						contact.put(Operation.RANG_1_1, rang_1);
+						contact.put(Operation.DESCRIPTION_OPERATION,
+								descriptionOperation);
+						contact.put(Operation.NUMERO_OPERATION, num);
+						contact.put(Operation.DUREE_THEORIQUE, KIT_TETE);
+
+						// Ajout de l'entité
+						getContentResolver().insert(urlSequencement, contact);
+						// Ecrasement de ses données pour passer à la suivante
+						contact.clear();
+
+					} while (cursor.moveToNext());
 				}
-				contact.put(BOM.REFERENCE_INTERNE, cursor.getString(cursor
-						.getColumnIndex(Cable.REFERENCE_INTERNE)));
-				contact.put(BOM.FOURNISSEUR_FABRICANT, cursor.getString(cursor
-						.getColumnIndex(Cable.FOURNISSEUR_FABRICANT)));
-				contact.put(BOM.EQUIPEMENT, cursor.getString(cursor
-						.getColumnIndex(Cable.EQUIPEMENT)));
-				contact.put(BOM.REPERE_ELECTRIQUE_TENANT, cursor
-						.getString(cursor
-								.getColumnIndex(Cable.REPERE_ELECTRIQUE)));
-				contact.put(BOM.NUMERO_COMPOSANT, cursor.getString(cursor
-						.getColumnIndex(Cable.NUMERO_COMPOSANT)));
-				contact.put(BOM.ACCESSOIRE_CABLAGE, cursor.getString(cursor
-						.getColumnIndex(Cable.ACCESSOIRE_CABLAGE)));
-				contact.put(BOM.ACCESSOIRE_COMPOSANT, cursor.getString(cursor
-						.getColumnIndex(Cable.ACCESSOIRE_COMPOSANT)));
-				contact.put(BOM.REFERENCE_IMPOSEE, cursor.getString(cursor
-						.getColumnIndex(Cable.REFERENCE_IMPOSEE)));
-				contact.put(BOM.QUANTITE,
-						cursor.getString(cursor.getColumnIndex(Cable.QUANTITE)));
-				contact.put(BOM.UNITE,
-						cursor.getString(cursor.getColumnIndex(Cable.UNITE)));
-				contact.put(BOM.NUMERO_DEBIT, debit);
-				contact.put(BOM.NUMERO_OPERATION, num);
-
-				clause = new String(Cheminement.NUMERO_COMPOSANT_TENANT + "='"
-						+ contact.getAsString(BOM.NUMERO_COMPOSANT) + "' OR "
-						+ Cheminement.NUMERO_COMPOSANT_ABOUTISSANT + "='"
-						+ contact.getAsString(BOM.NUMERO_COMPOSANT) + "'");
-				cursorB = cr
-						.query(urlCheminement, ColChem1, clause, null, null);
-
-				if (cursorB.moveToFirst()) {
-					try {
-						numeroCheminement = cursorB.getInt(cursorB
-								.getColumnIndex(Cheminement.NUMERO_CHEMINEMNT));
-						contact.put(BOM.NUMERO_CHEMINEMENT, numeroCheminement);
-					} catch (NullPointerException e) {
-
-					}
-
-				}
-				clause = new String(Kitting.NUMERO_COMPOSANT
-						+ "='"
-						+ cursor.getString(cursor
-								.getColumnIndex(Cable.NUMERO_COMPOSANT)) + "'");
-				cursorB = cr.query(urlKitting, colKit3, clause, null, null);
-				if (cursorB.moveToFirst()) {
-					contact.put(
-							BOM.NUMERO_POSITION_CHARIOT,
-							cursorB.getString(cursorB
-									.getColumnIndex(Kitting.NUMERO_POSITION_CHARIOT)));
-				}
-
-				// Ajouter les Ordre depuis la BD Production
-				clause = new String(Fil.NUMERO_COMPOSANT_TENANT + "='"
-						+ contact.getAsString(BOM.NUMERO_COMPOSANT) + "' OR "
-						+ Fil.NUMERO_COMPOSANT_ABOUTISSANT + "='"
-						+ contact.getAsString(BOM.NUMERO_COMPOSANT) + "'");
-				cursorB = cr.query(urlProduction, colProd1, clause, null,
-						Fil._id);
-				if (cursorB.moveToFirst()) {
-					contact.put(BOM.ORDRE_REALISATION, cursorB
-							.getString(cursorB
-									.getColumnIndex(Fil.ORDRE_REALISATION)));
-				}
-
-				// Ajout de l'entité
-				getContentResolver().insert(urlBOM, contact);
-				// Ecrasement de ses données pour passer à la suivante
-				contact.clear();
-
-				rang_1 = "Débit "
-						+ cursor.getString(cursor
-								.getColumnIndex(Cable.DESIGNATION_COMPOSANT))
-						+ " réference "
-						+ cursor.getString(cursor
-								.getColumnIndex(Cable.REFERENCE_FABRICANT2))
-						+ " ("
-						+ cursor.getString(cursor
-								.getColumnIndex(Cable.REFERENCE_INTERNE)) + ")";
-				descriptionOperation = "Débit pour connecteur"
-						+ cursor.getString(cursor
-								.getColumnIndex(Cable.NUMERO_COMPOSANT))
-						+ " ("
-						+ cursor.getString(cursor
-								.getColumnIndex(Cable.REPERE_ELECTRIQUE)) + ")";
-
-				// Ajout des opérations à la table de séquencement
-				contact.put(Operation.GAMME, gamme);
-				contact.put(Operation.RANG_1, rang);
-				contact.put(Operation.RANG_1_1, rang_1);
-				contact.put(Operation.DESCRIPTION_OPERATION,
-						descriptionOperation);
-				contact.put(Operation.NUMERO_OPERATION, num);
-				contact.put(Operation.DUREE_THEORIQUE, KIT_TETE);
-
-				// Ajout de l'entité
-				getContentResolver().insert(urlSequencement, contact);
-				// Ecrasement de ses données pour passer à la suivante
-				contact.clear();
-
-			} while (cursor.moveToNext());
+			} while (cursorA.moveToNext());
 			// Regroupement des cables
-			clause = new String(BOM.NUMERO_COMPOSANT + "!='" + "null" + "'"
-					+ " GROUP BY " + BOM.NUMERO_COMPOSANT);
+			clause = new String(BOM.NUMERO_COMPOSANT + "!='" + "null"
+					+ "' AND " + BOM.NUMERO_COMPOSANT + "!='' " + " AND "
+					+ BOM.REPERE_ELECTRIQUE_TENANT + "!='" + "null" + "' AND "
+					+ BOM.REPERE_ELECTRIQUE_TENANT + "!='' GROUP BY "
+					+ BOM.NUMERO_COMPOSANT);
 			cursor = cr.query(urlBOM, colBOM3, clause, null, null);
 
 			if (cursor.moveToFirst()) {
+
 				do {
-					num1 = numeroOperation + Integer.toString(indice++);
-					rang_1 = "Constitution kit "
-							+ cursor.getString(cursor
-									.getColumnIndex(BOM.ORDRE_REALISATION))
-							+ " connecteur "
-							+ cursor.getString(cursor
-									.getColumnIndex(BOM.NUMERO_COMPOSANT))
-							+ " ("
-							+ cursor.getString(cursor
-									.getColumnIndex(BOM.REPERE_ELECTRIQUE_TENANT))
-							+ ")";
-					descriptionOperation = "Intégration des câbles du connecteur "
-							+ cursor.getString(cursor
-									.getColumnIndex(BOM.NUMERO_COMPOSANT))
-							+ " ("
-							+ cursor.getString(cursor
-									.getColumnIndex(BOM.REPERE_ELECTRIQUE_TENANT))
-							+ ")";
+					cursorA = cr
+							.query(urlKitting,
+									colKit3,
+									Kitting.NUMERO_COMPOSANT
+											+ "='"
+											+ cursor.getString(cursor
+													.getColumnIndex(BOM.NUMERO_COMPOSANT))
+											+ "'", null, null);
+					if (cursorA.moveToFirst()) {
 
-					// Ajout des opérations à la table de séquencement
-					contact.put(Operation.GAMME, gamme);
-					contact.put(Operation.RANG_1, rang);
-					contact.put(Operation.RANG_1_1, rang_1);
-					contact.put(Operation.DESCRIPTION_OPERATION,
-							descriptionOperation);
-					contact.put(Operation.NUMERO_OPERATION, num1);
-					contact.put(Operation.DUREE_THEORIQUE, KIT_TETE);
+						rang_1 = "Constitution kit "
+								+ cursor.getString(cursor
+										.getColumnIndex(BOM.ORDRE_REALISATION))
+								+ " connecteur "
+								+ cursor.getString(cursor
+										.getColumnIndex(BOM.NUMERO_COMPOSANT))
+								+ " ("
+								+ cursor.getString(cursor
+										.getColumnIndex(BOM.REPERE_ELECTRIQUE_TENANT))
+								+ ")";
 
-					// Ajout de l'entité
-					getContentResolver().insert(urlSequencement, contact);
-					// Ecrasement de ses données pour passer à la suivante
-					contact.clear();
+						num1 = numeroOperation + Integer.toString(indice++);
+						descriptionOperation = "Regroupement & emballage du kit connecteur "
+								+ cursor.getString(cursor
+										.getColumnIndex(BOM.NUMERO_COMPOSANT))
+								+ " ("
+								+ cursor.getString(cursor
+										.getColumnIndex(BOM.REPERE_ELECTRIQUE_TENANT))
+								+ ")";
 
-					num1 = numeroOperation + Integer.toString(indice++);
-					descriptionOperation = "Regroupement & emballage du kit connecteur "
-							+ cursor.getString(cursor
-									.getColumnIndex(BOM.NUMERO_COMPOSANT))
-							+ " ("
-							+ cursor.getString(cursor
-									.getColumnIndex(BOM.REPERE_ELECTRIQUE_TENANT))
-							+ ")";
+						// Ajout des opérations à la table de séquencement
+						contact.put(Operation.GAMME, gamme);
+						contact.put(Operation.RANG_1, rang);
+						contact.put(Operation.RANG_1_1, rang_1);
+						contact.put(Operation.DESCRIPTION_OPERATION,
+								descriptionOperation);
+						contact.put(Operation.NUMERO_OPERATION, num1);
+						contact.put(Operation.DUREE_THEORIQUE, KIT_TETE);
 
-					// Ajout des opérations à la table de séquencement
-					contact.put(Operation.GAMME, gamme);
-					contact.put(Operation.RANG_1, rang);
-					contact.put(Operation.RANG_1_1, rang_1);
-					contact.put(Operation.DESCRIPTION_OPERATION,
-							descriptionOperation);
-					contact.put(Operation.NUMERO_OPERATION, num1);
-					contact.put(Operation.DUREE_THEORIQUE, KIT_TETE);
-
-					// Ajout de l'entité
-					getContentResolver().insert(urlSequencement, contact);
-					// Ecrasement de ses données pour passer à la suivante
-					contact.clear();
+						// Ajout de l'entité
+						getContentResolver().insert(urlSequencement, contact);
+						// Ecrasement de ses données pour passer à la suivante
+						contact.clear();
+					}
 
 				} while (cursor.moveToNext());
+
 			} else {
 				Toast.makeText(this, "Regroupement non établi",
 						Toast.LENGTH_SHORT).show();
@@ -1174,6 +1188,7 @@ public class MainMenuPreparateur extends Activity {
 	 * 
 	 * @return Réussite de l'import
 	 */
+
 	private boolean importSources() {
 		getContentResolver().delete(urlSequencement,
 				Operation._id + "!='null'", null);
@@ -1631,10 +1646,12 @@ public class MainMenuPreparateur extends Activity {
 		// des colonnes
 		HSSFRow row = (HSSFRow) rows.next();
 		HashMap<String, Integer> colonnes = new HashMap<String, Integer>();
-
+		String col;
 		// Stockage des indices des colonnes
 		for (int i = 0; i < row.getLastCellNum(); i++) {
-			colonnes.put(row.getCell(i).toString(), i);
+			col = row.getCell(i).toString();
+			colonnes.put(col.substring(col.length() - 3, col.length()), i);
+			Log.d("Colonnes", col.substring(col.length() - 3, col.length()));
 
 		}
 
@@ -1647,84 +1664,68 @@ public class MainMenuPreparateur extends Activity {
 			// NullPointerException causées par les cellules vides
 			try {
 				contact.put(Fil.DESIGNATION_PRODUIT,
-						row.getCell(colonnes.get("Designation_produit (1)"))
-								.toString());
+						row.getCell(colonnes.get("(1)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Fil.REFERENCE_FICHIER_SOURCE,
-						row.getCell(
-								colonnes.get("Reference_fichier_source (2)"))
-								.toString());
+				contact.put(Fil.REFERENCE_FICHIER_SOURCE,
+						row.getCell(colonnes.get("(2)")).toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Fil.NUMERO_REVISION_HARNAIS, Float.parseFloat(row
-						.getCell(colonnes.get("Numero_revision_harnais (4)"))
-						.toString()));
+						.getCell(colonnes.get("(4)")).toString()));
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Fil.NUMERO_HARNAIS_FAISCEAUX, Float.parseFloat(row
-						.getCell(colonnes.get("Numero_harnais_faisceaux (6)"))
-						.toString()));
+						.getCell(colonnes.get("(6)")).toString()));
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Fil.REFERENCE_FABRICANT1,
-						row.getCell(colonnes.get("Reference_fabricant (17)"))
-								.toString());
+						row.getCell(colonnes.get("17)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Fil.STANDARD,
-						Float.parseFloat(row.getCell(
-								colonnes.get("Standard (21)")).toString()));
+				contact.put(Fil.STANDARD, Float.parseFloat(row.getCell(
+						colonnes.get("21)")).toString()));
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.ZONE_ACTIVITE,
-						row.getCell(colonnes.get("Zone-activité (67)"))
-								.toString());
+				contact.put(Fil.ZONE_ACTIVITE, row.getCell(colonnes.get("67)"))
+						.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.LOCALISATION1,
-						row.getCell(colonnes.get("Localisation_1 (68)"))
-								.toString());
+				contact.put(Fil.LOCALISATION1, row.getCell(colonnes.get("68)"))
+						.toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Fil.LOCALISATION2, Float.parseFloat((row
-						.getCell(colonnes.get("Localisation_2 (69)"))
-						.toString())));
+						.getCell(colonnes.get("69)")).toString())));
 			} catch (Exception e) {
 			}
 
 			try {
-				contact.put(Fil.NUMERO_ROUTE,
-						row.getCell(colonnes.get("Numero_route (62)"))
-								.toString());
+				contact.put(Fil.NUMERO_ROUTE, row.getCell(colonnes.get("62)"))
+						.toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Fil.ETAT_LIAISON_FIL,
-						row.getCell(colonnes.get("Etat_liaison_fil (3)"))
-								.toString());
+						row.getCell(colonnes.get("(3)")).toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Fil.NUMERO_REVISION_FIL, Float.parseFloat(row
-						.getCell(colonnes.get("Numero_revision_fil (5)"))
-						.toString()));
+						.getCell(colonnes.get("(5)")).toString()));
 			} catch (Exception e) {
 
 			}
 			try {
-				if (row.getCell(colonnes.get("Fil_sensible (66)")).toString()
-						.equals("X")) {
+				if (row.getCell(colonnes.get("66)")).toString().equals("X")) {
 					contact.put(Fil.FIL_SENSIBLE, true);
 				}
 			} catch (Exception e) {
@@ -1732,242 +1733,177 @@ public class MainMenuPreparateur extends Activity {
 			}
 			try {
 				contact.put(Fil.NUMERO_FIL_CABLE,
-						row.getCell(colonnes.get("Numero_fil_cable (13)"))
-								.toString());
+						row.getCell(colonnes.get("13)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.NORME_CABLE,
-						row.getCell(colonnes.get("Norme_cable (72)"))
-								.toString());
+				contact.put(Fil.NORME_CABLE, row.getCell(colonnes.get("72)"))
+						.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.TYPE_FIL_CABLE,
-						row.getCell(colonnes.get("Type_fil_cable (15)"))
-								.toString());
+				contact.put(Fil.TYPE_FIL_CABLE, row
+						.getCell(colonnes.get("15)")).toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Fil.LONGUEUR_FIL_CABLE, Float.parseFloat(row
-						.getCell(colonnes.get("Longueur_fil_cable (16)"))
-						.toString()));
+						.getCell(colonnes.get("16)")).toString()));
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Fil.NUMERO_FIL_DANS_CABLE,
-						row.getCell(colonnes.get("Numero_fil_dans_cable (54)"))
-								.toString());
+						row.getCell(colonnes.get("54)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.COULEUR_FIL,
-						row.getCell(colonnes.get("Couleur_fil (34)"))
-								.toString());
+				contact.put(Fil.COULEUR_FIL, row.getCell(colonnes.get("34)"))
+						.toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Fil.ORDRE_REALISATION,
-						row.getCell(colonnes.get("Ordre de réalisation (24)"))
-								.toString());
+						row.getCell(colonnes.get("24)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Fil.REPERE_ELECTRIQUE_TENANT,
-						row.getCell(
-								colonnes.get("Repère electrique tenant (8)"))
-								.toString());
+				contact.put(Fil.REPERE_ELECTRIQUE_TENANT,
+						row.getCell(colonnes.get("(8)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Fil.NUMERO_COMPOSANT_TENANT,
-						row.getCell(
-								colonnes.get("Numéro de composant tenant (9)"))
-								.toString());
+				contact.put(Fil.NUMERO_COMPOSANT_TENANT,
+						row.getCell(colonnes.get("(9)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Fil.NUMERO_BORNE_TENANT, Float.parseFloat(row
-						.getCell(colonnes.get("Numero_borne_tenant (43)"))
-						.toString()));
+				contact.put(Fil.NUMERO_BORNE_TENANT,
+						row.getCell(colonnes.get("43)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Fil.TYPE_RACCORDEMENT_TENANT,
-						row.getCell(
-								colonnes.get("Type_raccordement_tenant (45)"))
-								.toString());
+				contact.put(Fil.TYPE_RACCORDEMENT_TENANT,
+						row.getCell(colonnes.get("45)")).toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Fil.REPRISE_BLINDAGE,
-						row.getCell(colonnes.get("Reprise_blindage (37)"))
-								.toString());
+						row.getCell(colonnes.get("37)")).toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Fil.SANS_REPRISE_BLINDAGE,
-						row.getCell(colonnes.get("Sans_Reprise_blindage (83)"))
-								.toString());
+						row.getCell(colonnes.get("83)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Fil.REPERE_ELECTRIQUE_ABOUTISSANT,
-						row.getCell(
-								colonnes.get("Repère electrique aboutissant (11)"))
-								.toString());
+				contact.put(Fil.REPERE_ELECTRIQUE_ABOUTISSANT,
+						row.getCell(colonnes.get("11)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Fil.NUMERO_COMPOSANT_ABOUTISSANT,
-						row.getCell(
-								colonnes.get("Numéro de composant aboutissant (12)"))
-								.toString());
+				contact.put(Fil.NUMERO_COMPOSANT_ABOUTISSANT,
+						row.getCell(colonnes.get("12)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Fil.NUMERO_BORNE_ABOUTISSANT,
-						row.getCell(
-								colonnes.get("Numero_Borne_aboutissant (48)"))
-								.toString());
+				contact.put(Fil.NUMERO_BORNE_ABOUTISSANT,
+						row.getCell(colonnes.get("48)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Fil.TYPE_RACCORDEMENT_ABOUTISSANT,
-						row.getCell(
-								colonnes.get("Type_raccordement_aboutissant (50)"))
-								.toString());
+				contact.put(Fil.TYPE_RACCORDEMENT_ABOUTISSANT,
+						row.getCell(colonnes.get("50)")).toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Fil.TYPE_ELEMENT_RACCORDE,
-						row.getCell(colonnes.get("Type_element_raccorde (46)"))
-								.toString());
+						row.getCell(colonnes.get("46)")).toString());
 			} catch (Exception e) {
 			}
 
 			try {
 				contact.put(Fil.REFERENCE_FABRICANT2,
-						row.getCell(colonnes.get("Reference_fabricant (18)"))
-								.toString());
+						row.getCell(colonnes.get("18)")).toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Fil.REFERENCE_INTERNE,
-						row.getCell(colonnes.get("Reference_interne (19)"))
-								.toString());
+						row.getCell(colonnes.get("19)")).toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Fil.FICHE_INSTRUCTION,
-						row.getCell(colonnes.get("Fiche_instruction (25)"))
-								.toString());
+						row.getCell(colonnes.get("25)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Fil.REFERENCE_CONFIGURATION_SERTISSAGE,
-						row.getCell(
-								colonnes.get("reference_configuration_sertissage (26)"))
-								.toString());
+				contact.put(Fil.REFERENCE_CONFIGURATION_SERTISSAGE, row
+						.getCell(colonnes.get("26)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Fil.ACCESSOIRE_COMPOSANT1,
-						row.getCell(colonnes.get("Accessoire_composant_1 (42)"))
-								.toString());
+				contact.put(Fil.ACCESSOIRE_COMPOSANT1,
+						row.getCell(colonnes.get("42)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Fil.ACCESSOIRE_COMPOSANT2,
-						row.getCell(colonnes.get("Accessoire_composant_2 (44)"))
-								.toString());
+				contact.put(Fil.ACCESSOIRE_COMPOSANT2,
+						row.getCell(colonnes.get("44)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Fil.REFERENCE_OUTIL_TENANT,
-						row.getCell(colonnes.get("Référence_outil_tenant (27)"))
-								.toString());
+				contact.put(Fil.REFERENCE_OUTIL_TENANT,
+						row.getCell(colonnes.get("27)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Fil.REFERENCE_ACCESSOIRE_OUTIL_TENANT,
-						row.getCell(
-								colonnes.get("Référence_accessoire_outil_tenant (28)"))
-								.toString());
+				contact.put(Fil.REFERENCE_ACCESSOIRE_OUTIL_TENANT,
+						row.getCell(colonnes.get("28)")).toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Fil.REGLAGE_OUTIL_TENANT,
-						row.getCell(colonnes.get("Reglage_outil_tenant (29)"))
-								.toString());
+						row.getCell(colonnes.get("29)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Fil.REFERENCE_OUTIL_ABOUTISSANT,
-						row.getCell(
-								colonnes.get("Référence_outil_aboutissant (30)"))
-								.toString());
+				contact.put(Fil.REFERENCE_OUTIL_ABOUTISSANT,
+						row.getCell(colonnes.get("30)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Fil.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT,
-						row.getCell(
-								colonnes.get("Référence_accessoire_outil_aboutissant (31)"))
-								.toString());
+				contact.put(Fil.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT, row
+						.getCell(colonnes.get("31)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Fil.REGLAGE_OUTIL_ABOUTISSANT,
-						row.getCell(
-								colonnes.get("Reglage_outil_aboutissant (32)"))
-								.toString());
+				contact.put(Fil.REGLAGE_OUTIL_ABOUTISSANT,
+						row.getCell(colonnes.get("32)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				if (row.getCell(colonnes.get("Obturateur (39)")).toString()
-						.equals("X")) {
+				if (row.getCell(colonnes.get("39)")).toString().equals("X")) {
 					contact.put(Fil.OBTURATEUR, true);
 				}
 			} catch (Exception e) {
 				contact.put(Fil.OBTURATEUR, false);
 			}
 			try {
-				if (row.getCell(colonnes.get("Faux-contact (40)")).toString()
-						.equals("X")) {
+				if (row.getCell(colonnes.get("40)")).toString().equals("X")) {
 					contact.put(Fil.FAUX_CONTACT, true);
 				}
 			} catch (Exception e) {
 				contact.put(Fil.FAUX_CONTACT, false);
 			}
 			try {
-				contact.put(
-						Fil.ETAT_FINALISATION_PRISE,
-						row.getCell(
-								colonnes.get("Etat_finalisation_prise (64)"))
-								.toString());
+				contact.put(Fil.ETAT_FINALISATION_PRISE,
+						row.getCell(colonnes.get("64)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Fil.ORIENTATION_RACCORD_ARRIERE,
-						row.getCell(
-								colonnes.get("Orientation_raccord_arriere (65)"))
-								.toString());
+				contact.put(Fil.ORIENTATION_RACCORD_ARRIERE,
+						row.getCell(colonnes.get("65)")).toString());
 			} catch (Exception e) {
 			}
 
@@ -2025,10 +1961,12 @@ public class MainMenuPreparateur extends Activity {
 		HSSFRow row = (HSSFRow) rows.next();
 		HashMap<String, Integer> colonnes = new HashMap<String, Integer>();
 
+		String col;
 		// Stockage des indices des colonnes
 		for (int i = 0; i < row.getLastCellNum(); i++) {
-			colonnes.put(row.getCell(i).toString(), i);
-			Log.e("Colones", row.getCell(i).toString());
+			col = row.getCell(i).toString();
+			colonnes.put(col.substring(col.length() - 3, col.length()), i);
+			Log.d("Colonnes", col.substring(col.length() - 3, col.length()));
 
 		}
 		ContentValues contact = new ContentValues();
@@ -2040,116 +1978,92 @@ public class MainMenuPreparateur extends Activity {
 			// NullPointerException causées par les cellules vides
 			try {
 				contact.put(Cable.DESIGNATION_PRODUIT,
-						row.getCell(colonnes.get("Designation_produit (1)"))
-								.toString());
+						row.getCell(colonnes.get("(1)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Cable.REFERENCE_FICHIER_SOURCE,
-						row.getCell(
-								colonnes.get("Reference_fichier_source (2)"))
-								.toString());
+				contact.put(Cable.REFERENCE_FICHIER_SOURCE,
+						row.getCell(colonnes.get("(2)")).toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Cable.NUMERO_REVISION_HARNAIS, Float.parseFloat(row
-						.getCell(colonnes.get("Numero_revision_harnais (4)"))
-						.toString()));
+						.getCell(colonnes.get("(4)")).toString()));
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Cable.NUMERO_HARNAIS_FAISCEAUX, Float
-						.parseFloat(row.getCell(
-								colonnes.get("Numero_harnais_faisceaux (6)"))
+				contact.put(Cable.NUMERO_HARNAIS_FAISCEAUX,
+						Float.parseFloat(row.getCell(colonnes.get("(6)"))
 								.toString()));
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Cable.REFERENCE_FABRICANT1,
-						row.getCell(colonnes.get("Reference_fabricant (17)"))
-								.toString());
+						row.getCell(colonnes.get("17)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Cable.STANDARD,
-						Float.parseFloat(row.getCell(
-								colonnes.get("Standard (21)")).toString()));
+				contact.put(Cable.STANDARD, Float.parseFloat(row.getCell(
+						colonnes.get("21)")).toString()));
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Cable.EQUIPEMENT,
-						row.getCell(colonnes.get("Equipement (7)")).toString());
+				contact.put(Cable.EQUIPEMENT, row.getCell(colonnes.get("(7)"))
+						.toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Cable.REPERE_ELECTRIQUE,
-						row.getCell(colonnes.get("Repère_electrique (8 & 11)"))
-								.toString());
+						row.getCell(colonnes.get("11)")).toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Cable.NUMERO_COMPOSANT,
-						row.getCell(colonnes.get("Numéro_composant (9 & 12)"))
-								.toString());
+						row.getCell(colonnes.get("12)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Cable.NORME_CABLE,
-						row.getCell(colonnes.get("Norme_cable (72)"))
-								.toString());
+				contact.put(Cable.NORME_CABLE, row.getCell(colonnes.get("72)"))
+						.toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Cable.ACCESSOIRE_CABLAGE,
-						row.getCell(
-								colonnes.get("Accessoire_cablage (49 & 63 & 81 & 82)"))
-								.toString());
+				contact.put(Cable.ACCESSOIRE_CABLAGE,
+						row.getCell(colonnes.get("82)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(
-						Cable.ACCESSOIRE_COMPOSANT,
-						row.getCell(
-								colonnes.get("Accessoire_composant (37 & 42 & 44)"))
-								.toString());
+				contact.put(Cable.ACCESSOIRE_COMPOSANT,
+						row.getCell(colonnes.get("44)")).toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Cable.DESIGNATION_COMPOSANT,
-						row.getCell(colonnes.get("Designation_composant (80)"))
-								.toString());
+						row.getCell(colonnes.get("80)")).toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Cable.FAMILLE_PRODUIT,
-						row.getCell(colonnes.get("Famille_produit (71)"))
-								.toString());
+						row.getCell(colonnes.get("71)")).toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Cable.REFERENCE_FABRICANT2,
-						row.getCell(colonnes.get(" Reference_fabricant (18)"))
-								.toString());
+						row.getCell(colonnes.get("18)")).toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Cable.FOURNISSEUR_FABRICANT,
-						row.getCell(colonnes.get("Fournisseur_Fabricant (73)"))
-								.toString());
+						row.getCell(colonnes.get("73)")).toString());
 			} catch (Exception e) {
 			}
 			try {
 				contact.put(Cable.REFERENCE_INTERNE,
-						row.getCell(colonnes.get("Reference_interne (19)"))
-								.toString());
+						row.getCell(colonnes.get("19)")).toString());
 			} catch (Exception e) {
 			}
 			try {
-				if (row.getCell(colonnes.get("Reference_imposee (76)"))
-						.toString().equals("X")) {
+				if (row.getCell(colonnes.get("76)")).toString().equals("X")) {
 					contact.put(Cable.REFERENCE_IMPOSEE, true);
 				}
 
@@ -2157,15 +2071,13 @@ public class MainMenuPreparateur extends Activity {
 				contact.put(Cable.REFERENCE_IMPOSEE, false);
 			}
 			try {
-				contact.put(
-						Cable.QUANTITE,
-						Float.parseFloat(row.getCell(
-								colonnes.get("Quantite (70 & 74)")).toString()));
+				contact.put(Cable.QUANTITE, Float.parseFloat(row.getCell(
+						colonnes.get("74)")).toString()));
 			} catch (Exception e) {
 			}
 			try {
-				contact.put(Cable.UNITE, row
-						.getCell(colonnes.get("Unite (78)")).toString());
+				contact.put(Cable.UNITE, row.getCell(colonnes.get("78)"))
+						.toString());
 			} catch (Exception e) {
 			}
 
@@ -2587,9 +2499,11 @@ public class MainMenuPreparateur extends Activity {
 				}
 
 				// Ajout des autres cables
+				FIL_SENSIBLE = 1;
 				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
 						+ numeroComposant + "' AND  "
-						+ Raccordement.NUMERO_OPERATION + " IS NULL GROUP BY "
+						+ Raccordement.NUMERO_OPERATION + " IS NULL AND "
+						+ Raccordement.FIL_SENSIBLE + "='1' GROUP BY "
 						+ Raccordement.NUMERO_FIL_CABLE;
 				cursorA = cr.query(urlRaccordement, colRac, clause, null, null);
 
@@ -2597,24 +2511,119 @@ public class MainMenuPreparateur extends Activity {
 					String refFabricant = cursorA.getString(cursorA
 							.getColumnIndex(Raccordement.REFERENCE_FABRICANT2));
 					// Verifications de la sensibilité des fils
-					if (cursorA.getInt(cursorA
-							.getColumnIndex(Raccordement.FIL_SENSIBLE)) == 1) {
 
-						FIL_SENSIBLE = 0;
+					FIL_SENSIBLE = 0;
 
-						// CONTROLE FIL SENSIBLE
-						gamme = "Contrôle jalons";
-						numeroOperation = "9-000";
+					// CONTROLE FIL SENSIBLE
+					gamme = "Contrôle jalons";
+					numeroOperation = "9-000";
 
-						// Controle finalisation
-						descriptionOperation = "Contrôle sertissage tête A "
+					// Controle sertissage
+					descriptionOperation = "Contrôle sertissage tête A "
+							+ cursorA
+									.getString(cursorA
+											.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT));
+
+					// Ajout des opérations à la table de séquencement
+					num1 = numeroOperation
+							+ Integer.toString(indiceControleJalons++);
+					contact.put(Operation.GAMME, gamme);
+					contact.put(Operation.RANG_1, rang);
+					contact.put(Operation.RANG_1_1, rang_1);
+					contact.put(Operation.DESCRIPTION_OPERATION,
+							descriptionOperation);
+					contact.put(Operation.NUMERO_OPERATION, num1);
+					contact.put(Operation.REALISABLE, 0);
+					contact.put(Operation.DUREE_THEORIQUE, SERTISSAGE_CONTACTS);
+
+					// Ajout de l'entité
+					getContentResolver().insert(urlSequencement, contact);
+					// Ecrasement de ses données pour passer à la
+					// suivante
+					contact.clear();
+
+					// Controle rétention
+					descriptionOperation = "Contrôle rétention tête A "
+							+ cursorA
+									.getString(cursorA
+											.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT));
+
+					// Ajout des opérations à la table de séquencement
+					num1 = numeroOperation
+							+ Integer.toString(indiceControleJalons++);
+					contact.put(Operation.GAMME, gamme);
+					contact.put(Operation.RANG_1, rang);
+					contact.put(Operation.RANG_1_1, rang_1);
+					contact.put(Operation.DESCRIPTION_OPERATION,
+							descriptionOperation);
+					contact.put(Operation.NUMERO_OPERATION, num1);
+					contact.put(Operation.REALISABLE, 0);
+					contact.put(Operation.DUREE_THEORIQUE, SERTISSAGE_CONTACTS);
+
+					// Ajout de l'entité
+					getContentResolver().insert(urlSequencement, contact);
+					// Ecrasement de ses données pour passer à la
+					// suivante
+					contact.clear();
+
+					gamme = "Raccordement tête A";
+					numeroOperation = "4-000";
+
+					do {
+						// Dénudage Sertissage
+						descriptionOperation = "Denudage Sertissage de contact "
+								+ refFabricant
+								+ " sur  Tête A  "
 								+ cursorA
 										.getString(cursorA
 												.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT));
 
 						// Ajout des opérations à la table de séquencement
-						num1 = numeroOperation
-								+ Integer.toString(indiceControleJalons++);
+						num1 = numeroOperation + Integer.toString(indice++);
+						contact.put(Operation.GAMME, gamme);
+						contact.put(Operation.RANG_1, rang);
+						contact.put(Operation.RANG_1_1, rang_1);
+						contact.put(Operation.DESCRIPTION_OPERATION,
+								descriptionOperation);
+						contact.put(Operation.NUMERO_OPERATION, num1);
+						contact.put(Operation.REALISABLE, 1);
+						contact.put(Operation.DUREE_THEORIQUE,
+								SERTISSAGE_CONTACTS);
+						contact.put(
+								Operation.RANG_1_1_1,
+								cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
+
+						// Ajout de l'entité
+						getContentResolver().insert(urlSequencement, contact);
+						// Ecrasement de ses données pour passer à la
+						// suivante
+						contact.clear();
+
+						contact.put(Raccordement.NUMERO_OPERATION, num1);
+						cr.update(
+								urlRaccordement,
+								contact,
+								Raccordement._id
+										+ "='"
+										+ cursorA.getInt(cursorA
+												.getColumnIndex(Raccordement._id))
+										+ "'", null);
+
+						contact.clear();
+
+					} while (cursorA.moveToNext());
+					cursorA.moveToFirst();
+					do {
+
+						// Enfichage
+						descriptionOperation = "Enfichage Tête A  "
+								+ cursorA
+										.getString(cursorA
+												.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT));
+
+						// Ajout des opérations à la table de séquencement
+						num1 = numeroOperation + Integer.toString(indice++);
 						contact.put(Operation.GAMME, gamme);
 						contact.put(Operation.RANG_1, rang);
 						contact.put(Operation.RANG_1_1, rang_1);
@@ -2623,7 +2632,11 @@ public class MainMenuPreparateur extends Activity {
 						contact.put(Operation.NUMERO_OPERATION, num1);
 						contact.put(Operation.REALISABLE, 0);
 						contact.put(Operation.DUREE_THEORIQUE,
-								SERTISSAGE_CONTACTS);
+								ENFICHAGE_FC_OBTURATEURS);
+						contact.put(
+								Operation.RANG_1_1_1,
+								cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2631,24 +2644,44 @@ public class MainMenuPreparateur extends Activity {
 						// suivante
 						contact.clear();
 
-						// Controle finalisation
-						descriptionOperation = "Contrôle rétention tête A "
+					} while (cursorA.moveToNext());
+				}
+
+				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
+						+ numeroComposant + "' AND  "
+						+ Raccordement.NUMERO_OPERATION + " IS NULL AND "
+						+ Raccordement.FIL_SENSIBLE + "!='1' GROUP BY "
+						+ Raccordement.NUMERO_FIL_CABLE;
+				cursorA = cr.query(urlRaccordement, colRac, clause, null, null);
+
+				if (cursorA.moveToFirst()) {
+					String refFabricant = cursorA.getString(cursorA
+							.getColumnIndex(Raccordement.REFERENCE_FABRICANT2));
+
+					do {
+						// Dénudage sertissage enfichage
+						descriptionOperation = "Denudage Sertissage Enfichage de contact "
+								+ refFabricant
+								+ " sur  Tête A  "
 								+ cursorA
 										.getString(cursorA
 												.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT));
 
 						// Ajout des opérations à la table de séquencement
-						num1 = numeroOperation
-								+ Integer.toString(indiceControleJalons++);
+						num1 = numeroOperation + Integer.toString(indice++);
 						contact.put(Operation.GAMME, gamme);
 						contact.put(Operation.RANG_1, rang);
 						contact.put(Operation.RANG_1_1, rang_1);
 						contact.put(Operation.DESCRIPTION_OPERATION,
 								descriptionOperation);
 						contact.put(Operation.NUMERO_OPERATION, num1);
-						contact.put(Operation.REALISABLE, 0);
+						contact.put(Operation.REALISABLE, FIL_SENSIBLE);
 						contact.put(Operation.DUREE_THEORIQUE,
 								SERTISSAGE_CONTACTS);
+						contact.put(
+								Operation.RANG_1_1_1,
+								cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -2656,137 +2689,19 @@ public class MainMenuPreparateur extends Activity {
 						// suivante
 						contact.clear();
 
-						gamme = "Raccordement tête A";
-						numeroOperation = "4-000";
+						contact.put(Raccordement.NUMERO_OPERATION, num1);
+						cr.update(
+								urlRaccordement,
+								contact,
+								Raccordement._id
+										+ "='"
+										+ cursorA.getInt(cursorA
+												.getColumnIndex(Raccordement._id))
+										+ "'", null);
 
-						do {
-							// Dénudage Sertissage
-							descriptionOperation = "Denudage Sertissage de contact "
-									+ refFabricant
-									+ " sur  Tête A  "
-									+ cursorA
-											.getString(cursorA
-													.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT));
+						contact.clear();
 
-							// Ajout des opérations à la table de séquencement
-							num1 = numeroOperation + Integer.toString(indice++);
-							contact.put(Operation.GAMME, gamme);
-							contact.put(Operation.RANG_1, rang);
-							contact.put(Operation.RANG_1_1, rang_1);
-							contact.put(Operation.DESCRIPTION_OPERATION,
-									descriptionOperation);
-							contact.put(Operation.NUMERO_OPERATION, num1);
-							contact.put(Operation.REALISABLE, 1);
-							contact.put(Operation.DUREE_THEORIQUE,
-									SERTISSAGE_CONTACTS);
-							contact.put(
-									Operation.RANG_1_1_1,
-									cursorA.getString(cursorA
-											.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
-
-							// Ajout de l'entité
-							getContentResolver().insert(urlSequencement,
-									contact);
-							// Ecrasement de ses données pour passer à la
-							// suivante
-							contact.clear();
-
-							contact.put(Raccordement.NUMERO_OPERATION, num1);
-							cr.update(
-									urlRaccordement,
-									contact,
-									Raccordement._id
-											+ "='"
-											+ cursorA.getInt(cursorA
-													.getColumnIndex(Raccordement._id))
-											+ "'", null);
-
-							contact.clear();
-
-						} while (cursorA.moveToNext());
-						cursorA.moveToFirst();
-						do {
-
-							// Enfichage
-							descriptionOperation = "Enfichage Tête A  "
-									+ cursorA
-											.getString(cursorA
-													.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT));
-
-							// Ajout des opérations à la table de séquencement
-							num1 = numeroOperation + Integer.toString(indice++);
-							contact.put(Operation.GAMME, gamme);
-							contact.put(Operation.RANG_1, rang);
-							contact.put(Operation.RANG_1_1, rang_1);
-							contact.put(Operation.DESCRIPTION_OPERATION,
-									descriptionOperation);
-							contact.put(Operation.NUMERO_OPERATION, num1);
-							contact.put(Operation.REALISABLE, 0);
-							contact.put(Operation.DUREE_THEORIQUE,
-									ENFICHAGE_FC_OBTURATEURS);
-							contact.put(
-									Operation.RANG_1_1_1,
-									cursorA.getString(cursorA
-											.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
-
-							// Ajout de l'entité
-							getContentResolver().insert(urlSequencement,
-									contact);
-							// Ecrasement de ses données pour passer à la
-							// suivante
-							contact.clear();
-
-						} while (cursorA.moveToNext());
-
-					} else {
-
-						do {
-							// Dénudage sertissage enfichage
-							descriptionOperation = "Denudage Sertissage Enfichage de contact "
-									+ refFabricant
-									+ " sur  Tête A  "
-									+ cursorA
-											.getString(cursorA
-													.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_TENANT));
-
-							// Ajout des opérations à la table de séquencement
-							num1 = numeroOperation + Integer.toString(indice++);
-							contact.put(Operation.GAMME, gamme);
-							contact.put(Operation.RANG_1, rang);
-							contact.put(Operation.RANG_1_1, rang_1);
-							contact.put(Operation.DESCRIPTION_OPERATION,
-									descriptionOperation);
-							contact.put(Operation.NUMERO_OPERATION, num1);
-							contact.put(Operation.REALISABLE, 1);
-							contact.put(Operation.DUREE_THEORIQUE,
-									SERTISSAGE_CONTACTS);
-							contact.put(
-									Operation.RANG_1_1_1,
-									cursorA.getString(cursorA
-											.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
-
-							// Ajout de l'entité
-							getContentResolver().insert(urlSequencement,
-									contact);
-							// Ecrasement de ses données pour passer à la
-							// suivante
-							contact.clear();
-
-							contact.put(Raccordement.NUMERO_OPERATION, num1);
-							cr.update(
-									urlRaccordement,
-									contact,
-									Raccordement._id
-											+ "='"
-											+ cursorA.getInt(cursorA
-													.getColumnIndex(Raccordement._id))
-											+ "'", null);
-
-							contact.clear();
-
-						} while (cursorA.moveToNext());
-					}
-
+					} while (cursorA.moveToNext());
 				}
 
 				// Finalisation têtes
@@ -2863,8 +2778,9 @@ public class MainMenuPreparateur extends Activity {
 						+ numeroComposant + "'AND  "
 						+ Raccordement.ORDRE_REALISATION + " LIKE '%A%' AND "
 						+ Raccordement.FAUX_CONTACT + "='" + 0 + "' AND "
-						+ Raccordement.OBTURATEUR + "='" + 0 + "' AND "
-						+ Raccordement.REPRISE_BLINDAGE + " IS NULL ";
+						+ Raccordement.OBTURATEUR + "='" + 0 + "' AND ("
+						+ Raccordement.REPRISE_BLINDAGE + " IS NULL OR "
+						+ Raccordement.REPRISE_BLINDAGE + "='')";
 				cursorA = cr.query(urlRaccordement, colRac, clause
 						+ " GROUP BY " + Raccordement.NUMERO_FIL_CABLE, null,
 						Raccordement._id);
@@ -2895,6 +2811,51 @@ public class MainMenuPreparateur extends Activity {
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
 						// Ecrasement de ses données pour passer à la suivante
+						contact.clear();
+
+					} while (cursorA.moveToNext());
+				}
+
+				// Ajout des cosses manchons
+				clause = Raccordement.NUMERO_COMPOSANT_TENANT + " ='"
+						+ numeroComposant + "' AND ("
+						+ Raccordement.TYPE_ELEMENT_RACCORDE
+						+ " LIKE 'SPL' OR "
+						+ Raccordement.TYPE_ELEMENT_RACCORDE
+						+ " LIKE 'TER' ) GROUP BY "
+						+ Raccordement.NUMERO_FIL_CABLE;
+				cursorA = cr.query(urlRaccordement, colRac, clause, null,
+						Raccordement._id);
+				if (cursorA.moveToFirst()) {
+					do {
+
+						descriptionOperation = "Denudage Sertissage Cosse et Manchons "
+
+								+ " sur  Tête A  "
+								+ cursorA
+										.getString(cursorA
+												.getColumnIndex(Raccordement.NUMERO_COMPOSANT_TENANT));
+
+						// Ajout des opérations à la table de séquencement
+						num1 = numeroOperation + Integer.toString(indice++);
+						contact.put(Operation.GAMME, gamme);
+						contact.put(Operation.RANG_1, rang);
+						contact.put(Operation.RANG_1_1, rang_1);
+						contact.put(Operation.DESCRIPTION_OPERATION,
+								descriptionOperation);
+						contact.put(Operation.NUMERO_OPERATION, num1);
+						contact.put(Operation.REALISABLE, 1);
+						contact.put(Operation.DUREE_THEORIQUE,
+								SERTISSAGE_CONTACTS);
+						contact.put(
+								Operation.RANG_1_1_1,
+								cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
+
+						// Ajout de l'entité
+						getContentResolver().insert(urlSequencement, contact);
+						// Ecrasement de ses données pour passer à la
+						// suivante
 						contact.clear();
 
 					} while (cursorA.moveToNext());
@@ -3112,8 +3073,9 @@ public class MainMenuPreparateur extends Activity {
 				// Recherche des reprises blindages
 				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
 						+ numeroComposant + "' AND "
-						+ Raccordement.REPRISE_BLINDAGE + "!='" + "null"
-						+ "' GROUP BY " + Raccordement.REPRISE_BLINDAGE;
+						+ Raccordement.REPRISE_BLINDAGE + "!='" + "null' AND "
+						+ Raccordement.REPRISE_BLINDAGE + "!='' "
+						+ " GROUP BY " + Raccordement.REPRISE_BLINDAGE;
 				cursorA = cr.query(urlRaccordement, colRac, clause, null,
 						Raccordement._id);
 				if (cursorA.moveToFirst()) {
@@ -3160,34 +3122,87 @@ public class MainMenuPreparateur extends Activity {
 				}
 
 				// Ajout des autres cables
+				FIL_SENSIBLE = 1;
 				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
-						+ numeroComposant + "' AND "
-						+ Raccordement.TYPE_ELEMENT_RACCORDE
-						+ " LIKE 'CNT' AND " + Raccordement.NUMERO_OPERATION
-						+ " IS NULL GROUP BY " + Raccordement.NUMERO_FIL_CABLE;
+						+ numeroComposant + "' AND  "
+						+ Raccordement.NUMERO_OPERATION + " IS NULL AND "
+						+ Raccordement.FIL_SENSIBLE + "='1' GROUP BY "
+						+ Raccordement.NUMERO_FIL_CABLE;
 				cursorA = cr.query(urlRaccordement, colRac, clause, null, null);
 
 				if (cursorA.moveToFirst()) {
 					String refFabricant = cursorA.getString(cursorA
 							.getColumnIndex(Raccordement.REFERENCE_FABRICANT2));
 					// Verifications de la sensibilité des fils
-					if (cursorA.getInt(cursorA
-							.getColumnIndex(Raccordement.FIL_SENSIBLE)) == 1) {
 
-						FIL_SENSIBLE = 0;
-						// CONTROLE FIL SENSIBLE
-						gamme = "Contrôle jalons";
-						numeroOperation = "9-000";
+					FIL_SENSIBLE = 0;
 
-						// Controle finalisation
-						descriptionOperation = "Contrôle sertissage tête B "
+					// CONTROLE FIL SENSIBLE
+					gamme = "Contrôle jalons";
+					numeroOperation = "9-000";
+
+					// Controle sertissage
+					descriptionOperation = "Contrôle sertissage tête B "
+							+ cursorA
+									.getString(cursorA
+											.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
+
+					// Ajout des opérations à la table de séquencement
+					num1 = numeroOperation
+							+ Integer.toString(indiceControleJalons++);
+					contact.put(Operation.GAMME, gamme);
+					contact.put(Operation.RANG_1, rang);
+					contact.put(Operation.RANG_1_1, rang_1);
+					contact.put(Operation.DESCRIPTION_OPERATION,
+							descriptionOperation);
+					contact.put(Operation.NUMERO_OPERATION, num1);
+					contact.put(Operation.REALISABLE, 0);
+					contact.put(Operation.DUREE_THEORIQUE, SERTISSAGE_CONTACTS);
+
+					// Ajout de l'entité
+					getContentResolver().insert(urlSequencement, contact);
+					// Ecrasement de ses données pour passer à la
+					// suivante
+					contact.clear();
+
+					// Controle rétention
+					descriptionOperation = "Contrôle rétention tête B "
+							+ cursorA
+									.getString(cursorA
+											.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
+
+					// Ajout des opérations à la table de séquencement
+					num1 = numeroOperation
+							+ Integer.toString(indiceControleJalons++);
+					contact.put(Operation.GAMME, gamme);
+					contact.put(Operation.RANG_1, rang);
+					contact.put(Operation.RANG_1_1, rang_1);
+					contact.put(Operation.DESCRIPTION_OPERATION,
+							descriptionOperation);
+					contact.put(Operation.NUMERO_OPERATION, num1);
+					contact.put(Operation.REALISABLE, 0);
+					contact.put(Operation.DUREE_THEORIQUE, SERTISSAGE_CONTACTS);
+
+					// Ajout de l'entité
+					getContentResolver().insert(urlSequencement, contact);
+					// Ecrasement de ses données pour passer à la
+					// suivante
+					contact.clear();
+
+					gamme = "Raccordement tête B";
+					numeroOperation = "7-000";
+
+					do {
+						// Dénudage Sertissage
+						descriptionOperation = "Denudage Sertissage de contact "
+								+ refFabricant
+								+ " sur  Tête B  "
 								+ cursorA
 										.getString(cursorA
 												.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
 
 						// Ajout des opérations à la table de séquencement
-						num1 = numeroOperation
-								+ Integer.toString(indiceControleJalons++);
+						num1 = numeroOperation + Integer.toString(indice++);
 						contact.put(Operation.GAMME, gamme);
 						contact.put(Operation.RANG_1, rang);
 						contact.put(Operation.RANG_1_1, rang_1);
@@ -3197,6 +3212,10 @@ public class MainMenuPreparateur extends Activity {
 						contact.put(Operation.REALISABLE, 0);
 						contact.put(Operation.DUREE_THEORIQUE,
 								SERTISSAGE_CONTACTS);
+						contact.put(
+								Operation.RANG_1_1_1,
+								cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -3204,15 +3223,75 @@ public class MainMenuPreparateur extends Activity {
 						// suivante
 						contact.clear();
 
-						// Controle finalisation
-						descriptionOperation = "Contrôle rétention tête B "
+						contact.put(Raccordement.NUMERO_OPERATION, num1);
+						cr.update(
+								urlRaccordement,
+								contact,
+								Raccordement._id
+										+ "='"
+										+ cursorA.getInt(cursorA
+												.getColumnIndex(Raccordement._id))
+										+ "'", null);
+
+						contact.clear();
+
+					} while (cursorA.moveToNext());
+					cursorA.moveToFirst();
+					do {
+
+						// Enfichage
+						descriptionOperation = "Enfichage Tête B  "
 								+ cursorA
 										.getString(cursorA
 												.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
 
 						// Ajout des opérations à la table de séquencement
-						num1 = numeroOperation
-								+ Integer.toString(indiceControleJalons++);
+						num1 = numeroOperation + Integer.toString(indice++);
+						contact.put(Operation.GAMME, gamme);
+						contact.put(Operation.RANG_1, rang);
+						contact.put(Operation.RANG_1_1, rang_1);
+						contact.put(Operation.DESCRIPTION_OPERATION,
+								descriptionOperation);
+						contact.put(Operation.NUMERO_OPERATION, num1);
+						contact.put(Operation.REALISABLE, 0);
+						contact.put(Operation.DUREE_THEORIQUE,
+								ENFICHAGE_FC_OBTURATEURS);
+						contact.put(
+								Operation.RANG_1_1_1,
+								cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
+
+						// Ajout de l'entité
+						getContentResolver().insert(urlSequencement, contact);
+						// Ecrasement de ses données pour passer à la
+						// suivante
+						contact.clear();
+
+					} while (cursorA.moveToNext());
+				}
+
+				clause = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + " ='"
+						+ numeroComposant + "' AND  "
+						+ Raccordement.NUMERO_OPERATION + " IS NULL AND "
+						+ Raccordement.FIL_SENSIBLE + "!='1' GROUP BY "
+						+ Raccordement.NUMERO_FIL_CABLE;
+				cursorA = cr.query(urlRaccordement, colRac, clause, null, null);
+
+				if (cursorA.moveToFirst()) {
+					String refFabricant = cursorA.getString(cursorA
+							.getColumnIndex(Raccordement.REFERENCE_FABRICANT2));
+
+					do {
+						// Dénudage sertissage enfichage
+						descriptionOperation = "Denudage Sertissage Enfichage de contact "
+								+ refFabricant
+								+ " sur  Tête B  "
+								+ cursorA
+										.getString(cursorA
+												.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
+
+						// Ajout des opérations à la table de séquencement
+						num1 = numeroOperation + Integer.toString(indice++);
 						contact.put(Operation.GAMME, gamme);
 						contact.put(Operation.RANG_1, rang);
 						contact.put(Operation.RANG_1_1, rang_1);
@@ -3222,6 +3301,10 @@ public class MainMenuPreparateur extends Activity {
 						contact.put(Operation.REALISABLE, 0);
 						contact.put(Operation.DUREE_THEORIQUE,
 								SERTISSAGE_CONTACTS);
+						contact.put(
+								Operation.RANG_1_1_1,
+								cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
 
 						// Ajout de l'entité
 						getContentResolver().insert(urlSequencement, contact);
@@ -3229,129 +3312,19 @@ public class MainMenuPreparateur extends Activity {
 						// suivante
 						contact.clear();
 
-						do {
-							descriptionOperation = "Denudage Sertissage de contact "
-									+ refFabricant
-									+ " sur  Tête B  "
-									+ cursorA
-											.getString(cursorA
-													.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
+						contact.put(Raccordement.NUMERO_OPERATION, num1);
+						cr.update(
+								urlRaccordement,
+								contact,
+								Raccordement._id
+										+ "='"
+										+ cursorA.getInt(cursorA
+												.getColumnIndex(Raccordement._id))
+										+ "'", null);
 
-							// Ajout des opérations à la table de séquencement
-							num1 = numeroOperation + Integer.toString(indice++);
-							contact.put(Operation.GAMME, gamme);
-							contact.put(Operation.RANG_1, rang);
-							contact.put(Operation.RANG_1_1, rang_1);
-							contact.put(Operation.DESCRIPTION_OPERATION,
-									descriptionOperation);
-							contact.put(Operation.NUMERO_OPERATION, num1);
-							contact.put(Operation.REALISABLE, 0);
-							contact.put(Operation.DUREE_THEORIQUE,
-									SERTISSAGE_CONTACTS);
+						contact.clear();
 
-							// Ajout de l'entité
-							getContentResolver().insert(urlSequencement,
-									contact);
-							// Ecrasement de ses données pour passer à la
-							// suivante
-							contact.clear();
-
-							contact.put(Raccordement.NUMERO_OPERATION, num1);
-							cr.update(
-									urlRaccordement,
-									contact,
-									Raccordement._id
-											+ "='"
-											+ cursorA.getInt(cursorA
-													.getColumnIndex(Raccordement._id))
-											+ "'", null);
-
-							contact.clear();
-
-							gamme = "Raccordement Tête B";
-							numeroOperation = "7-000";
-						} while (cursorA.moveToNext());
-						cursorA.moveToFirst();
-						do {
-
-							descriptionOperation = "Enfichage Tête B  "
-									+ cursorA
-											.getString(cursorA
-													.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
-
-							// Ajout des opérations à la table de séquencement
-							num1 = numeroOperation + Integer.toString(indice++);
-							contact.put(Operation.GAMME, gamme);
-							contact.put(Operation.RANG_1, rang);
-							contact.put(Operation.RANG_1_1, rang_1);
-							contact.put(Operation.DESCRIPTION_OPERATION,
-									descriptionOperation);
-							contact.put(Operation.NUMERO_OPERATION, num1);
-							contact.put(Operation.REALISABLE, 0);
-							contact.put(Operation.DUREE_THEORIQUE,
-									ENFICHAGE_FC_OBTURATEURS);
-							contact.put(
-									Operation.RANG_1_1_1,
-									cursorA.getString(cursorA
-											.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
-
-							// Ajout de l'entité
-							getContentResolver().insert(urlSequencement,
-									contact);
-							// Ecrasement de ses données pour passer à la
-							// suivante
-							contact.clear();
-
-						} while (cursorA.moveToNext());
-
-					} else {
-
-						do {
-							descriptionOperation = "Denudage Sertissage Enfichage de contact "
-									+ refFabricant
-									+ " sur  Tête B  "
-									+ cursorA
-											.getString(cursorA
-													.getColumnIndex(Raccordement.REPERE_ELECTRIQUE_ABOUTISSANT));
-
-							// Ajout des opérations à la table de séquencement
-							num1 = numeroOperation + Integer.toString(indice++);
-							contact.put(Operation.GAMME, gamme);
-							contact.put(Operation.RANG_1, rang);
-							contact.put(Operation.RANG_1_1, rang_1);
-							contact.put(Operation.DESCRIPTION_OPERATION,
-									descriptionOperation);
-							contact.put(Operation.NUMERO_OPERATION, num1);
-							contact.put(Operation.REALISABLE, 0);
-							contact.put(Operation.DUREE_THEORIQUE,
-									SERTISSAGE_CONTACTS);
-							contact.put(
-									Operation.RANG_1_1_1,
-									cursorA.getString(cursorA
-											.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)));
-
-							// Ajout de l'entité
-							getContentResolver().insert(urlSequencement,
-									contact);
-							// Ecrasement de ses données pour passer à la
-							// suivante
-							contact.clear();
-
-							contact.put(Raccordement.NUMERO_OPERATION, num1);
-							cr.update(
-									urlRaccordement,
-									contact,
-									Raccordement._id
-											+ "='"
-											+ cursorA.getInt(cursorA
-													.getColumnIndex(Raccordement._id))
-											+ "'", null);
-
-							contact.clear();
-
-						} while (cursorA.moveToNext());
-					}
-
+					} while (cursorA.moveToNext());
 				}
 
 				// Ajout des cosses manchons
@@ -3558,6 +3531,17 @@ public class MainMenuPreparateur extends Activity {
 							// Ecrasement de ses données pour passer à la
 							// suivante
 							contact.clear();
+							contact.put(Raccordement.NUMERO_OPERATION, num1);
+							cr.update(
+									urlRaccordement,
+									contact,
+									Raccordement._id
+											+ "='"
+											+ cursorA.getInt(cursorA
+													.getColumnIndex(Raccordement._id))
+											+ "'", null);
+
+							contact.clear();
 
 						} while (cursorA.moveToNext());
 					}
@@ -3628,6 +3612,18 @@ public class MainMenuPreparateur extends Activity {
 									contact);
 							// Ecrasement de ses données pour passer à la
 							// suivante
+							contact.clear();
+
+							contact.put(Raccordement.NUMERO_OPERATION, num1);
+							cr.update(
+									urlRaccordement,
+									contact,
+									Raccordement._id
+											+ "='"
+											+ cursorA.getInt(cursorA
+													.getColumnIndex(Raccordement._id))
+											+ "'", null);
+
 							contact.clear();
 
 						} while (cursorA.moveToNext());

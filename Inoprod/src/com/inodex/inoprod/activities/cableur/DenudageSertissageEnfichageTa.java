@@ -1,6 +1,9 @@
 package com.inodex.inoprod.activities.cableur;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -19,6 +22,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.SimpleAdapter;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -68,6 +72,13 @@ public class DenudageSertissageEnfichageTa extends Activity {
 	/** Tableau des infos produit */
 	private String labels[];
 
+	/** Liste à afficher dans l'adapteur */
+	private List<HashMap<String, String>> liste = new ArrayList<HashMap<String, String>>();
+	private List<HashMap<String, String>> oldListe = new ArrayList<HashMap<String, String>>();
+	private HashMap<String, String> element;
+	private int nbCablesAjoutes;
+	private HashMap<String, String> straps = new HashMap<String, String>();
+
 	/** Heure et dates à ajouter à la table de séquencment */
 	private Date dateDebut, dateRealisation;
 	private long dureeMesuree = 0;
@@ -82,7 +93,7 @@ public class DenudageSertissageEnfichageTa extends Activity {
 	private ContentValues contact;
 
 	private String clause, numeroOperation, numeroCo, clauseTotal,
-			oldClauseTotal, numeroCable, b;
+			oldClauseTotal, numeroCable, b, bc, nc, nco;
 	private boolean prodAchevee, teteB;
 
 	/** Colonnes utilisés pour les requêtes */
@@ -115,7 +126,8 @@ public class DenudageSertissageEnfichageTa extends Activity {
 			Raccordement.NUMERO_OPERATION,
 			Raccordement.NUMERO_POSITION_CHARIOT,
 			Raccordement.LONGUEUR_FIL_CABLE, Raccordement.ORDRE_REALISATION,
-			Raccordement.NUMERO_BORNE_ABOUTISSANT };
+			Raccordement.NUMERO_BORNE_ABOUTISSANT,
+			Raccordement.NUMERO_BORNE_TENANT };
 
 	private String colNom[] = new String[] { Cable.REFERENCE_INTERNE,
 			Cable.REFERENCE_FABRICANT2, Cable.QUANTITE, Cable.UNITE,
@@ -151,7 +163,8 @@ public class DenudageSertissageEnfichageTa extends Activity {
 		opId = intent.getIntArrayExtra("opId");
 		cr = getContentResolver();
 		contact = new ContentValues();
-		clauseTotal = "";
+		clauseTotal = " ";
+		nbCablesAjoutes = 0;
 
 		// initialisation de la production
 		prodAchevee = false;
@@ -235,6 +248,9 @@ public class DenudageSertissageEnfichageTa extends Activity {
 						+ " IS NULL )";
 				teteB = false;
 				b = Raccordement.NUMERO_BORNE_TENANT;
+				bc = Raccordement.NUMERO_BORNE_ABOUTISSANT;
+				nc = Raccordement.NUMERO_COMPOSANT_TENANT;
+				nco = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT;
 			} else {
 				titre.setText(R.string.denudageSertissageEnfichageTb);
 				repereElectrique
@@ -247,15 +263,17 @@ public class DenudageSertissageEnfichageTa extends Activity {
 						+ 0 + "' OR " + Raccordement.REPRISE_BLINDAGE
 						+ " IS NULL )";
 				teteB = true;
+				colRac[6] = Raccordement.NUMERO_BORNE_ABOUTISSANT;
+				colRac[8] = Raccordement.REFERENCE_OUTIL_ABOUTISSANT;
+				colRac[10] = Raccordement.REGLAGE_OUTIL_ABOUTISSANT;
+				colRac[11] = Raccordement.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT;
 				b = Raccordement.NUMERO_BORNE_ABOUTISSANT;
+				bc = Raccordement.NUMERO_BORNE_TENANT;
+				nco = Raccordement.NUMERO_COMPOSANT_TENANT;
+				nc = Raccordement.NUMERO_COMPOSANT_ABOUTISSANT;
 			}
 
 		}
-
-		// Initialisation du nombre de ligne à atteindre
-		nbRows = cr.query(urlRac, colRac,
-				clause + " GROUP BY " + Raccordement.NUMERO_FIL_CABLE, null,
-				Raccordement._id).getCount();
 
 		nbRows = 0;
 		for (int i : opId) {
@@ -268,7 +286,7 @@ public class DenudageSertissageEnfichageTa extends Activity {
 						&& cursorA
 								.getString(
 										cursorA.getColumnIndex(Operation.DESCRIPTION_OPERATION))
-								.contains("Denudage")) {
+								.contains("Denudage Sertissage Enfichage")) {
 					nbRows++;
 				}
 
@@ -296,15 +314,14 @@ public class DenudageSertissageEnfichageTa extends Activity {
 
 				// Vérification de l'état de la production
 				if (prodAchevee) {
-					indiceCourant++;
+
 					String nextOperation = null;
 
 					if (teteB) {
 						// Signalement du point de controle
 						// Cables validés
 						clause = Operation.RANG_1_1 + " LIKE '%" + numeroCo
-								+ "%' AND (" + Operation.DESCRIPTION_OPERATION
-								+ " LIKE 'Enfichage Tête%' OR "
+								+ "%' AND (" 
 								+ Operation.DESCRIPTION_OPERATION
 								+ " LIKE 'Finalisation Tête%' OR "
 								+ Operation.DESCRIPTION_OPERATION
@@ -324,6 +341,8 @@ public class DenudageSertissageEnfichageTa extends Activity {
 							} while (cursor.moveToNext());
 						}
 					}
+
+					indiceCourant += nbRows;
 
 					// Passage à l'étape suivante en fonction de sa description
 					try {
@@ -465,6 +484,7 @@ public class DenudageSertissageEnfichageTa extends Activity {
 			@Override
 			// MAJ des indices
 			public void onClick(View v) {
+				// MAJ des indices
 				if (indiceLimite > 0) {
 					indiceLimite--;
 					Log.e("Indice", "" + indiceLimite);
@@ -476,11 +496,28 @@ public class DenudageSertissageEnfichageTa extends Activity {
 				dureeMesuree = 0;
 				dateDebut = new Date();
 
-				// MAJ de la clause
-				clauseTotal = oldClauseTotal;
-				// Vérification de l'état de la production
-				prodAchevee = (indiceLimite >= nbRows);
+				for (int i = 0; i < nbCablesAjoutes; i++) {
+					Log.e("Taille liste", liste.size() + "");
+					element = liste.get(liste.size() - 1);
+
+					contact.put(Operation.DATE_REALISATION, "");
+					cr.update(
+							urlSeq,
+							contact,
+							Operation.RANG_1_1_1
+									+ "='"
+									+ element
+											.get(Raccordement.NUMERO_FIL_CABLE)
+									+ "' AND "
+									+ Operation.DESCRIPTION_OPERATION
+									+ " LIKE '%Denudage Sertissage de%' AND "
+									+ Operation.RANG_1_1 + " LIKE '%"
+									+ numeroCo + "%'", null);
+					liste.remove(liste.size() - 1);
+				}
+
 				displayContentProvider();
+				prodAchevee = false;
 			}
 		});
 
@@ -551,47 +588,34 @@ public class DenudageSertissageEnfichageTa extends Activity {
 	}
 
 	private void displayContentProvider() {
-		// Création du SimpleCursorAdapter affilié au GridView
-		cursor = cr.query(urlRac, colRac, "("
-				+ Raccordement.NUMERO_COMPOSANT_TENANT + "='" + numeroCo
-				+ "' OR " + Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + "='"
-				+ numeroCo + "') AND (" + clauseTotal + ") AND "
-				+ Raccordement.REPRISE_BLINDAGE + " IS NULL ", null,
-				Raccordement._id);
-		SimpleCursorAdapter sca = new SimpleCursorAdapter(this,
-				R.layout.grid_layout_denudage_sertissage_enfichage_ta, cursor,
-				colRac, layouts);
-
-		gridView.setAdapter(sca);
-		// MAJ Table de sequencement
-		dateRealisation = new Date();
-		contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0] + " "
-				+ nomPrenomOperateur[1]);
-		contact.put(Operation.DATE_REALISATION, dateRealisation.toGMTString());
-		heureRealisation.setToNow();
-		contact.put(Operation.HEURE_REALISATION, heureRealisation.toString());
-		dureeMesuree += dateRealisation.getTime() - dateDebut.getTime();
-		contact.put(Operation.DUREE_MESUREE, dureeMesuree / 1000);
-		/*
-		 * cr.update(urlSeq, contact, Operation._id + " = ?", new String[] {
-		 * Integer.toString(opId[indiceCourant]) });
-		 */
-		cr.update(urlSeq, contact, Operation.RANG_1_1_1 + "='" + numeroCable
-				+ "' AND " + Operation.DESCRIPTION_OPERATION
-				+ " LIKE '%Denudage Sertissage Enfichage%' AND "
-				+ Operation.RANG_1_1 + " LIKE '%" + numeroCo + "%'", null);
-		contact.clear();
-
-		// MAJ de la durée
-		dureeMesuree = 0;
-		dateDebut = new Date();
-
 		// Vérification de l'état de la production
-		if (indiceLimite == nbRows) {
+		int fin = cr.query(
+				urlSeq,
+				columnsSeq,
+				Operation.DATE_REALISATION + "!='null' AND "
+						+ Operation.RANG_1_1 + " LIKE '%" + numeroCo
+						+ "%' AND " + Operation.DESCRIPTION_OPERATION
+						+ " LIKE '%Sertissage Enfichage%'", null, null)
+				.getCount();
+		Log.e("Fin", "" + fin);
+		if (fin >= cr.query(
+				urlSeq,
+				columnsSeq,
+				Operation.RANG_1_1 + " LIKE '%" + numeroCo + "%' AND "
+						+ Operation.DESCRIPTION_OPERATION
+						+ " LIKE '%Sertissage Enfichage%'", null, null)
+				.getCount()) {
 			prodAchevee = true;
 			Toast.makeText(this, "Production achevée", Toast.LENGTH_LONG)
 					.show();
+
 		}
+
+		SimpleAdapter sca = new SimpleAdapter(this, liste,
+				R.layout.grid_layout_denudage_sertissage_enfichage_ta, colRac,
+				layouts);
+
+		gridView.setAdapter(sca);
 
 	}
 
@@ -604,70 +628,179 @@ public class DenudageSertissageEnfichageTa extends Activity {
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		if (requestCode == 0) {
 			if (resultCode == RESULT_OK) {
+				Log.e("SCAN", "OK");
 				String contents = intent.getStringExtra("SCAN_RESULT");
 				numeroCable = contents;
 				String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 
-				if (clauseTotal.contains(numeroCable)) {
-					// Cable dèja utilisé
+				clause = Operation.RANG_1_1_1 + "='" + numeroCable + "' AND "
+						+ Operation.DESCRIPTION_OPERATION
+						+ " LIKE '%Sertissage Enfichage%' AND "
+						+ Operation.RANG_1_1 + " LIKE '%" + numeroCo
+						+ "%' AND " + Operation.DATE_REALISATION
+						+ "!='null' AND " + Operation.DATE_REALISATION + "!=''";
+				cursor = cr.query(urlSeq, columnsSeq, clause, null, null);
+				if (cursor.moveToFirst()) {
 					Toast.makeText(DenudageSertissageEnfichageTa.this,
 							"Ce cable a dèja été utilisé", Toast.LENGTH_SHORT)
 							.show();
-				} else {
 
+				} else if (straps.get(numeroCable) != null) {
+					nbCablesAjoutes = 0;
+					oldListe = liste;
 					clause = Raccordement.NUMERO_FIL_CABLE + "='" + numeroCable
-							+ "' AND (" + Raccordement.NUMERO_COMPOSANT_TENANT
-							+ "='" + numeroCo + "' OR "
-							+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + "='"
-							+ numeroCo + "' )";
+							+ "' AND " + straps.get(numeroCable) + "='"
+							+ numeroCo + "' AND " + Raccordement.FIL_SENSIBLE
+							+ "='0' AND ( " + Raccordement.REPRISE_BLINDAGE
+							+ " IS NULL OR " + Raccordement.REPRISE_BLINDAGE
+							+ "='' )";
 					cursorA = cr.query(urlRac, colRac, clause, null,
 							Raccordement._id);
 					if (cursorA.moveToFirst()) {
-						int borne = cursorA.getInt(cursorA.getColumnIndex(b));
-						Log.e("Borne", "" + borne);
-						Log.e(" OU", b);
-						clause = b + "='" + borne + ".0' AND ("
-								+ Raccordement.NUMERO_COMPOSANT_TENANT + "='"
-								+ numeroCo + "' OR "
-								+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-								+ "='" + numeroCo + "' )";
-						cursorB = cr.query(urlRac, colRac, clause, null,
-								Raccordement._id);
-
-						if (cursorB.moveToFirst()) {
-
-							do {
-								numeroCable = cursorB
-										.getString(cursorB
-												.getColumnIndex(Raccordement.NUMERO_FIL_CABLE));
-								Log.e("N° Cable", numeroCable);
-								if (clauseTotal.equals("")) {
-									clauseTotal = Raccordement.NUMERO_FIL_CABLE
-											+ "='" + numeroCable + "'";
-								} else {
-
-									oldClauseTotal = clauseTotal;
-									clauseTotal += " OR "
-											+ Raccordement.NUMERO_FIL_CABLE
-											+ "='" + numeroCable + "'";
-								}
-								// Ajout du cable à la liste des
-								// éléments à afficher
-								indiceLimite++;
-								displayContentProvider();
-								indiceCourant++;
-							} while (cursorB.moveToNext());
+						String borne = cursorA
+								.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_BORNE_TENANT));
+						boolean tenant = true;
+						if (borne == null) {
+							borne = cursorA
+									.getString(cursorA
+											.getColumnIndex(Raccordement.NUMERO_BORNE_ABOUTISSANT));
+							tenant = false;
 						}
+						addCables(borne, numeroCo, tenant, true);
+					}
+
+				} else if (straps.get(numeroCable) == null) {
+					nbCablesAjoutes = 0;
+					oldListe = liste;
+					String borneT, borneA;
+					Log.e("Strap", "non ");
+					// Verification de l'existence d'un strap
+					clause = Raccordement.NUMERO_FIL_CABLE + "='" + numeroCable
+							+ "' AND " + Raccordement.NUMERO_COMPOSANT_TENANT
+							+ "='" + numeroCo + "' AND "
+							+ Raccordement.FIL_SENSIBLE + "='0' AND ( "
+							+ Raccordement.REPRISE_BLINDAGE + " IS NULL OR "
+							+ Raccordement.REPRISE_BLINDAGE + "='' )";
+					cursorA = cr.query(urlRac, colRac, clause, null,
+							Raccordement._id);
+					// Verification de l'existence d'un strap
+					clause = Raccordement.NUMERO_FIL_CABLE + "='" + numeroCable
+							+ "' AND "
+							+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT + "='"
+							+ numeroCo + "' AND " + Raccordement.FIL_SENSIBLE
+							+ "='0' AND ( " + Raccordement.REPRISE_BLINDAGE
+							+ " IS NULL OR " + Raccordement.REPRISE_BLINDAGE
+							+ "='' )";
+					cursorB = cr.query(urlRac, colRac, clause, null,
+							Raccordement._id);
+
+					if (cursorB.moveToFirst() && cursorA.moveToFirst()) {
+						// Présence d'un strap
+						Log.e("Strap", "OUI");
+						borneA = cursorB
+								.getString(cursorB
+										.getColumnIndex(Raccordement.NUMERO_BORNE_ABOUTISSANT));
+						borneT = cursorA
+								.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_BORNE_TENANT));
+						Cursor c1, c2;
+						c1 = cr.query(urlRac, colRac,
+								Raccordement.NUMERO_BORNE_TENANT + "='"
+										+ borneT + "' AND "
+										+ Raccordement.NUMERO_COMPOSANT_TENANT
+										+ "='" + numeroCo + "'", null, null);
+						c2 = cr.query(
+								urlRac,
+								colRac,
+								Raccordement.NUMERO_BORNE_ABOUTISSANT
+										+ "='"
+										+ borneA
+										+ "' AND "
+										+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+										+ "='" + numeroCo + "'", null, null);
+						if (c1.getCount() > c2.getCount()) {
+							c1.moveToFirst();
+							addCables(
+									c1.getString(c1
+											.getColumnIndex(Raccordement.NUMERO_BORNE_TENANT)),
+									numeroCo, true, false);
+							do {
+								straps.put(
+										c1.getString(c1
+												.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)),
+										Raccordement.NUMERO_COMPOSANT_ABOUTISSANT);
+							} while (c1.moveToNext());
+						} else {
+							c2.moveToFirst();
+							addCables(
+									c2.getString(c2
+											.getColumnIndex(Raccordement.NUMERO_BORNE_ABOUTISSANT)),
+									numeroCo, false, false);
+							do {
+								straps.put(
+										c2.getString(c2
+												.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)),
+										Raccordement.NUMERO_COMPOSANT_TENANT);
+							} while (c2.moveToNext());
+						}
+
+					} else if (cursorA.moveToFirst()
+							&& (cursorA.getCount() == 1)) {
+						Log.e("Strap", "1 ");
+						// Monofilaire
+
+						addCables(
+								cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_BORNE_TENANT)),
+								numeroCo, true, true);
+
+					} else if (cursorA.moveToFirst() && cursorA.getCount() > 1) {
+						// Paire torsadé
+						Log.e("Strap",
+								"2"
+										+ " Borne: "
+										+ cursorA.getString(cursorA
+												.getColumnIndex(Raccordement.NUMERO_BORNE_TENANT)));
+						do {
+							addCables(
+									cursorA.getString(cursorA
+											.getColumnIndex(Raccordement.NUMERO_BORNE_TENANT)),
+									numeroCo, true, true);
+						} while (cursorA.moveToNext());
+					} else if (cursorB.moveToFirst()
+							&& (cursorB.getCount() == 1)) {
+						// Monofilaire
+						Log.e("Strap", "3 ");
+						addCables(
+								cursorB.getString(cursorB
+										.getColumnIndex(Raccordement.NUMERO_BORNE_ABOUTISSANT)),
+								numeroCo, true, true);
+
+					} else if (cursorB.moveToFirst() && cursorB.getCount() > 1) {
+						// Paire torsadé
+						Log.e("Strap", "4 ");
+						do {
+							addCables(
+									cursorB.getString(cursorB
+											.getColumnIndex(Raccordement.NUMERO_BORNE_ABOUTISSANT)),
+									numeroCo, true, true);
+						} while (cursorB.moveToNext());
+
 					} else {
+						// Le cable n'est pas utilisé pour
+						// ce connecteur
 						Toast.makeText(DenudageSertissageEnfichageTa.this,
 								"Ce cable ne correspond pas",
 								Toast.LENGTH_SHORT).show();
+
 					}
 				}
+				displayContentProvider();
 			}
 
 		} else if (resultCode == RESULT_CANCELED) {
-			entreCable("Echec du scan de l'identifiant");
+			entreCable("Echec du scan. Entrez le n° de cable :");
 		}
 	}
 
@@ -685,70 +818,181 @@ public class DenudageSertissageEnfichageTa extends Activity {
 						// Recherche du cable entré
 						numeroCable = cable.getText().toString();
 
-						if (clauseTotal.contains(numeroCable)) {
-							// Cable dèja utilisé
+						clause = Operation.RANG_1_1_1 + "='" + numeroCable
+								+ "' AND " + Operation.DESCRIPTION_OPERATION
+								+ " LIKE '%Sertissage Enfichage%' AND "
+								+ Operation.RANG_1_1 + " LIKE '%" + numeroCo
+								+ "%' AND " + Operation.DATE_REALISATION
+								+ "!='null' AND " + Operation.DATE_REALISATION
+								+ "!=''";
+						cursor = cr.query(urlSeq, columnsSeq, clause, null,
+								null);
+						if (cursor.moveToFirst()) {
 							Toast.makeText(DenudageSertissageEnfichageTa.this,
 									"Ce cable a dèja été utilisé",
 									Toast.LENGTH_SHORT).show();
-						} else {
-							Log.e("N°Cable", numeroCable);
 
+						} else if (straps.get(numeroCable) != null) {
+							nbCablesAjoutes = 0;
+							oldListe = liste;
 							clause = Raccordement.NUMERO_FIL_CABLE + "='"
-									+ numeroCable + "' AND ("
-									+ Raccordement.NUMERO_COMPOSANT_TENANT
-									+ "='" + numeroCo + "' OR "
-									+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-									+ "='" + numeroCo + "' )";
+									+ numeroCable + "' AND "
+									+ straps.get(numeroCable) + "='" + numeroCo
+									+ "' AND " + Raccordement.FIL_SENSIBLE
+									+ "='0' AND ( "
+									+ Raccordement.REPRISE_BLINDAGE
+									+ " IS NULL OR "
+									+ Raccordement.REPRISE_BLINDAGE + "='' )";
 							cursorA = cr.query(urlRac, colRac, clause, null,
 									Raccordement._id);
 							if (cursorA.moveToFirst()) {
-								int borne = cursorA.getInt(cursorA
-										.getColumnIndex(b));
-								Log.e("Borne", "" + borne);
-								Log.e(" OU", b);
-								clause = b
-										+ "='"
-										+ borne
-										+ ".0' AND ("
-										+ Raccordement.NUMERO_COMPOSANT_TENANT
-										+ "='"
-										+ numeroCo
-										+ "' OR "
-										+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
-										+ "='" + numeroCo + "' )";
-								cursorB = cr.query(urlRac, colRac, clause,
-										null, Raccordement._id);
-
-								if (cursorB.moveToFirst()) {
-
-									do {
-										numeroCable = cursorB.getString(cursorB
-												.getColumnIndex(Raccordement.NUMERO_FIL_CABLE));
-										Log.e("N° Cable", numeroCable);
-										if (clauseTotal.equals("")) {
-											clauseTotal = Raccordement.NUMERO_FIL_CABLE
-													+ "='" + numeroCable + "'";
-										} else {
-
-											oldClauseTotal = clauseTotal;
-											clauseTotal += " OR "
-													+ Raccordement.NUMERO_FIL_CABLE
-													+ "='" + numeroCable + "'";
-										}
-										// Ajout du cable à la liste des
-										// éléments à afficher
-										indiceLimite++;
-										displayContentProvider();
-										indiceCourant++;
-									} while (cursorB.moveToNext());
+								String borne = cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_BORNE_TENANT));
+								boolean tenant = true;
+								if (borne == null) {
+									borne = cursorA.getString(cursorA
+											.getColumnIndex(Raccordement.NUMERO_BORNE_ABOUTISSANT));
+									tenant = false;
 								}
+								addCables(borne, numeroCo, tenant, true);
+							}
+
+						} else if (straps.get(numeroCable) == null) {
+							nbCablesAjoutes = 0;
+							oldListe = liste;
+							String borneT, borneA;
+							Log.e("Strap", "non ");
+							// Verification de l'existence d'un strap
+							clause = Raccordement.NUMERO_FIL_CABLE + "='"
+									+ numeroCable + "' AND "
+									+ Raccordement.NUMERO_COMPOSANT_TENANT
+									+ "='" + numeroCo + "' AND "
+									+ Raccordement.FIL_SENSIBLE + "='0' AND ( "
+									+ Raccordement.REPRISE_BLINDAGE
+									+ " IS NULL OR "
+									+ Raccordement.REPRISE_BLINDAGE + "='' )";
+							cursorA = cr.query(urlRac, colRac, clause, null,
+									Raccordement._id);
+							// Verification de l'existence d'un strap
+							clause = Raccordement.NUMERO_FIL_CABLE + "='"
+									+ numeroCable + "' AND "
+									+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+									+ "='" + numeroCo + "' AND "
+									+ Raccordement.FIL_SENSIBLE + "='0' AND ( "
+									+ Raccordement.REPRISE_BLINDAGE
+									+ " IS NULL OR "
+									+ Raccordement.REPRISE_BLINDAGE + "='' )";
+							cursorB = cr.query(urlRac, colRac, clause, null,
+									Raccordement._id);
+
+							if (cursorB.moveToFirst() && cursorA.moveToFirst()) {
+								// Présence d'un strap
+								Log.e("Strap", "OUI");
+								borneA = cursorB.getString(cursorB
+										.getColumnIndex(Raccordement.NUMERO_BORNE_ABOUTISSANT));
+								borneT = cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_BORNE_TENANT));
+								Cursor c1, c2;
+								c1 = cr.query(
+										urlRac,
+										colRac,
+										Raccordement.NUMERO_BORNE_TENANT
+												+ "='"
+												+ borneT
+												+ "' AND "
+												+ Raccordement.NUMERO_COMPOSANT_TENANT
+												+ "='" + numeroCo + "'", null,
+										null);
+								c2 = cr.query(
+										urlRac,
+										colRac,
+										Raccordement.NUMERO_BORNE_ABOUTISSANT
+												+ "='"
+												+ borneA
+												+ "' AND "
+												+ Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+												+ "='" + numeroCo + "'", null,
+										null);
+								if (c1.getCount() > c2.getCount()) {
+									c1.moveToFirst();
+									addCables(
+											c1.getString(c1
+													.getColumnIndex(Raccordement.NUMERO_BORNE_TENANT)),
+											numeroCo, true, false);
+									do {
+										straps.put(
+												c1.getString(c1
+														.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)),
+												Raccordement.NUMERO_COMPOSANT_ABOUTISSANT);
+									} while (c1.moveToNext());
+								} else {
+									c2.moveToFirst();
+									addCables(
+											c2.getString(c2
+													.getColumnIndex(Raccordement.NUMERO_BORNE_ABOUTISSANT)),
+											numeroCo, false, false);
+									do {
+										straps.put(
+												c2.getString(c2
+														.getColumnIndex(Raccordement.NUMERO_FIL_CABLE)),
+												Raccordement.NUMERO_COMPOSANT_TENANT);
+									} while (c2.moveToNext());
+								}
+
+							} else if (cursorA.moveToFirst()
+									&& (cursorA.getCount() == 1)) {
+								Log.e("Strap", "1 ");
+								// Monofilaire
+								cursorA.moveToFirst();
+								borneT = cursorA.getString(cursorA
+										.getColumnIndex(Raccordement.NUMERO_BORNE_TENANT));
+								addCables(borneT, numeroCo, true, true);
+
+							} else if (cursorA.moveToFirst()
+									&& cursorA.getCount() > 1) {
+								// Paire torsadé
+								Log.e("Strap",
+										"2"
+												+ " Borne: "
+												+ cursorA.getString(cursorA
+														.getColumnIndex(Raccordement.NUMERO_BORNE_TENANT)));
+								do {
+									addCables(
+											cursorA.getString(cursorA
+													.getColumnIndex(Raccordement.NUMERO_BORNE_TENANT)),
+											numeroCo, true, true);
+								} while (cursorA.moveToNext());
+							} else if (cursorB.moveToFirst()
+									&& (cursorB.getCount() == 1)) {
+								// Monofilaire
+								Log.e("Strap", "3 ");
+								addCables(
+										cursorB.getString(cursorB
+												.getColumnIndex(Raccordement.NUMERO_BORNE_ABOUTISSANT)),
+										numeroCo, false, true);
+
+							} else if (cursorB.moveToFirst()
+									&& cursorB.getCount() > 1) {
+								// Paire torsadé
+								Log.e("Strap", "4 ");
+								do {
+									addCables(
+											cursorB.getString(cursorB
+													.getColumnIndex(Raccordement.NUMERO_BORNE_ABOUTISSANT)),
+											numeroCo, false, true);
+								} while (cursorB.moveToNext());
+
 							} else {
+								// Le cable n'est pas utilisé pour
+								// ce connecteur
 								Toast.makeText(
 										DenudageSertissageEnfichageTa.this,
 										"Ce cable ne correspond pas",
 										Toast.LENGTH_SHORT).show();
+
 							}
 						}
+						displayContentProvider();
 					}
 
 				});
@@ -764,6 +1008,73 @@ public class DenudageSertissageEnfichageTa extends Activity {
 				});
 
 		builder.show();
+	}
+
+	private void addCables(String numeroBorne, String numeroComposant,
+			boolean tenant, boolean save) {
+		String clause;
+		if (tenant) {
+			clause = Raccordement.NUMERO_BORNE_TENANT + "='" + numeroBorne
+					+ "' AND " + Raccordement.NUMERO_COMPOSANT_TENANT + "='"
+					+ numeroComposant + "'";
+		} else {
+			clause = Raccordement.NUMERO_BORNE_ABOUTISSANT + "='" + numeroBorne
+					+ "' AND " + Raccordement.NUMERO_COMPOSANT_ABOUTISSANT
+					+ "='" + numeroComposant + "'";
+		}
+		Cursor c = cr.query(urlRac, colRac, clause, null, Raccordement._id);
+		if (c.moveToFirst()) {
+			dateRealisation = new Date();
+			do {
+				nbCablesAjoutes++;
+				HashMap<String, String> element = new HashMap<String, String>();
+				for (int i = 0; i < 13; i++) {
+					element.put(colRac[i],
+							c.getString(c.getColumnIndex(colRac[i])));
+				}
+				liste.add(element);
+
+				if (save) {
+					// MAJ Table de sequencement
+
+					contact.put(Operation.NOM_OPERATEUR, nomPrenomOperateur[0]
+							+ " " + nomPrenomOperateur[1]);
+					contact.put(Operation.DATE_REALISATION,
+							dateRealisation.toGMTString());
+					heureRealisation.setToNow();
+					contact.put(Operation.HEURE_REALISATION,
+							heureRealisation.toString());
+					dureeMesuree += dateRealisation.getTime()
+							- dateDebut.getTime();
+					contact.put(Operation.DUREE_MESUREE, dureeMesuree / 1000);
+					try {
+						cr.update(
+								urlSeq,
+								contact,
+								Operation.RANG_1_1_1
+										+ "='"
+										+ c.getString(c
+												.getColumnIndex(Raccordement.NUMERO_FIL_CABLE))
+										+ "' AND "
+										+ Operation.DESCRIPTION_OPERATION
+										+ " LIKE '%Sertissage Enfichage%' AND "
+										+ Operation.RANG_1_1 + " LIKE '%"
+										+ numeroCo + "%'", null);
+					} catch (Exception e) {
+
+					}
+
+					contact.clear();
+
+				}
+
+			} while (c.moveToNext());
+			// MAJ de la durée
+			dureeMesuree = 0;
+			dateDebut = new Date();
+
+		}
+
 	}
 
 }

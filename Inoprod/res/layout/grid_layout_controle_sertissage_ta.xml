@@ -6,82 +6,82 @@
 
     <TextView
         android:id="@+id/statutLiaison"
-        android:layout_width="80dp"
+        android:layout_width="@dimen/c2"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/forTMin" />
+        android:textSize="@dimen/b7" />
 
     <TextView
         android:id="@+id/numeroRevisionLiaison"
-        android:layout_width="80dp"
+        android:layout_width="@dimen/c2"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/forTMin" />
+        android:textSize="@dimen/b7" />
 
     <TextView
         android:id="@+id/typeCable"
-        android:layout_width="80dp"
+        android:layout_width="@dimen/c2"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/forTMin" />
+        android:textSize="@dimen/b7" />
 
     <TextView
         android:id="@+id/numeroFil"
-        android:layout_width="80dp"
+        android:layout_width="@dimen/c2"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/forTMin" />
+        android:textSize="@dimen/b7" />
 
     <TextView
         android:id="@+id/numeroFilDansCable"
-        android:layout_width="80dp"
+        android:layout_width="@dimen/c2"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/forTMin" />
+        android:textSize="@dimen/b7" />
 
     <TextView
         android:id="@+id/couleurFil"
-        android:layout_width="80dp"
+        android:layout_width="@dimen/c2"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/forTMin" />
+        android:textSize="@dimen/b7" />
 
     <TextView
         android:id="@+id/referenceFabricantContact"
-        android:layout_width="80dp"
+        android:layout_width="@dimen/c2"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/forTMin" />
+        android:textSize="@dimen/b7" />
 
     <TextView
         android:id="@+id/controleValide"
-        android:layout_width="80dp"
+        android:layout_width="@dimen/c2"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/forTMin" />
+        android:textSize="@dimen/b7" />
 
     <TextView
         android:id="@+id/controleAcceptable"
-        android:layout_width="80dp"
+        android:layout_width="@dimen/c2"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/forTMin" />
+        android:textSize="@dimen/b7" />
 
     <TextView
         android:id="@+id/controleRefuse"
-        android:layout_width="80dp"
+        android:layout_width="@dimen/c2"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/forTMin" />
+        android:textSize="@dimen/b7" />
 
 </LinearLayout>

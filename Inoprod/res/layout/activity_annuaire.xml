@@ -11,7 +11,7 @@
         android:layout_height="40dip"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_margin="@dimen/forT"
+        android:layout_margin="@dimen/b12"
         android:src="@drawable/exit" />
 
     <TextView
@@ -20,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_margin="@dimen/forT"
+        android:layout_margin="@dimen/b12"
         android:text="@string/annuairePersonnel"
         android:textSize="@dimen/basicima" />
 
@@ -31,9 +31,9 @@
         android:layout_alignBottom="@+id/imageButton1"
         android:layout_below="@+id/linear"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="85dp"
-        android:layout_marginLeft="85dp"
-        android:layout_marginRight="85dp"
+        android:layout_marginBottom="@dimen/c3"
+        android:layout_marginLeft="@dimen/c3"
+        android:layout_marginRight="@dimen/c3"
         android:numColumns="1"
         android:stretchMode="columnWidth" >
 
@@ -48,7 +48,7 @@
 
         <TextView
             android:id="@+id/textView1"
-            android:layout_width="150dp"
+            android:layout_width="@dimen/c8"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/matricule"
@@ -56,7 +56,7 @@
 
         <TextView
             android:id="@+id/textView2"
-            android:layout_width="150dp"
+            android:layout_width="@dimen/c8"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/nom"
@@ -64,7 +64,7 @@
 
         <TextView
             android:id="@+id/textView3"
-            android:layout_width="150dp"
+            android:layout_width="@dimen/c8"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/prenom"
@@ -72,7 +72,7 @@
 
         <TextView
             android:id="@+id/textView4"
-            android:layout_width="150dp"
+            android:layout_width="@dimen/c8"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/profilMetier"

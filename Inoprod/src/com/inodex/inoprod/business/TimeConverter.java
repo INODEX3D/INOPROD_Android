@@ -19,7 +19,9 @@ public class TimeConverter {
 	}
 	
 	public static String display(long time) {
-		if (time % 60 == 0) {
+		if (time/3600 >0 ) {
+			return time/3600 + "h " + (time%3600)/60 +"min " ;
+		} else if (time % 60 == 0){
 			return time/60 + "min";
 		} else {
 			return time/60 +"min " + time%60 + "sec";

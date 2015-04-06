@@ -6,43 +6,43 @@
 
     <TextView
         android:id="@+id/pointsVerifier"
-        android:layout_width="75dp"
+        android:layout_width="@dimen/c7"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/forTMin" />
+        android:textSize="@dimen/b1" />
     
        <TextView
         android:id="@+id/valeurAttendue"
-        android:layout_width="150dp"
+        android:layout_width="@dimen/c5"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/forTMin" />
+        android:textSize="@dimen/b1" />
     
           <TextView
         android:id="@+id/controleValide"
-        android:layout_width="150dp"
+        android:layout_width="@dimen/c5"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/forTMin" />
+        android:textSize="@dimen/b1" />
        
              <TextView
         android:id="@+id/controleRefuse"
-        android:layout_width="150dp"
+        android:layout_width="@dimen/c5"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/forTMin" />
+        android:textSize="@dimen/b1" />
           
                 <EditText
         android:id="@+id/commentaires"
-        android:layout_width="150dp"
+        android:layout_width="@dimen/c8"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:textColor="#000000"
-        android:textSize="@dimen/forTMin" />
+        android:textSize="@dimen/b1" />
              
 
 </LinearLayout>

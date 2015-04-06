@@ -20,7 +20,7 @@
         android:layout_height="50dip"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_margin="@dimen/forT"
+        android:layout_margin="@dimen/b12"
         android:src="@drawable/aide3" />
     
         <ImageButton
@@ -29,7 +29,7 @@
         android:layout_height="40dip"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_margin="@dimen/forT"
+        android:layout_margin="@dimen/b12"
         android:src="@drawable/exit" />
 
          <LinearLayout
@@ -43,23 +43,23 @@
 
         <TextView
             android:id="@+id/textView9"
-            android:layout_width="90dp"
+            android:layout_width="@dimen/c4"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/ordreOperation"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/forTMin" />
+            android:textSize="@dimen/b1" />
 
         <TextView
             android:id="@+id/textView10"
-            android:layout_width="150dp"
+            android:layout_width="@dimen/c10"
             android:layout_height="wrap_content"
             android:layout_margin="5dp"
             android:text="@string/operationsRealiser"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#0000ff"
-            android:textSize="@dimen/forTMin" />
+            android:textSize="@dimen/b1" />
 
       
         
@@ -73,9 +73,9 @@
                  android:layout_height="wrap_content"
                  android:layout_below="@+id/textView1"
                  android:layout_centerHorizontal="true"
-                 android:layout_margin="@dimen/forT"
+                 android:layout_margin="@dimen/b12"
                  android:text="@string/ordreJour"
-                 android:textSize="@dimen/forT" />
+                 android:textSize="@dimen/b9" />
     
     <GridView
         android:id="@+id/gridview"

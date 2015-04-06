@@ -295,7 +295,7 @@ public class MainMenuCableur extends Activity {
 					element.put(
 							columns[2],
 							cursorA.getString(cursorA
-									.getColumnIndex(Raccordement.REFERENCE_ACCESSOIRE_OUTIL_ABOUTISSANT)));
+									.getColumnIndex(Raccordement.REFERENCE_OUTIL_ABOUTISSANT)));
 					element.put(columns[3], cursorA.getString(cursorA
 							.getColumnIndex(Raccordement.NUMERO_SERIE_OUTIL)));
 
@@ -316,9 +316,9 @@ public class MainMenuCableur extends Activity {
 				+ Operation.REALISABLE + "='" + 1 + "'  AND " + Operation.GAMME
 				+ "!='Contrôle jalons' AND " + Operation.GAMME
 				+ "!='Contrôle final'  ");
-		//clause = Operation.DESCRIPTION_OPERATION + " LIKE '%Chemin%'";
+		//clause = Operation.DESCRIPTION_OPERATION + " LIKE 'Repr%'";
 		cursor = cr.query(url, columns, clause, null, Operation.NOM_OPERATEUR
-				+ " DESC, " + Operation._id + " LIMIT 70");
+				+ " DESC, " + Operation._id + " LIMIT 100");
 
 		// Rempliassage du tableau pour chaque numero de cable
 		if (cursor.moveToFirst()) {
